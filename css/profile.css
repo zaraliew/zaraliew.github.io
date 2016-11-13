@@ -1,5 +1,5 @@
 .profile-pic
-	{max-width: 60%; margin-bottom: 12px}
+	{max-width: 60%; margin-bottom: 12px; border: solid;border-width: 1px; border-color: lightgrey}
 
 .center
 {text-align:center;font-weight: bolder;font-size: 45; margin-bottom: 20px}
@@ -12,6 +12,5 @@ html{background-color: #f2f7ff}
 .rando{color:#d4d6d8;font-family: sans-serif;}
 .sb-border {border-color: #9fb1ce;border-width: 2px;border-style: solid;border-radius: 3px}
 .post-border {border-color: #cbd8ed;border-width: 2px;border-style: solid;border-radius: 3px}
-nav{height: 45px;}
 .gif{max-width: 100%}
-
+h1{letter-spacing: 4px;}
