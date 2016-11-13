@@ -1,0 +1,17 @@
+.profile-pic
+	{max-width: 60%}
+
+.center
+{text-align:center;font-weight: bolder;font-size: 45; margin-bottom: 20px}
+
+.small-blue {font-size: 13; color: #77a1e5}
+
+html{background-color: #f2f7ff}
+
+.post-title {font-weight: bold;}
+.rando{color:#d4d6d8;font-family: sans-serif;}
+.sb-border {border-color: #9fb1ce;border-width: 2px;border-style: solid;border-radius: 3px}
+.post-border {border-color: #cbd8ed;border-width: 2px;border-style: solid;border-radius: 3px}
+nav{height: 45px;}
+.gif{max-width: 100%}
+
