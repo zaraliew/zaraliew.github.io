@@ -1,0 +1,74 @@
+/* ── Layer toggles container ───────────────────────── */
+
+.layer-toggles {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.layer-toggles-group {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(13, 13, 20, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(139, 92, 246, 0.08);
+  pointer-events: auto;
+}
+
+/* ── Individual toggle button ─────────────────────── */
+
+.layer-toggle {
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-muted);
+  background: transparent;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  line-height: 1.2;
+}
+
+.layer-toggle:not(.layer-toggle--active) {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.layer-toggle:not(.layer-toggle--active):active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Active state ─────────────────────────────────── */
+
+.layer-toggle--active {
+  background: var(--accent-purple);
+  color: #fff;
+  border-color: var(--accent-purple);
+}
+
+.layer-toggle--active:active {
+  opacity: 0.85;
+}
+
+/* ── Focus visible ────────────────────────────────── */
+
+.layer-toggle:focus-visible {
+  outline: 2px solid var(--accent-purple);
+  outline-offset: 2px;
+}

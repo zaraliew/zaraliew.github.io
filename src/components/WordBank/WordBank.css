@@ -1,0 +1,246 @@
+/* ── Page container ── */
+.wordbank {
+  min-height: 100vh;
+  padding: 20px 16px calc(var(--nav-height) + 32px);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* ── Header ── */
+.wordbank-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.wordbank-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.wordbank-back:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.wordbank-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.wordbank-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--accent-purple);
+  color: #fff;
+}
+
+/* ── Empty state ── */
+.wordbank-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+}
+
+.wordbank-empty-icon {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.wordbank-empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+
+.wordbank-empty-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 0 28px;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+.wordbank-empty-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  background: var(--accent-purple);
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.wordbank-empty-link:hover {
+  opacity: 0.88;
+}
+
+/* ── Content area ── */
+.wordbank-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── Song group ── */
+.wordbank-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wordbank-group + .wordbank-group {
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.wordbank-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin: 0 0 4px;
+}
+
+.wordbank-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Word card ── */
+.word-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  position: relative;
+  transition: background 0.2s;
+}
+
+.word-card:hover {
+  background: var(--bg-elevated);
+}
+
+.word-card-characters {
+  font-family: var(--font-chinese);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 52px;
+  text-align: center;
+}
+
+.word-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.word-card-pinyin {
+  font-family: var(--font-latin);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.word-card-meaning {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.word-card-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.word-card:hover .word-card-remove,
+.word-card-remove:focus-visible {
+  opacity: 1;
+}
+
+.word-card-remove:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+/* make remove always visible on touch devices */
+@media (hover: none) {
+  .word-card-remove {
+    opacity: 0.6;
+  }
+}
+
+/* ── Flashcard link button ── */
+.flashcard-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px;
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-soft));
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.flashcard-link:hover {
+  opacity: 0.92;
+}
+
+.flashcard-link:active {
+  transform: scale(0.98);
+}
