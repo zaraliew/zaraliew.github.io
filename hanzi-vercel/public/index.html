@@ -456,7 +456,11 @@ async function loadAndTranslate(title, artist, apiKey, lrcLines) {
   const wordsAnnotated = S.lyrics.filter(l => l.words?.length).length;
   const engAnnotated = S.lyrics.filter(l => l.english).length;
   pill.className = 'status-pill ready';
-  pill.innerHTML = `<span>✓ ${lrcLines.length} lines · ${wordsAnnotated} with words · ${engAnnotated} with English</span>`;
+  if (wordsAnnotated === 0 && engAnnotated === 0) {
+    pill.innerHTML = `<span style="color:#e08080">⚠ Translation failed — check your API key</span>`;
+  } else {
+    pill.innerHTML = `<span>✓ ${lrcLines.length} lines ready</span>`;
+  }
   rerender();
 }
 
@@ -492,21 +496,49 @@ async function annotateInChunks(arr, apiKey) {
 }
 
 async function annotateChunk(lines, apiKey) {
-  const resp = await fetch('/api/annotate', {
+  const numbered = lines.map((l, i) => `${i+1}. ${l}`).join('\n');
+  const prompt = `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural English translation.\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks always required, group natural word units, keep English poetic for song lyrics.`;
+
+  // Try server-side proxy first
+  try {
+    const resp = await fetch('/api/annotate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+      body: JSON.stringify({ lines })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.result?.length) return data.result;
+    }
+  } catch(e) { console.warn('Server annotate failed, trying direct:', e.message); }
+
+  // Fall back to direct Anthropic call
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
     },
-    body: JSON.stringify({ lines })
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4000,
+      system: 'You output ONLY a raw JSON array. No markdown, no backticks, no explanation. Start immediately with [',
+      messages: [
+        { role: 'user', content: prompt },
+        { role: 'assistant', content: '[' }
+      ]
+    })
   });
   if (!resp.ok) {
     const e = await resp.json().catch(() => ({}));
-    throw new Error(e.error || `Server error ${resp.status}`);
+    throw new Error(e.error?.message || `API error ${resp.status}`);
   }
   const data = await resp.json();
-  if (data.error) throw new Error(data.error);
-  return data.result;
+  const raw = '[' + (data.content?.[0]?.text || '');
+  try { return JSON.parse(raw); }
+  catch { try { return JSON.parse(raw + ']'); } catch { return []; } }
 }
 
 // ── LRC PARSER ────────────────────────────────────────────────────────────
