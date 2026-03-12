@@ -453,8 +453,10 @@ async function loadAndTranslate(title, artist, apiKey, lrcLines) {
   await annotateInChunks(S.lyrics, apiKey);
 
   document.getElementById('translating-notice').classList.add('hidden');
+  const wordsAnnotated = S.lyrics.filter(l => l.words?.length).length;
+  const engAnnotated = S.lyrics.filter(l => l.english).length;
   pill.className = 'status-pill ready';
-  pill.innerHTML = `<span>✓ ${lrcLines.length} lines ready</span>`;
+  pill.innerHTML = `<span>✓ ${lrcLines.length} lines · ${wordsAnnotated} with words · ${engAnnotated} with English</span>`;
   rerender();
 }
 
@@ -566,23 +568,29 @@ function renderLine(id, line, isActive) {
   let html = '';
 
   if (line.words?.length) {
+    // ── Word-by-word (full annotation) ────────────────────────────────────
     html += '<div class="k-word-row">';
     line.words.forEach((w, wi) => {
       const sv = S.saved.some(s => s.char === w.char);
       html += `<span class="k-word ${sv?'saved':''}" onmouseenter="showTooltip(event,${S.activeIdx},${wi})" onmouseleave="hideTooltip()" onclick="showTooltip(event,${S.activeIdx},${wi})">`;
-      // Pinyin on top (hidden unless toggle on or hovering)
       if (showP && w.pinyin) html += `<span class="k-pin">${esc(w.pinyin)}</span>`;
-      else if (w.pinyin) html += `<span class="k-pin k-pin-hover">${esc(w.pinyin)}</span>`;
-      // Character always present as click target (hidden via opacity if tog off)
+      else if (w.pinyin)     html += `<span class="k-pin k-pin-hover">${esc(w.pinyin)}</span>`;
       html += `<span class="k-char" style="font-size:${sz};${showC?'':'opacity:0.12'}">${esc(w.char)}</span>`;
       html += '</span>';
     });
     html += '</div>';
-    if (showE && line.english) html += `<div class="k-eng k-eng-on">${esc(line.english)}</div>`;
-    else if (line.english) html += `<div class="k-eng k-eng-hover">${esc(line.english)}</div>`;
+    if (showE && line.english)      html += `<div class="k-eng-on">${esc(line.english)}</div>`;
+    else if (line.english)          html += `<div class="k-eng-hover">${esc(line.english)}</div>`;
+
+  } else if (line.pinyin || line.english) {
+    // ── Line-level annotation (no word split) — still show what we have ──
+    if (showP && line.pinyin) html += `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);margin-bottom:4px;letter-spacing:0.03em">${esc(line.pinyin)}</div>`;
+    if (showC)                html += `<div style="font-family:'Noto Serif SC',serif;font-size:${sz};line-height:1.3">${esc(text)}</div>`;
+    if (showE && line.english) html += `<div class="k-eng-on" style="margin-top:4px">${esc(line.english)}</div>`;
+
   } else {
-    // Not yet annotated — show plain text
-    html = `<span style="font-family:'Noto Serif SC',serif;font-size:${sz}">${esc(text)}</span>`;
+    // ── Not yet annotated ─────────────────────────────────────────────────
+    html = `<span style="font-family:'Noto Serif SC',serif;font-size:${sz};opacity:0.5">${esc(text)}</span>`;
   }
 
   el.innerHTML = html;
