@@ -471,6 +471,22 @@ async function annotateInChunks(arr, apiKey) {
     if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ Invalid API key — must start with sk-ant-</span>`;
     return;
   }
+
+  // Quick test call first
+  try {
+    const test = await annotateChunk(['你好'], apiKey);
+    console.log('Test annotation result:', test);
+    if (!test?.length) {
+      const pill = document.getElementById('status-pill');
+      if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ API returned empty — key may be invalid or out of credits</span>`;
+      return;
+    }
+  } catch(e) {
+    const pill = document.getElementById('status-pill');
+    if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ API error: ${e.message}</span>`;
+    return;
+  }
+
   const SIZE = 18;
   for (let i = 0; i < arr.length; i += SIZE) {
     const chunk = arr.slice(i, i + SIZE);
@@ -514,10 +530,12 @@ async function annotateChunk(lines, apiKey) {
     if (resp.ok) {
       const data = await resp.json();
       if (data.result?.length) return data.result;
+      if (data.error) console.warn('Server annotate error:', data.error);
     }
-  } catch(e) { console.warn('Server annotate failed, trying direct:', e.message); }
+  } catch(e) { console.warn('Server annotate failed:', e.message); }
 
   // Fall back to direct Anthropic call
+  console.log('Trying direct Anthropic call...');
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -536,14 +554,21 @@ async function annotateChunk(lines, apiKey) {
       ]
     })
   });
+
+  const responseText = await resp.text();
+  console.log('Direct API response status:', resp.status);
+  console.log('Direct API response:', responseText.slice(0, 300));
+
   if (!resp.ok) {
-    const e = await resp.json().catch(() => ({}));
-    throw new Error(e.error?.message || `API error ${resp.status}`);
+    let errMsg = `API error ${resp.status}`;
+    try { const e = JSON.parse(responseText); errMsg = e.error?.message || errMsg; } catch {}
+    throw new Error(errMsg);
   }
-  const data = await resp.json();
+
+  const data = JSON.parse(responseText);
   const raw = '[' + (data.content?.[0]?.text || '');
   try { return JSON.parse(raw); }
-  catch { try { return JSON.parse(raw + ']'); } catch { return []; } }
+  catch { try { return JSON.parse(raw + ']'); } catch { throw new Error('Could not parse Claude response'); } }
 }
 
 // ── LRC PARSER ────────────────────────────────────────────────────────────
