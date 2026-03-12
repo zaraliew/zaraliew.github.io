@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/lyrics.js": { "maxDuration": 15 }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/public/index.html" }
+  ]
+}
