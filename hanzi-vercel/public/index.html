@@ -653,7 +653,7 @@ document.addEventListener('click', (e) => {
   }
 });
 
-
+function toggleWord(li, wi) {
   const w=S.lyrics[li]?.words?.[wi]; if(!w) return;
   const idx=S.saved.findIndex(s=>s.char===w.char);
   if(idx>=0) S.saved.splice(idx,1);
