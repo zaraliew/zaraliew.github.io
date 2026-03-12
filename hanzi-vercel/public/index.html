@@ -443,6 +443,7 @@ async function annotateInChunks(arr, apiKey) {
     try {
       const texts = chunk.map(l => l.text || l.characters);
       const result = await annotateChunk(texts, apiKey);
+      console.log('Annotation result sample:', result?.[0]);
       // Use forEach index directly — most reliable
       result.forEach((item, j) => {
         const idx = i + j;
@@ -528,39 +529,37 @@ function rerender() {
 }
 
 function renderLine(id, line, isActive) {
-  const el=document.getElementById(id); if(!el) return;
-  if(!line) { el.innerHTML=''; return; }
-  const showC=document.getElementById('tog-chars')?.checked ?? true;
-  const showP=document.getElementById('tog-pin')?.checked ?? true;
-  const showE=document.getElementById('tog-eng')?.checked ?? true;
-  const sz=isActive?'28px':'20px';
+  const el = document.getElementById(id); if (!el) return;
+  if (!line) { el.innerHTML = ''; return; }
+  const showC = document.getElementById('tog-chars')?.checked ?? true;
+  const showP = document.getElementById('tog-pin')?.checked ?? true;
+  const showE = document.getElementById('tog-eng')?.checked ?? true;
+  const sz = isActive ? '28px' : '20px';
   const text = line.text || line.characters || '';
 
-  // If we have annotated words, show word-by-word
-  if (line.words?.length) {
-    let html='';
-    if (showC || showP) {
-      html += '<div class="k-word-row">';
-      line.words.forEach((w, wi) => {
-        const sv = S.saved.some(s => s.char === w.char);
-        html += `<span class="k-word ${sv?'saved':''}" onclick="toggleWord(${S.activeIdx},${wi})">`;
-        if (showC) html += `<span class="k-char" style="font-size:${sz}">${esc(w.char)}</span>`;
-        if (showP && w.pinyin) html += `<span class="k-pin">${esc(w.pinyin)}</span>`;
-        html += '</span>';
-      });
-      html += '</div>';
-    }
+  let html = '';
+
+  if (line.words?.length && (showC || showP)) {
+    // Word-by-word display
+    html += '<div class="k-word-row">';
+    line.words.forEach((w, wi) => {
+      const sv = S.saved.some(s => s.char === w.char);
+      html += `<span class="k-word ${sv?'saved':''}" onclick="toggleWord(${S.activeIdx},${wi})">`;
+      if (showC) html += `<span class="k-char" style="font-size:${sz}">${esc(w.char)}</span>`;
+      if (showP && w.pinyin) html += `<span class="k-pin">${esc(w.pinyin)}</span>`;
+      html += '</span>';
+    });
+    html += '</div>';
     if (showE && line.english) html += `<div class="k-eng">${esc(line.english)}</div>`;
-    el.innerHTML = html;
-    return;
+
+  } else {
+    // Fallback: show characters + line-level pinyin/english
+    if (showC) html += `<div style="font-family:'Noto Serif SC',serif;font-size:${sz};line-height:1.4;margin-bottom:4px">${esc(text)}</div>`;
+    if (showP && line.pinyin) html += `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.03em;margin-bottom:3px">${esc(line.pinyin)}</div>`;
+    if (showE && line.english) html += `<div class="k-eng">${esc(line.english)}</div>`;
+    if (!html) html = `<span style="font-family:'Noto Serif SC',serif;font-size:${sz}">${esc(text)}</span>`;
   }
 
-  // Not yet annotated — show characters + pinyin/english if available (partial state)
-  let html = '';
-  if (showC) html += `<div style="font-family:'Noto Serif SC',serif;font-size:${sz};line-height:1.3">${esc(text)}</div>`;
-  if (showP && line.pinyin) html += `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);margin-top:4px">${esc(line.pinyin)}</div>`;
-  if (showE && line.english) html += `<div class="k-eng">${esc(line.english)}</div>`;
-  if (!html) html = `<span class="k-chars-only" style="font-size:${sz}">${esc(text)}</span>`;
   el.innerHTML = html;
 }
 
