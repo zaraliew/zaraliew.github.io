@@ -466,6 +466,11 @@ async function loadAndTranslate(title, artist, apiKey, lrcLines) {
 
 // ── ANNOTATION ────────────────────────────────────────────────────────────
 async function annotateInChunks(arr, apiKey) {
+  if (!apiKey || !apiKey.startsWith('sk-ant-')) {
+    const pill = document.getElementById('status-pill');
+    if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ Invalid API key — must start with sk-ant-</span>`;
+    return;
+  }
   const SIZE = 18;
   for (let i = 0; i < arr.length; i += SIZE) {
     const chunk = arr.slice(i, i + SIZE);
@@ -488,9 +493,9 @@ async function annotateInChunks(arr, apiKey) {
       rerender();
     } catch(e) {
       console.error('Chunk failed at', i, e);
-      // Show error in status so user knows
       const pill = document.getElementById('status-pill');
-      if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ Translation error: ${e.message}</span>`;
+      if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ ${e.message}</span>`;
+      return; // stop trying more chunks
     }
   }
 }
