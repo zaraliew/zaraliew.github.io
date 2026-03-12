@@ -274,6 +274,14 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
       <div class="toggle-row"><span class="toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
       <div class="toggle-row"><span class="toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
     </div>
+    <div>
+      <div class="section-label">Manual scroll</div>
+      <div class="seek-row">
+        <button class="seek-btn" onclick="manualScroll(-1)" style="font-size:16px">↑</button>
+        <button class="seek-btn" onclick="manualScroll(1)" style="font-size:16px">↓</button>
+      </div>
+      <div class="sync-hint" style="margin-top:6px">Or use ← → arrow keys</div>
+    </div>
     <button class="back-btn" onclick="showView('search')">← Add Another Song</button>
   </aside>
   <main class="karaoke-main">
@@ -284,6 +292,13 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
       <div class="k-line dim" id="k-next"></div>
     </div>
     <div class="progress-track"><div class="progress-fill" id="progress-fill" style="height:0%"></div></div>
+    <!-- Word tooltip -->
+    <div id="word-tooltip" style="display:none;position:fixed;z-index:100;background:#1a1410;border:1px solid rgba(200,150,42,0.4);border-radius:12px;padding:16px 20px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6);pointer-events:none">
+      <div id="tt-char" style="font-family:'Noto Serif SC',serif;font-size:36px;color:#fff;text-align:center;margin-bottom:6px"></div>
+      <div id="tt-pin" style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#c8962a;text-align:center;margin-bottom:4px"></div>
+      <div id="tt-eng" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#a09080;text-align:center;margin-bottom:12px"></div>
+      <button id="tt-add" onclick="tooltipAddToDeck()" style="width:100%;padding:8px;background:#c8962a;color:#0a0806;border:none;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">+ Add to Deck</button>
+    </div>
   </main>
 </div>
 
@@ -362,7 +377,7 @@ async function startSearch() {
       return;
     }
 
-    const lrcLines = parseLrc(data.lrc).filter(l => /[\u4e00-\u9fff]/.test(l.text));
+    const lrcLines = parseLrc(data.lrc).filter(l => /[\u4e00-\u9fff\uAC00-\uD7AF]/.test(l.text));
     if (!lrcLines.length) {
       setSearchStatus('error', 'No Chinese lyrics found — try pasting manually.');
       document.getElementById('search-btn').disabled = false;
@@ -389,7 +404,7 @@ async function startPaste() {
 
   const lines = raw.split('\n')
     .map(l => l.replace(/\[\d+:\d+[^\]]*\]/g, '').replace(/^\s*\d+\.\s*/, '').trim())
-    .filter(l => /[\u4e00-\u9fff\u3400-\u4dbf]/.test(l));
+    .filter(l => /[\u4e00-\u9fff\u3400-\u4dbf\uAC00-\uD7AF]/.test(l));
 
   if (!lines.length) return alert('No Chinese characters found. Make sure you copied Chinese text.');
 
@@ -544,8 +559,14 @@ function renderLine(id, line, isActive) {
     html += '<div class="k-word-row">';
     line.words.forEach((w, wi) => {
       const sv = S.saved.some(s => s.char === w.char);
-      html += `<span class="k-word ${sv?'saved':''}" onclick="toggleWord(${S.activeIdx},${wi})">`;
+      // Always show char for hover target even if chars toggle is off
+      const charHidden = !showC;
+      html += `<span class="k-word ${sv?'saved':''}" 
+        onmouseenter="showTooltip(event,${S.activeIdx},${wi})" 
+        onmouseleave="hideTooltip()"
+        onclick="showTooltip(event,${S.activeIdx},${wi})">`;
       if (showC) html += `<span class="k-char" style="font-size:${sz}">${esc(w.char)}</span>`;
+      if (charHidden) html += `<span class="k-char" style="font-size:${sz};opacity:0.15">${esc(w.char)}</span>`;
       if (showP && w.pinyin) html += `<span class="k-pin">${esc(w.pinyin)}</span>`;
       html += '</span>';
     });
@@ -563,7 +584,76 @@ function renderLine(id, line, isActive) {
   el.innerHTML = html;
 }
 
-function toggleWord(li,wi) {
+// ── MANUAL SCROLL + KEYBOARD ─────────────────────────────────────────────
+function manualScroll(dir) {
+  // Pause auto-sync when manually scrolling
+  if (S.running) { S.running = false; S.offset = getElapsed(); document.getElementById('sync-btn').textContent = '▶ Resume'; }
+  S.activeIdx = Math.max(0, Math.min(S.lyrics.length - 1, S.activeIdx + dir));
+  rerender();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); manualScroll(-1); }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); manualScroll(1); }
+});
+
+// ── WORD TOOLTIP ──────────────────────────────────────────────────────────
+let tooltipWord = null;
+
+function showTooltip(e, lineIdx, wordIdx) {
+  const line = S.lyrics[lineIdx];
+  const w = line?.words?.[wordIdx];
+  if (!w) return;
+
+  tooltipWord = { lineIdx, wordIdx, char: w.char, pinyin: w.pinyin, english: w.english };
+  const saved = S.saved.some(s => s.char === w.char);
+
+  document.getElementById('tt-char').textContent = w.char;
+  document.getElementById('tt-pin').textContent = w.pinyin || '';
+  document.getElementById('tt-eng').textContent = w.english || '';
+  document.getElementById('tt-add').textContent = saved ? '✓ In Deck' : '+ Add to Deck';
+  document.getElementById('tt-add').style.background = saved ? 'rgba(80,160,80,0.3)' : '#c8962a';
+
+  const tt = document.getElementById('word-tooltip');
+  tt.style.display = 'block';
+
+  // Position near cursor but stay on screen
+  const x = Math.min(e.clientX + 12, window.innerWidth - 240);
+  const y = Math.min(e.clientY - 10, window.innerHeight - 180);
+  tt.style.left = x + 'px';
+  tt.style.top = y + 'px';
+}
+
+function hideTooltip() {
+  setTimeout(() => { document.getElementById('word-tooltip').style.display = 'none'; }, 150);
+}
+
+function tooltipAddToDeck() {
+  if (!tooltipWord) return;
+  const { char, pinyin, english } = tooltipWord;
+  const exists = S.saved.findIndex(s => s.char === char);
+  if (exists >= 0) {
+    S.saved.splice(exists, 1);
+  } else {
+    S.saved.push({ char, pinyin, english, song: S.title });
+  }
+  localStorage.setItem('ht_deck', JSON.stringify(S.saved));
+  updateBadge();
+  rerender();
+  // Update button
+  const saved = S.saved.some(s => s.char === char);
+  document.getElementById('tt-add').textContent = saved ? '✓ In Deck' : '+ Add to Deck';
+  document.getElementById('tt-add').style.background = saved ? 'rgba(80,160,80,0.3)' : '#c8962a';
+}
+
+// Hide tooltip on click elsewhere
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#word-tooltip') && !e.target.closest('.k-word')) {
+    document.getElementById('word-tooltip').style.display = 'none';
+  }
+});
+
+
   const w=S.lyrics[li]?.words?.[wi]; if(!w) return;
   const idx=S.saved.findIndex(s=>s.char===w.char);
   if(idx>=0) S.saved.splice(idx,1);
