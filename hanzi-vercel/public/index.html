@@ -463,32 +463,21 @@ async function annotateInChunks(arr, apiKey) {
 }
 
 async function annotateChunk(lines, apiKey) {
-  const numbered = lines.map((l, i) => `${i+1}. ${l}`).join('\n');
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+  const resp = await fetch('/api/annotate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6', max_tokens: 4000,
-      system: 'You output ONLY a raw JSON array. No markdown, no backticks, no explanation. Start immediately with [',
-      messages: [
-        { role: 'user', content: `Annotate these Mandarin song lyric lines with pinyin (tone marks required) and natural English translation.\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"原来的字","pinyin":"yuán lái de zì","english":"the original characters","words":[{"char":"原来","pinyin":"yuán lái","english":"original"},{"char":"的","pinyin":"de","english":"(particle)"},{"char":"字","pinyin":"zì","english":"characters"}]}]\n\nRules: tone marks always, group natural word units, keep English poetic/natural for song context.` },
-        { role: 'assistant', content: '[' }
-      ]
-    })
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+    },
+    body: JSON.stringify({ lines })
   });
   if (!resp.ok) {
-    const e = await resp.json().catch(()=>({}));
-    throw new Error(e.error?.message || `API error ${resp.status}`);
+    const e = await resp.json().catch(() => ({}));
+    throw new Error(e.error || `Server error ${resp.status}`);
   }
   const data = await resp.json();
-  const raw = '[' + (data.content?.[0]?.text || '');
-  // Robust parse — try full, then try to recover partial JSON
-  try {
-    return JSON.parse(raw);
-  } catch {
-    // Try closing the array if it got cut off
-    try { return JSON.parse(raw + ']'); } catch { return []; }
-  }
+  if (data.error) throw new Error(data.error);
+  return data.result;
 }
 
 // ── LRC PARSER ────────────────────────────────────────────────────────────
