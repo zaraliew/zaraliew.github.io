@@ -2,7 +2,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
@@ -11,6 +10,15 @@ export default async function handler(req, res) {
 
   const { lines } = req.body;
   if (!lines?.length) return res.status(400).json({ error: 'Missing lines' });
+
+  // Detect language
+  const sample = lines.join('');
+  const isKorean = /[\uAC00-\uD7AF\u1100-\u11FF]/.test(sample);
+  const isChinese = /[\u4e00-\u9fff]/.test(sample);
+
+  const langInstructions = isKorean
+    ? `These are Korean lyrics. Add romanization (McCune-Reischauer or Revised Romanization) and natural English translation. Use "pinyin" field for romanization.`
+    : `These are Mandarin Chinese lyrics. Add pinyin with tone marks and natural English translation.`;
 
   const numbered = lines.map((l, i) => `${i+1}. ${l}`).join('\n');
 
@@ -29,7 +37,7 @@ export default async function handler(req, res) {
         messages: [
           {
             role: 'user',
-            content: `Annotate these Mandarin song lyric lines with pinyin (tone marks required) and natural English translation.\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks always required, group natural word units, keep English poetic for song lyrics.`
+            content: `${langInstructions}\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks always required for Mandarin, group natural word units, keep English poetic for song lyrics.`
           },
           { role: 'assistant', content: '[' }
         ]
@@ -43,16 +51,11 @@ export default async function handler(req, res) {
 
     const data = await response.json();
     const raw = '[' + (data.content?.[0]?.text || '');
-
     let result;
     try { result = JSON.parse(raw); }
-    catch { 
-      try { result = JSON.parse(raw + ']'); }
-      catch { return res.status(500).json({ error: 'Failed to parse Claude response' }); }
-    }
+    catch { try { result = JSON.parse(raw + ']'); } catch { return res.status(500).json({ error: 'Failed to parse response' }); } }
 
     return res.json({ result });
-
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
