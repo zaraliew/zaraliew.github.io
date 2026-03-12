@@ -401,8 +401,9 @@ async function startPaste() {
 async function loadAndTranslate(title, artist, apiKey, lrcLines) {
   S.title = title; S.artist = artist; S.apiKey = apiKey;
   localStorage.setItem('ht_key', apiKey);
-  S.lyrics = lrcLines.map(l => ({ ...l, characters: l.text, pinyin: null, english: null, words: null }));
-  S.activeIdx = -1; S.syncStart = null; S.running = false; S.offset = 0;
+  S.lyrics = lrcLines.map((l, i) => ({ ...l, characters: l.text, pinyin: null, english: null, words: null }));
+  S.activeIdx = 0;  // start at first line immediately
+  S.syncStart = null; S.running = false; S.offset = 0;
 
   document.getElementById('np-title').textContent = title;
   document.getElementById('np-artist').textContent = artist;
@@ -442,17 +443,22 @@ async function annotateInChunks(arr, apiKey) {
     try {
       const texts = chunk.map(l => l.text || l.characters);
       const result = await annotateChunk(texts, apiKey);
-      // Map by line number (1-based) for reliability, fall back to index
-      result.forEach((item) => {
-        const idx = item.line ? (i + item.line - 1) : (i + result.indexOf(item));
+      // Use forEach index directly — most reliable
+      result.forEach((item, j) => {
+        const idx = i + j;
         if (arr[idx]) {
           arr[idx].pinyin  = item.pinyin  || arr[idx].pinyin;
           arr[idx].english = item.english || arr[idx].english;
-          arr[idx].words   = item.words?.length ? item.words : null;
+          arr[idx].words   = item.words?.length ? item.words : arr[idx].words;
         }
       });
       rerender();
-    } catch(e) { console.error('Chunk failed', i, e); }
+    } catch(e) {
+      console.error('Chunk failed at', i, e);
+      // Show error in status so user knows
+      const pill = document.getElementById('status-pill');
+      if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ Translation error: ${e.message}</span>`;
+    }
   }
 }
 
@@ -462,7 +468,7 @@ async function annotateChunk(lines, apiKey) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514', max_tokens: 4000,
+      model: 'claude-sonnet-4-6', max_tokens: 4000,
       system: 'You output ONLY a raw JSON array. No markdown, no backticks, no explanation. Start immediately with [',
       messages: [
         { role: 'user', content: `Annotate these Mandarin song lyric lines with pinyin (tone marks required) and natural English translation.\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"原来的字","pinyin":"yuán lái de zì","english":"the original characters","words":[{"char":"原来","pinyin":"yuán lái","english":"original"},{"char":"的","pinyin":"de","english":"(particle)"},{"char":"字","pinyin":"zì","english":"characters"}]}]\n\nRules: tone marks always, group natural word units, keep English poetic/natural for song context.` },
@@ -504,15 +510,26 @@ function seekBy(s) { S.offset=getElapsed()+s; if(S.running) S.syncStart=Date.now
 function getElapsed() { if(!S.running||!S.syncStart) return S.offset; return (Date.now()-S.syncStart)/1000; }
 
 function tick() {
-  const pos=getElapsed();
-  document.getElementById('sync-min').textContent=Math.floor(pos/60);
-  document.getElementById('sync-sec').textContent=String(Math.floor(pos%60)).padStart(2,'0');
-  if(!S.lyrics.length) return;
-  const pf=document.getElementById('progress-fill');
-  if(pf) pf.style.height=Math.min(100,(pos/(S.lyrics[S.lyrics.length-1]?.time||1))*100)+'%';
-  let idx=-1;
-  for(let i=0;i<S.lyrics.length;i++) { if(S.lyrics[i].time<=pos+0.3) idx=i; else break; }
-  if(idx!==S.activeIdx) { S.activeIdx=idx; rerender(); }
+  const pos = getElapsed();
+  document.getElementById('sync-min').textContent = Math.floor(pos/60);
+  document.getElementById('sync-sec').textContent = String(Math.floor(pos%60)).padStart(2,'0');
+  if (!S.lyrics.length) return;
+
+  // Progress bar
+  const last = S.lyrics[S.lyrics.length-1]?.time || 1;
+  const pf = document.getElementById('progress-fill');
+  if (pf) pf.style.height = Math.min(100, (pos/last)*100) + '%';
+
+  // Only advance lines if sync is actually running
+  if (!S.running) return;
+
+  // Find which line we're on
+  let idx = 0;
+  for (let i = 0; i < S.lyrics.length; i++) {
+    if (S.lyrics[i].time <= pos) idx = i;
+    else break;
+  }
+  if (idx !== S.activeIdx) { S.activeIdx = idx; rerender(); }
 }
 
 function rerender() {
