@@ -119,9 +119,23 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 .k-word.saved::after { content: '·'; position: absolute; top: 0; right: 1px; color: var(--gold); font-size: 12px; }
 .k-char { font-family: 'Noto Serif SC', serif; line-height: 1; color: var(--paper); }
 .active .k-char { color: #fff; font-weight: 700; }
-.k-pin { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gold); line-height: 1; }
-.k-eng { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; color: rgba(245,240,232,0.4); margin-top: 3px; }
-.active .k-eng { color: rgba(245,240,232,0.6); }
+
+/* Pinyin hidden by default, reveals on word hover */
+.k-pin { 
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gold); 
+  line-height: 1; opacity: 0; transition: opacity 0.18s; max-height: 0; overflow: hidden;
+  transition: opacity 0.18s, max-height 0.18s;
+}
+.k-word:hover .k-pin { opacity: 1; max-height: 20px; }
+
+/* English hidden by default, reveals when hovering the whole line */
+.k-eng { 
+  font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; 
+  color: rgba(245,240,232,0.5); margin-top: 4px;
+  opacity: 0; transition: opacity 0.25s;
+}
+.k-line:hover .k-eng { opacity: 1; }
+.active .k-line:hover .k-eng, .k-line.active:hover .k-eng { color: rgba(245,240,232,0.75); }
 .k-chars-only { font-family: 'Noto Serif SC', serif; color: var(--paper); line-height: 1.3; }
 
 /* DECK */
@@ -268,11 +282,10 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
       </div>
       <div class="sync-hint">Press Start Sync when the song begins.<br>±2s / ±5s to adjust if drifting.</div>
     </div>
-    <div class="toggle-section">
-      <div class="section-label">Display</div>
-      <div class="toggle-row"><span class="toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
-      <div class="toggle-row"><span class="toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
-      <div class="toggle-row"><span class="toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
+    <div style="font-size:9px;color:var(--muted);line-height:1.8;letter-spacing:0.04em;text-transform:uppercase">
+      Hover a word → pinyin<br>
+      Hover a line → english<br>
+      Click a word → save to deck
     </div>
     <div>
       <div class="section-label">Manual scroll</div>
@@ -546,39 +559,30 @@ function rerender() {
 function renderLine(id, line, isActive) {
   const el = document.getElementById(id); if (!el) return;
   if (!line) { el.innerHTML = ''; return; }
-  const showC = document.getElementById('tog-chars')?.checked ?? true;
-  const showP = document.getElementById('tog-pin')?.checked ?? true;
-  const showE = document.getElementById('tog-eng')?.checked ?? true;
   const sz = isActive ? '28px' : '20px';
   const text = line.text || line.characters || '';
 
   let html = '';
 
-  if (line.words?.length && (showC || showP)) {
-    // Word-by-word display
+  if (line.words?.length) {
     html += '<div class="k-word-row">';
     line.words.forEach((w, wi) => {
       const sv = S.saved.some(s => s.char === w.char);
-      // Always show char for hover target even if chars toggle is off
-      const charHidden = !showC;
       html += `<span class="k-word ${sv?'saved':''}" 
-        onmouseenter="showTooltip(event,${S.activeIdx},${wi})" 
+        onmouseenter="showTooltip(event,${S.activeIdx},${wi})"
         onmouseleave="hideTooltip()"
         onclick="showTooltip(event,${S.activeIdx},${wi})">`;
-      if (showC) html += `<span class="k-char" style="font-size:${sz}">${esc(w.char)}</span>`;
-      if (charHidden) html += `<span class="k-char" style="font-size:${sz};opacity:0.15">${esc(w.char)}</span>`;
-      if (showP && w.pinyin) html += `<span class="k-pin">${esc(w.pinyin)}</span>`;
+      html += `<span class="k-pin">${esc(w.pinyin||'')}</span>`;
+      html += `<span class="k-char" style="font-size:${sz}">${esc(w.char)}</span>`;
       html += '</span>';
     });
     html += '</div>';
-    if (showE && line.english) html += `<div class="k-eng">${esc(line.english)}</div>`;
-
+    if (line.english) html += `<div class="k-eng">${esc(line.english)}</div>`;
   } else {
-    // Fallback: show characters + line-level pinyin/english
-    if (showC) html += `<div style="font-family:'Noto Serif SC',serif;font-size:${sz};line-height:1.4;margin-bottom:4px">${esc(text)}</div>`;
-    if (showP && line.pinyin) html += `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.03em;margin-bottom:3px">${esc(line.pinyin)}</div>`;
-    if (showE && line.english) html += `<div class="k-eng">${esc(line.english)}</div>`;
-    if (!html) html = `<span style="font-family:'Noto Serif SC',serif;font-size:${sz}">${esc(text)}</span>`;
+    // Not yet annotated
+    html = `<span style="font-family:'Noto Serif SC',serif;font-size:${sz}">${esc(text)}</span>`;
+    if (line.pinyin) html += `<div class="k-pin" style="opacity:0.6;margin-top:4px">${esc(line.pinyin)}</div>`;
+    if (line.english) html += `<div class="k-eng" style="opacity:0.5">${esc(line.english)}</div>`;
   }
 
   el.innerHTML = html;
