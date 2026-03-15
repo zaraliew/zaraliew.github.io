@@ -304,7 +304,7 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
     </div>
     <div class="progress-track"><div class="progress-fill" id="progress-fill" style="height:0%"></div></div>
     <!-- Word tooltip -->
-    <div id="word-tooltip" style="display:none;position:fixed;z-index:100;background:#1a1410;border:1px solid rgba(200,150,42,0.4);border-radius:12px;padding:16px 20px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6);pointer-events:none">
+    <div id="word-tooltip" onmouseenter="clearTimeout(tooltipHideTimer)" onmouseleave="hideTooltip()" style="display:none;position:fixed;z-index:100;background:#1a1410;border:1px solid rgba(200,150,42,0.4);border-radius:12px;padding:16px 20px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6)">
       <div id="tt-char" style="font-family:'Noto Serif SC',serif;font-size:36px;color:#fff;text-align:center;margin-bottom:6px"></div>
       <div id="tt-pin" style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#c8962a;text-align:center;margin-bottom:4px"></div>
       <div id="tt-eng" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#a09080;text-align:center;margin-bottom:12px"></div>
@@ -667,8 +667,10 @@ document.addEventListener('wheel', (e) => {
 
 // ── WORD TOOLTIP ──────────────────────────────────────────────────────────
 let tooltipWord = null;
+let tooltipHideTimer = null;
 
 function showTooltip(e, lineIdx, wordIdx) {
+  clearTimeout(tooltipHideTimer);
   const line = S.lyrics[lineIdx];
   const w = line?.words?.[wordIdx];
   if (!w) return;
@@ -684,8 +686,8 @@ function showTooltip(e, lineIdx, wordIdx) {
 
   const tt = document.getElementById('word-tooltip');
   tt.style.display = 'block';
+  tt.style.pointerEvents = 'auto';
 
-  // Position near cursor but stay on screen
   const x = Math.min(e.clientX + 12, window.innerWidth - 240);
   const y = Math.min(e.clientY - 10, window.innerHeight - 180);
   tt.style.left = x + 'px';
@@ -693,7 +695,10 @@ function showTooltip(e, lineIdx, wordIdx) {
 }
 
 function hideTooltip() {
-  setTimeout(() => { document.getElementById('word-tooltip').style.display = 'none'; }, 150);
+  // Delay hiding so mouse can travel to tooltip
+  tooltipHideTimer = setTimeout(() => {
+    document.getElementById('word-tooltip').style.display = 'none';
+  }, 300);
 }
 
 function tooltipAddToDeck() {
