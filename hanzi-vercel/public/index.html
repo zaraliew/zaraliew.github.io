@@ -547,10 +547,9 @@ async function annotateChunk(lines, apiKey) {
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 4000,
-      system: 'You output ONLY a raw JSON array. No markdown, no backticks, no explanation. Start immediately with [',
+      system: 'You are a Mandarin annotation tool. You output ONLY valid JSON — no markdown, no backticks, no explanation, nothing else.',
       messages: [
-        { role: 'user', content: prompt },
-        { role: 'assistant', content: '[' }
+        { role: 'user', content: prompt }
       ]
     })
   });
@@ -566,9 +565,11 @@ async function annotateChunk(lines, apiKey) {
   }
 
   const data = JSON.parse(responseText);
-  const raw = '[' + (data.content?.[0]?.text || '');
+  let raw = data.content?.[0]?.text || '';
+  // Strip markdown fences if present
+  raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
   try { return JSON.parse(raw); }
-  catch { try { return JSON.parse(raw + ']'); } catch { throw new Error('Could not parse Claude response'); } }
+  catch { try { return JSON.parse(raw + ']'); } catch { throw new Error('Could not parse Claude response: ' + raw.slice(0,100)); } }
 }
 
 // ── LRC PARSER ────────────────────────────────────────────────────────────
