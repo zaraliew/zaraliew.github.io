@@ -472,22 +472,7 @@ async function annotateInChunks(arr, apiKey) {
     return;
   }
 
-  // Quick test call first
-  try {
-    const test = await annotateChunk(['你好'], apiKey);
-    console.log('Test annotation result:', test);
-    if (!test?.length) {
-      const pill = document.getElementById('status-pill');
-      if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ API returned empty — key may be invalid or out of credits</span>`;
-      return;
-    }
-  } catch(e) {
-    const pill = document.getElementById('status-pill');
-    if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ API error: ${e.message}</span>`;
-    return;
-  }
-
-  const SIZE = 18;
+  const SIZE = 8; // smaller chunks = less chance of truncation
   for (let i = 0; i < arr.length; i += SIZE) {
     const chunk = arr.slice(i, i + SIZE);
     const done = Math.min(i + SIZE, arr.length);
@@ -546,7 +531,7 @@ async function annotateChunk(lines, apiKey) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
+      max_tokens: 8000,
       system: 'You are a Mandarin annotation tool. You output ONLY valid JSON — no markdown, no backticks, no explanation, nothing else.',
       messages: [
         { role: 'user', content: prompt }
