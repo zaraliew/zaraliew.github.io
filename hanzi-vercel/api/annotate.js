@@ -37,7 +37,7 @@ export default async function handler(req, res) {
         messages: [
           {
             role: 'user',
-            content: `${langInstructions}\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks always required for Mandarin, group natural word units, keep English poetic for song lyrics.`
+            content: `${langInstructions}\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks always required for Mandarin, convert any traditional Chinese characters to simplified Chinese in all fields, group natural word units, keep English poetic for song lyrics.`
           }
         ]
       })
