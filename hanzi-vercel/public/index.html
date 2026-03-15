@@ -158,7 +158,8 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 .wc-pin { font-size: 9px; color: var(--gold); margin-top: 2px; }
 .wc-eng { font-size: 9px; color: var(--muted); }
 .wc-del { background: none; border: none; color: #3a2828; cursor: pointer; font-size: 15px; padding: 3px; transition: color 0.15s; }
-.wc-del:hover { color: #e06060; }
+.word-card:hover { border-color: rgba(200,150,42,0.3); }
+.wc-active { border-color: rgba(200,150,42,0.6) !important; background: rgba(200,150,42,0.08) !important; }
 .export-btn { padding: 9px 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
 .export-btn:hover { color: var(--gold); border-color: rgba(200,150,42,0.4); }
 
@@ -752,9 +753,10 @@ function renderDeck() {
   document.getElementById('card-back-char').textContent=w.char;
   document.getElementById('grid-label').textContent=`All saved words (${words.length})`;
   document.getElementById('word-grid').innerHTML=words.map((w,i)=>
-    `<div class="word-card"><div><div class="wc-char">${esc(w.char)}</div><div class="wc-pin">${esc(w.pinyin)}</div><div class="wc-eng">${esc(w.english)}</div></div><button class="wc-del" onclick="removeWord(${i})">×</button></div>`
+    `<div class="word-card ${i===S.cardIdx?'wc-active':''}" onclick="jumpToCard(${i})" style="cursor:pointer"><div><div class="wc-char">${esc(w.char)}</div><div class="wc-pin">${esc(w.pinyin)}</div><div class="wc-eng">${esc(w.english)}</div></div><button class="wc-del" onclick="event.stopPropagation();removeWord(${i})">×</button></div>`
   ).join('');
 }
+function jumpToCard(i) { S.cardIdx = i; renderDeck(); }
 function flipCard() { S.cardFlipped=!S.cardFlipped; document.getElementById('card-inner').classList.toggle('flipped',S.cardFlipped); document.getElementById('card-btns').style.display=S.cardFlipped?'flex':'none'; }
 function cardAction(a) { if(a==='remove'){removeWord(S.cardIdx);return;} S.cardIdx=(S.cardIdx+1)%Math.max(1,S.saved.length); renderDeck(); }
 function removeWord(i) { S.saved.splice(i,1); localStorage.setItem('ht_deck',JSON.stringify(S.saved)); updateBadge(); if(S.cardIdx>=S.saved.length)S.cardIdx=Math.max(0,S.saved.length-1); renderDeck(); }
