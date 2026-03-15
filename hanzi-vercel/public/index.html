@@ -486,9 +486,10 @@ async function annotateInChunks(arr, apiKey) {
       result.forEach((item, j) => {
         const idx = i + j;
         if (arr[idx]) {
-          arr[idx].pinyin  = item.pinyin  || arr[idx].pinyin;
-          arr[idx].english = item.english || arr[idx].english;
-          arr[idx].words   = item.words?.length ? item.words : arr[idx].words;
+          arr[idx].characters = item.characters || arr[idx].characters; // simplified
+          arr[idx].pinyin     = item.pinyin  || arr[idx].pinyin;
+          arr[idx].english    = item.english || arr[idx].english;
+          arr[idx].words      = item.words?.length ? item.words : arr[idx].words;
         }
       });
       rerender();
@@ -503,7 +504,7 @@ async function annotateInChunks(arr, apiKey) {
 
 async function annotateChunk(lines, apiKey) {
   const numbered = lines.map((l, i) => `${i+1}. ${l}`).join('\n');
-  const prompt = `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural English translation.\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks always required, group natural word units, keep English poetic for song lyrics.`;
+  const prompt = `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural English translation. IMPORTANT: Convert any traditional Chinese characters to simplified Chinese in the "characters" field and in each word's "char" field.\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks always required, group natural word units, keep English poetic for song lyrics, always output simplified Chinese characters.`;
 
   // Try server-side proxy first
   try {
@@ -611,7 +612,7 @@ function renderLine(id, line, isActive) {
   const showP = document.getElementById('tog-pin')?.checked ?? true;
   const showE = document.getElementById('tog-eng')?.checked ?? true;
   const sz = isActive ? '28px' : '20px';
-  const text = line.text || line.characters || '';
+  const text = line.characters || line.text || '';
 
   let html = '';
 
