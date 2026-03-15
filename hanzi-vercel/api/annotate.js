@@ -33,13 +33,12 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 4000,
-        system: 'You output ONLY a raw JSON array. No markdown, no backticks, no explanation. Start immediately with [',
+        system: 'You are a Mandarin annotation tool. You output ONLY valid JSON — no markdown, no backticks, no explanation, nothing else.',
         messages: [
           {
             role: 'user',
             content: `${langInstructions}\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks always required for Mandarin, group natural word units, keep English poetic for song lyrics.`
-          },
-          { role: 'assistant', content: '[' }
+          }
         ]
       })
     });
@@ -50,7 +49,8 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const raw = '[' + (data.content?.[0]?.text || '');
+    let raw = data.content?.[0]?.text || '';
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
     let result;
     try { result = JSON.parse(raw); }
     catch { try { result = JSON.parse(raw + ']'); } catch { return res.status(500).json({ error: 'Failed to parse response' }); } }
