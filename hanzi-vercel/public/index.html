@@ -485,18 +485,102 @@ body::before {
 .wc-del:hover { color: #fca5a5; }
 .grid-label { font-size: 9px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-top: 24px; margin-bottom: 12px; }
 
+/* ── MOBILE BOTTOM SHEET ─────────────────────────────────────────────── */
+.mobile-bar {
+  display: none; /* hidden on desktop */
+}
+.sheet-backdrop {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 60; backdrop-filter: blur(4px);
+}
+.sheet-backdrop.open { display: block; }
+.bottom-sheet {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #160d24; border-top: 1px solid rgba(124,58,237,0.3);
+  border-radius: 20px 20px 0 0; z-index: 70;
+  transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  max-height: 80vh; overflow-y: auto;
+  padding: 0 20px 32px;
+}
+.bottom-sheet.open { transform: translateY(0); }
+.sheet-handle {
+  width: 36px; height: 4px; background: rgba(255,255,255,0.2);
+  border-radius: 2px; margin: 12px auto 20px; cursor: pointer;
+}
+.sheet-section { margin-bottom: 24px; }
+.sheet-label {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+}
+.sheet-toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.sheet-toggle-label { font-size: 14px; font-weight: 700; color: var(--text); }
+
 /* ── MISC ──────────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
 
 @media (max-width: 700px) {
-  .hero { padding: 40px 20px 32px; }
-  .home-section { padding: 0 20px 36px; }
-  .player-screen { grid-template-columns: 1fr; }
-  .player-sidebar { border-right: none; border-bottom: 1px solid var(--border); max-height: 220px; flex-direction: row; flex-wrap: wrap; gap: 12px; }
-  .karaoke-main { padding: 24px 16px; }
-  .player-bar { grid-column: 1; }
+  /* Search screen */
+  .hero { padding: 32px 20px 24px; }
+  .hero h1 { font-size: 26px; }
+  .home-section { padding: 0 20px 32px; }
   .search-fields { flex-direction: column; }
   .search-divider { display: none; }
+  .api-section { margin: 0 20px 32px; }
+
+  /* Player — full screen lyrics, sidebar hidden */
+  .player-screen {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+  .player-sidebar { display: none; }
+  .player-bar { grid-column: 1; padding: 10px 16px 14px; }
+  .karaoke-main {
+    padding: 56px 16px 16px;
+    min-height: calc(100vh - 140px);
+  }
+  .song-nav { font-size: 11px; gap: 8px; }
+  .song-nav-title { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Show mobile bottom bar */
+  .mobile-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(14,8,24,0.9);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 65px; z-index: 40;
+    backdrop-filter: blur(12px);
+    gap: 10px;
+  }
+  .mobile-np {
+    min-width: 0; flex: 1;
+  }
+  .mobile-np-title {
+    font-size: 12px; font-weight: 800; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mobile-np-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 9px; font-weight: 700; margin-top: 2px;
+  }
+  .mobile-sync-btn {
+    padding: 8px 16px; border-radius: 20px; border: none;
+    background: linear-gradient(135deg, var(--purple), var(--purple2));
+    color: white; font-family: 'Nunito', sans-serif;
+    font-size: 12px; font-weight: 800; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .mobile-controls-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+    color: var(--muted); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .mobile-controls-btn:hover { background: rgba(124,58,237,0.15); color: var(--text); }
+
+  /* Hide desktop player bar on mobile, keep it but simplified */
+  .player-bar { display: none; }
+  .k-line.active { padding: 16px 16px; }
 }
 </style>
 </head>
@@ -790,6 +874,91 @@ body::before {
   </div>
 </div>
 
+<!-- ── MOBILE CONTROLS BAR + BOTTOM SHEET ───────────────────────────── -->
+<div class="mobile-bar" id="mobile-bar">
+  <div class="mobile-np">
+    <div class="mobile-np-title" id="mobile-np-title">—</div>
+    <div class="mobile-np-pill" id="mobile-np-pill" style="color:var(--muted)">0:00 elapsed</div>
+  </div>
+  <button class="mobile-sync-btn" id="mobile-sync-btn" onclick="toggleSync()">▶ Sync</button>
+  <button class="mobile-controls-btn" onclick="openSheet()" title="Controls">⚙</button>
+</div>
+
+<div class="sheet-backdrop" id="sheet-backdrop" onclick="closeSheet()"></div>
+<div class="bottom-sheet" id="bottom-sheet">
+  <div class="sheet-handle" onclick="closeSheet()"></div>
+
+  <!-- Now playing -->
+  <div class="sheet-section">
+    <div class="sheet-label">Now Learning</div>
+    <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:2px" id="sheet-title">—</div>
+    <div style="font-size:11px;color:var(--orange);font-weight:700" id="sheet-artist"></div>
+    <div id="sheet-pill" style="margin-top:6px;font-size:10px;color:var(--muted)"></div>
+  </div>
+
+  <!-- Display toggles -->
+  <div class="sheet-section">
+    <div class="sheet-label">Display</div>
+    <div class="sheet-toggle-row">
+      <span class="sheet-toggle-label">Characters</span>
+      <label class="toggle"><input type="checkbox" id="tog-chars-m" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="sheet-toggle-row">
+      <span class="sheet-toggle-label">Pinyin</span>
+      <label class="toggle"><input type="checkbox" id="tog-pin-m" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="sheet-toggle-row">
+      <span class="sheet-toggle-label">English</span>
+      <label class="toggle"><input type="checkbox" id="tog-eng-m" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label>
+    </div>
+  </div>
+
+  <!-- Sync controls -->
+  <div class="sheet-section">
+    <div class="sheet-label">Sync with your music</div>
+    <div style="font-size:32px;font-weight:300;color:var(--purple2);font-family:'JetBrains Mono',monospace;margin-bottom:10px" id="sheet-time">0:00</div>
+    <button class="sync-btn" id="sheet-sync-btn" onclick="toggleSync()" style="margin-bottom:10px">▶ Start Sync</button>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="seek-btn" onclick="seekBy(-5)" style="flex:1">−5s</button>
+      <button class="seek-btn" onclick="seekBy(-2)" style="flex:1">−2s</button>
+      <button class="seek-btn" onclick="seekBy(2)"  style="flex:1">+2s</button>
+      <button class="seek-btn" onclick="seekBy(5)"  style="flex:1">+5s</button>
+    </div>
+    <div style="font-size:10px;color:var(--dim);line-height:1.6">Press Start Sync when the song begins. ±2s / ±5s to adjust if drifting.</div>
+  </div>
+
+  <!-- Sync speed -->
+  <div class="sheet-section">
+    <div class="sheet-label">Sync Speed</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:12px;color:var(--muted)">Slower</span>
+      <span id="speed-label-m" style="font-size:14px;font-weight:800;color:var(--purple2)">1.0×</span>
+      <span style="font-size:12px;color:var(--muted)">Faster</span>
+    </div>
+    <input type="range" id="speed-slider-m" min="0.5" max="2" step="0.05" value="1"
+      style="width:100%;accent-color:var(--purple2);cursor:pointer"
+      oninput="setSpeedMobile(this.value)">
+    <div style="display:flex;justify-content:space-between;margin-top:6px">
+      <span style="font-size:10px;color:var(--dim)">0.5×</span>
+      <span style="font-size:10px;color:var(--dim)">1×</span>
+      <span style="font-size:10px;color:var(--dim)">1.5×</span>
+      <span style="font-size:10px;color:var(--dim)">2×</span>
+    </div>
+    <div style="font-size:10px;color:var(--dim);margin-top:8px;line-height:1.6">Use 0.5× if lyrics are moving ahead of the song.</div>
+  </div>
+
+  <!-- Manual scroll -->
+  <div class="sheet-section">
+    <div class="sheet-label">Manual Scroll</div>
+    <div style="display:flex;gap:10px">
+      <button class="seek-btn" onclick="manualScroll(-1);closeSheet()" style="flex:1;font-size:18px;padding:12px">↑</button>
+      <button class="seek-btn" onclick="manualScroll(1);closeSheet()"  style="flex:1;font-size:18px;padding:12px">↓</button>
+    </div>
+  </div>
+
+  <button class="back-btn" onclick="showView('search');closeSheet()" style="width:100%">← Add Another Song</button>
+</div>
+
 </div><!-- .app -->
 
 <script>
@@ -836,6 +1005,9 @@ function showView(v) {
     document.getElementById('view-'+id).classList.toggle('hidden', id !== v);
     document.getElementById('nav-'+id).classList.toggle('active', id === v);
   });
+  // Mobile bar only visible in player
+  const mb = document.getElementById('mobile-bar');
+  if (mb) mb.style.display = (v === 'player') ? 'flex' : 'none';
   if (v === 'deck') renderDeck();
 }
 
@@ -888,6 +1060,13 @@ async function loadAndTranslate(title, artist, apiKey, lrcLines) {
   document.getElementById('np-title').textContent = title;
   document.getElementById('np-artist').textContent = artist;
   document.getElementById('nav-song-title').textContent = title;
+  // Mobile UI
+  const mnt = document.getElementById('mobile-np-title');
+  if (mnt) mnt.textContent = title;
+  const st = document.getElementById('sheet-title');
+  if (st) st.textContent = title;
+  const sa = document.getElementById('sheet-artist');
+  if (sa) sa.textContent = artist;
   document.getElementById('sync-btn').textContent = '▶ Start Sync';
   document.getElementById('play-btn').textContent = '▶';
   const td = document.getElementById('sync-time-display');
@@ -1034,6 +1213,7 @@ function tick() {
   const bs = document.getElementById('bar-sec');
   if (bm) bm.textContent = mm;
   if (bs) bs.textContent = ss;
+  updateMobileUI(pos, timeStr);
 
   if (!S.lyrics.length) return;
   const last = S.lyrics[S.lyrics.length-1]?.time || 1;
@@ -1055,9 +1235,9 @@ function rerender() {
 function renderLine(id, line, isActive) {
   const el = document.getElementById(id); if (!el) return;
   if (!line) { el.innerHTML = ''; return; }
-  const showC = document.getElementById('tog-chars')?.checked ?? true;
-  const showP = document.getElementById('tog-pin')?.checked   ?? true;
-  const showE = document.getElementById('tog-eng')?.checked   ?? true;
+  const showC = getToggle('chars');
+  const showP = getToggle('pin');
+  const showE = getToggle('eng');
   const sz = isActive ? '28px' : '20px';
   const text = line.characters || line.text || '';
   let html = '';
@@ -1224,6 +1404,69 @@ function setSearchStatus(type, msg) {
   el.innerHTML = (type==='loading' ? '<span class="spinner"></span> ' : '') + msg;
 }
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── MOBILE SHEET ──────────────────────────────────────────────────────────
+function openSheet() {
+  document.getElementById('bottom-sheet').classList.add('open');
+  document.getElementById('sheet-backdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSheet() {
+  document.getElementById('bottom-sheet').classList.remove('open');
+  document.getElementById('sheet-backdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Keep mobile and desktop toggles in sync
+function syncToggles(which) {
+  const desktopId = 'tog-' + which;
+  const mobileId  = 'tog-' + which + '-m';
+  const desktop = document.getElementById(desktopId);
+  const mobile  = document.getElementById(mobileId);
+  // Whichever was just changed, sync the other
+  if (document.activeElement === mobile && desktop) desktop.checked = mobile.checked;
+  if (document.activeElement === desktop && mobile) mobile.checked = desktop.checked;
+  rerender();
+}
+
+// Override renderLine to read from whichever toggle is available
+// (already uses tog-chars, tog-pin, tog-eng — we need it to also check mobile ones)
+
+function getToggle(name) {
+  const d = document.getElementById('tog-' + name);
+  const m = document.getElementById('tog-' + name + '-m');
+  // Return true if either is checked (they should stay in sync)
+  return (d?.checked ?? true) && (m ? m.checked : true) || (d?.checked ?? m?.checked ?? true);
+}
+
+function setSpeedMobile(val) {
+  // Sync with desktop slider too
+  const ds = document.getElementById('speed-slider');
+  if (ds) ds.value = val;
+  const dl = document.getElementById('speed-label');
+  if (dl) dl.textContent = parseFloat(val).toFixed(2).replace(/\.?0+$/, '') + '×';
+  document.getElementById('speed-label-m').textContent = parseFloat(val).toFixed(2).replace(/\.?0+$/, '') + '×';
+  setSpeed(val);
+}
+
+// Update mobile UI elements from tick
+function updateMobileUI(pos, timeStr) {
+  const mb = document.getElementById('mobile-sync-btn');
+  const sb = document.getElementById('sheet-sync-btn');
+  const bt = document.getElementById('mobile-sync-btn');
+  const pill = document.getElementById('mobile-np-pill');
+  const sheetTime = document.getElementById('sheet-time');
+  if (pill) pill.textContent = timeStr + ' elapsed';
+  if (sheetTime) sheetTime.textContent = timeStr;
+  const label = S.running ? '⏸ Pause' : (S.offset > 0 ? '▶ Resume' : '▶ Sync');
+  if (mb) mb.textContent = label;
+  if (sb) sb.textContent = S.running ? '⏸ Pause' : (S.offset > 0 ? '▶ Resume' : '▶ Start Sync');
+}
+
+// Show mobile bar only in player view
+const _origShowView = showView;
+// patch showView to also show/hide mobile bar
+
 </script>
 </body>
 </html>
