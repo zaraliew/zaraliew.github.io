@@ -36,10 +36,6 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 .text-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--paper); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 12px 14px; outline: none; transition: border-color 0.2s; }
 .text-input:focus { border-color: var(--gold); }
 .text-input::placeholder { color: #2a2018; }
-.lyrics-area { width: 100%; flex: 1; min-height: 180px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; color: var(--paper); font-family: 'Noto Serif SC', serif; font-size: 15px; padding: 16px; outline: none; resize: none; line-height: 1.9; transition: border-color 0.2s; }
-.lyrics-area:focus { border-color: var(--gold); }
-.lyrics-area::placeholder { color: #2a2018; font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.8; }
-
 .search-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .go-btn { padding: 15px; background: var(--gold); color: var(--ink); border: none; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; width: 100%; }
 .go-btn:hover:not(:disabled) { background: var(--gold-light); transform: translateY(-1px); }
@@ -213,14 +209,6 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 
     <div class="status-bar" id="search-status"></div>
 
-    <div class="divider"><span>or paste lyrics manually</span></div>
-
-    <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-      <div class="field-label">Paste Chinese lyrics</div>
-      <textarea class="lyrics-area" id="inp-lyrics" placeholder="Paste Chinese lyrics here if search doesn't find your song.&#10;&#10;Works with any format — timestamps, English mixed in, etc.&#10;The app cleans it up automatically."></textarea>
-    </div>
-
-    <button class="go-btn secondary" id="paste-btn" onclick="startPaste()">→ Use Pasted Lyrics</button>
   </div>
 
   <div class="search-right">
@@ -400,28 +388,9 @@ async function startSearch() {
     await loadAndTranslate(data.title || title, data.artist || artist, apiKey, lrcLines);
 
   } catch(e) {
-    setSearchStatus('error', 'Could not connect — are you running on Vercel? Try pasting lyrics below.');
+    setSearchStatus('error', 'Could not connect — please check your song title and try again.');
     document.getElementById('search-btn').disabled = false;
   }
-}
-
-// ── PASTE FLOW ─────────────────────────────────────────────────────────────
-async function startPaste() {
-  const title  = document.getElementById('inp-title').value.trim() || 'Song';
-  const artist = document.getElementById('inp-artist').value.trim();
-  const raw    = document.getElementById('inp-lyrics').value.trim();
-  const apiKey = document.getElementById('inp-apikey').value.trim();
-  if (!raw)    return alert('Please paste some lyrics first.');
-  if (!apiKey) return alert('Please enter your Anthropic API key.\nGet one free at console.anthropic.com');
-
-  const lines = raw.split('\n')
-    .map(l => l.replace(/\[\d+:\d+[^\]]*\]/g, '').replace(/^\s*\d+\.\s*/, '').trim())
-    .filter(l => /[\u4e00-\u9fff\u3400-\u4dbf\uAC00-\uD7AF]/.test(l));
-
-  if (!lines.length) return alert('No Chinese characters found. Make sure you copied Chinese text.');
-
-  const lrcLines = lines.map((text, i) => ({ time: i * 4, text }));
-  await loadAndTranslate(title, artist, apiKey, lrcLines);
 }
 
 // ── SHARED: load lyrics + kick off translation ─────────────────────────────
