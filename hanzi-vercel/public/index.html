@@ -47,11 +47,11 @@ body::before {
   display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;
 }
 .logo-icon {
-  width: 34px; height: 34px; background: linear-gradient(135deg, #7c3aed, #e879f9);
-  border-radius: 10px; display: flex; align-items: center; justify-content: center;
-  font-size: 18px; box-shadow: 0 0 16px rgba(124,58,237,0.5);
+  width: 44px; height: 44px; background: linear-gradient(135deg, #7c3aed, #e879f9);
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  font-size: 22px; box-shadow: 0 0 16px rgba(124,58,237,0.5);
 }
-.logo-text { font-size: 20px; font-weight: 800; line-height: 1; }
+.logo-text { font-size: 26px; font-weight: 800; line-height: 1; }
 .logo-text span:first-child { color: var(--orange); }
 .logo-text span:last-child  { color: var(--blue); }
 
@@ -505,7 +505,11 @@ body::before {
 
 <header class="header">
   <div class="logo" onclick="showView('search')">
-   <img src="/logo.png" alt="SongLingo" style="height:40px;width:auto">
+    <img src="/logo.png" alt="SongLingo" style="height:52px;width:auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div style="display:none;align-items:center;gap:8px">
+      <div class="logo-icon">🎵</div>
+      <div class="logo-text"><span>Song</span><span>Lingo</span></div>
+    </div>
   </div>
   <nav class="nav">
     <button class="nav-btn active" id="nav-search" onclick="showView('search')">Songs</button>
@@ -678,6 +682,27 @@ body::before {
         <button class="seek-btn" onclick="manualScroll(1)"  style="font-size:16px">↓</button>
       </div>
       <div class="sync-hint" style="margin-top:6px">Or scroll / arrow keys</div>
+    </div>
+
+    <!-- Playback speed -->
+    <div>
+      <div class="sidebar-section-label">Sync speed</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--muted)">Slower</span>
+        <span id="speed-label" style="font-size:13px;font-weight:800;color:var(--purple2)">1×</span>
+        <span style="font-size:11px;color:var(--muted)">Faster</span>
+      </div>
+      <input type="range" id="speed-slider" min="0" max="4" step="1" value="2"
+        style="width:100%;accent-color:var(--purple2);cursor:pointer"
+        oninput="setSpeed(this.value)">
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-size:9px;color:var(--dim)">0.5×</span>
+        <span style="font-size:9px;color:var(--dim)">0.75×</span>
+        <span style="font-size:9px;color:var(--dim)">1×</span>
+        <span style="font-size:9px;color:var(--dim)">1.5×</span>
+        <span style="font-size:9px;color:var(--dim)">2×</span>
+      </div>
+      <div class="sync-hint" style="margin-top:6px">Adjusts how fast lyrics advance — use 0.5× to slow down and catch up, 2× to speed through.</div>
     </div>
 
     <button class="back-btn" onclick="showView('search')">← Add Another Song</button>
@@ -988,14 +1013,17 @@ function toggleSync() {
     document.getElementById('sync-btn').textContent = '▶ Resume';
     document.getElementById('play-btn').textContent = '▶';
   } else {
-    S.syncStart = Date.now() - (S.offset * 1000);
+    S.syncStart = Date.now(); // we track raw wall-clock start; getElapsed applies speed
     S.running = true;
     document.getElementById('sync-btn').textContent = '⏸ Pause';
     document.getElementById('play-btn').textContent = '⏸';
   }
 }
-function seekBy(s) { S.offset = getElapsed() + s; if(S.running) S.syncStart = Date.now() - (S.offset*1000); }
-function getElapsed() { if (!S.running || !S.syncStart) return S.offset; return (Date.now()-S.syncStart)/1000; }
+function seekBy(s) {
+  S.offset = getElapsed() + s;
+  if (S.running) S.syncStart = Date.now();
+}
+// tick defined below
 
 function tick() {
   const pos = getElapsed();
@@ -1066,11 +1094,35 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); manualScroll(-1); }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  { e.preventDefault(); manualScroll(1); }
 });
+
+// Throttled wheel scroll — fires at most once per 400ms to avoid jumping
+let wheelTimer = null;
 document.addEventListener('wheel', e => {
   const player = document.getElementById('view-player');
   if (!player || player.classList.contains('hidden')) return;
-  if (e.deltaY > 0) manualScroll(1); else if (e.deltaY < 0) manualScroll(-1);
+  if (wheelTimer) return; // ignore until cooldown expires
+  if (e.deltaY > 30) { manualScroll(1); wheelTimer = setTimeout(() => { wheelTimer = null; }, 400); }
+  else if (e.deltaY < -30) { manualScroll(-1); wheelTimer = setTimeout(() => { wheelTimer = null; }, 400); }
 }, { passive: true });
+
+// ── SPEED CONTROL ─────────────────────────────────────────────────────────
+const SPEEDS = [0.5, 0.75, 1, 1.5, 2];
+S.speed = 1;
+function setSpeed(val) {
+  S.speed = SPEEDS[parseInt(val)];
+  document.getElementById('speed-label').textContent = S.speed + '×';
+  // If running, adjust syncStart so the current position stays correct
+  if (S.running) {
+    S.offset = getElapsed();
+    S.syncStart = Date.now() - (S.offset * 1000 / S.speed);
+  }
+}
+
+// Override getElapsed and tick to respect speed
+function getElapsed() {
+  if (!S.running || !S.syncStart) return S.offset;
+  return S.offset + ((Date.now() - S.syncStart) / 1000) * S.speed;
+}
 
 // ── TOOLTIP ───────────────────────────────────────────────────────────────
 let tooltipWord = null;
