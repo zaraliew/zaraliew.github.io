@@ -3,171 +3,500 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>聆听 — Mandarin Through Music</title>
+<title>SongLingo — Learn Languages Through Music</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink: #0a0806; --paper: #f5f0e8; --gold: #c8962a; --gold-light: #e8b84b;
-  --muted: #6b5d4f; --border: rgba(200,150,42,0.2);
+  --bg:       #0e0818;
+  --bg2:      #160d24;
+  --surface:  rgba(255,255,255,0.05);
+  --border:   rgba(255,255,255,0.08);
+  --purple:   #7c3aed;
+  --purple2:  #9d5ff5;
+  --orange:   #f59e0b;
+  --orange2:  #fbbf24;
+  --blue:     #60a5fa;
+  --text:     #f0eafa;
+  --muted:    #9080b0;
+  --dim:      #4a3870;
+  --pink:     #e879f9;
+  --glow:     rgba(124,58,237,0.35);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--ink); color: var(--paper); font-family: 'JetBrains Mono', monospace; min-height: 100vh; }
-body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 20% 80%, rgba(139,32,32,0.05) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 20%, rgba(200,150,42,0.04) 0%, transparent 60%); pointer-events: none; z-index: 0; }
-.app { position: relative; z-index: 1; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 20%, rgba(124,58,237,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 80%, rgba(232,121,249,0.1) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 60% at 70% 10%, rgba(96,165,250,0.08) 0%, transparent 50%);
+}
+.app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
-/* HEADER */
-.header { display: flex; justify-content: space-between; align-items: center; padding: 20px 36px; border-bottom: 1px solid var(--border); }
-.logo-cn { font-family: 'Noto Serif SC', serif; font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 0.1em; }
-.logo-en { font-size: 9px; color: var(--muted); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 2px; }
-.nav { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 3px; }
-.nav-btn { padding: 6px 14px; border-radius: 4px; border: none; background: transparent; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-.nav-btn.active { background: var(--gold); color: var(--ink); }
-.nav-btn:hover:not(.active) { color: var(--paper); }
-.deck-badge { background: var(--gold); color: var(--ink); border-radius: 8px; padding: 1px 5px; font-size: 9px; font-weight: 700; margin-left: 4px; }
+/* ── LOGO ──────────────────────────────────────────────────────────────── */
+.logo {
+  display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer;
+}
+.logo-icon {
+  width: 34px; height: 34px; background: linear-gradient(135deg, #7c3aed, #e879f9);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 0 16px rgba(124,58,237,0.5);
+}
+.logo-text { font-size: 20px; font-weight: 800; line-height: 1; }
+.logo-text span:first-child { color: var(--orange); }
+.logo-text span:last-child  { color: var(--blue); }
 
-/* SEARCH SCREEN */
-.search-screen { display: flex; min-height: calc(100vh - 65px); }
-.search-left { flex: 1; padding: 48px 40px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px; }
-.search-right { width: 320px; padding: 48px 28px; display: flex; flex-direction: column; gap: 18px; }
-.screen-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; font-style: italic; margin-bottom: 4px; }
-.screen-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.04em; line-height: 1.8; }
-.field-label { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-.text-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--paper); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 12px 14px; outline: none; transition: border-color 0.2s; }
-.text-input:focus { border-color: var(--gold); }
-.text-input::placeholder { color: #2a2018; }
-.search-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.go-btn { padding: 15px; background: var(--gold); color: var(--ink); border: none; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; width: 100%; }
-.go-btn:hover:not(:disabled) { background: var(--gold-light); transform: translateY(-1px); }
-.go-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.go-btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); }
-.go-btn.secondary:hover:not(:disabled) { border-color: rgba(200,150,42,0.5); color: var(--paper); transform: none; background: rgba(200,150,42,0.05); }
+/* ── HEADER ─────────────────────────────────────────────────────────────── */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  background: rgba(14,8,24,0.7);
+  position: sticky; top: 0; z-index: 50;
+}
+.nav { display: flex; align-items: center; gap: 4px; }
+.nav-btn {
+  padding: 7px 18px; border-radius: 20px; border: none;
+  background: transparent; color: var(--muted);
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em;
+}
+.nav-btn.active { background: rgba(124,58,237,0.25); color: var(--text); }
+.nav-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.06); }
+.deck-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; border-radius: 9px; padding: 0 5px;
+  background: var(--orange); color: #1a0a00;
+  font-size: 10px; font-weight: 900; margin-left: 5px;
+}
 
-.status-bar { font-size: 11px; padding: 10px 14px; border-radius: 8px; border: 1px solid; display: none; align-items: center; gap: 8px; }
-.status-bar.loading { background: rgba(200,150,42,0.08); border-color: rgba(200,150,42,0.2); color: var(--gold); display: flex; }
-.status-bar.error { background: rgba(160,60,60,0.08); border-color: rgba(160,60,60,0.2); color: #e08080; display: flex; }
-.status-bar.ok { background: rgba(80,160,80,0.08); border-color: rgba(80,160,80,0.2); color: #80c880; display: flex; }
+/* ── SEARCH / HOME SCREEN ────────────────────────────────────────────────── */
+.search-screen { flex: 1; }
 
-.divider { display: flex; align-items: center; gap: 12px; }
-.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.divider span { font-size: 9px; color: #3a3028; letter-spacing: 0.1em; text-transform: uppercase; }
+.hero {
+  text-align: center;
+  padding: 72px 32px 48px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.hero h1 {
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+.hero h1 em { color: var(--orange); font-style: normal; }
+.hero p {
+  font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 36px;
+}
 
-/* Sidebar steps */
-.section-label { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-.steps { display: flex; flex-direction: column; gap: 12px; }
-.step { display: flex; gap: 12px; align-items: flex-start; }
-.step-num { width: 22px; height: 22px; min-width: 22px; border: 1px solid rgba(200,150,42,0.35); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--gold); }
-.step-text { font-size: 10px; color: #7a6a5a; line-height: 1.7; padding-top: 2px; }
-.step-text a { color: #9a8060; text-decoration: none; }
-.step-text a:hover { color: var(--gold); }
-.step-text strong { color: #a08060; }
+.search-bar {
+  display: flex; gap: 0;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(124,58,237,0.4);
+  border-radius: 14px; overflow: hidden;
+  max-width: 560px; margin: 0 auto 20px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-bar:focus-within {
+  border-color: var(--purple2);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
+}
+.search-fields {
+  display: flex; flex: 1; gap: 0;
+}
+.search-fields input {
+  flex: 1; background: transparent; border: none;
+  color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 600;
+  padding: 14px 16px; outline: none;
+}
+.search-fields input::placeholder { color: var(--dim); font-weight: 400; }
+.search-divider { width: 1px; background: rgba(255,255,255,0.08); align-self: stretch; margin: 8px 0; }
+.search-go {
+  padding: 12px 22px; background: linear-gradient(135deg, var(--purple), var(--purple2));
+  border: none; color: white; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800;
+  cursor: pointer; transition: opacity 0.2s; letter-spacing: 0.03em;
+  margin: 5px; border-radius: 10px;
+}
+.search-go:hover { opacity: 0.9; }
+.search-go:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.api-hint { font-size: 9px; color: #3a3028; line-height: 1.7; }
-.api-hint a { color: #6a5a3a; }
+.lang-tabs {
+  display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.lang-tab {
+  padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted);
+  font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.lang-tab.active { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.5); color: var(--text); }
+.lang-tab:hover:not(.active) { color: var(--text); border-color: rgba(255,255,255,0.2); }
+.lang-tab.soon { opacity: 0.4; cursor: default; }
 
-/* PLAYER */
-.player-screen { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 65px); }
-.player-sidebar { padding: 28px 22px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+.search-status {
+  max-width: 560px; margin: 10px auto 0;
+  font-size: 12px; padding: 10px 16px; border-radius: 10px; border: 1px solid; display: none;
+}
+.search-status.loading { background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.3); color: #c4b5fd; display: flex; align-items: center; gap: 8px; }
+.search-status.error   { background: rgba(220,60,60,0.08); border-color: rgba(220,60,60,0.2); color: #fca5a5; display: block; }
+.search-status.ok      { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.2); color: #6ee7b7; display: block; }
+
+.home-section { max-width: 860px; margin: 0 auto; padding: 0 32px 48px; }
+.section-heading {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 16px;
+}
+
+/* Popular songs cards */
+.song-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.song-card {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px; cursor: pointer;
+  transition: all 0.2s;
+}
+.song-card:hover { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.35); transform: translateY(-1px); }
+.song-card-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: linear-gradient(135deg, #2d1b69, #7c3aed);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.song-card-info { min-width: 0; }
+.song-card-title { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-card-artist { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.song-card-play {
+  margin-left: auto; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--orange); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: #1a0a00; flex-shrink: 0; transition: transform 0.15s;
+}
+.song-card-play:hover { transform: scale(1.1); }
+
+/* Why it works */
+.why-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.why-card {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+}
+.why-icon { font-size: 22px; margin-bottom: 10px; }
+.why-title { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+.why-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+/* API key section */
+.api-section {
+  max-width: 560px; margin: 0 auto 48px;
+  padding: 16px 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.api-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.api-input {
+  width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; padding: 10px 12px; outline: none; transition: border-color 0.2s;
+}
+.api-input:focus { border-color: var(--purple2); }
+.api-hint { font-size: 10px; color: var(--dim); margin-top: 7px; line-height: 1.6; }
+.api-hint a { color: #7c5fbc; text-decoration: none; }
+.api-hint a:hover { color: var(--purple2); }
+
+/* ── PLAYER SCREEN ───────────────────────────────────────────────────────── */
+.player-screen {
+  flex: 1; display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: 1fr auto;
+  min-height: calc(100vh - 65px);
+}
+
+/* Sidebar */
+.player-sidebar {
+  grid-row: 1 / 3;
+  padding: 24px 18px;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 22px;
+  overflow-y: auto;
+  background: rgba(14,8,24,0.6);
+  backdrop-filter: blur(8px);
+}
+
+.sidebar-search {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; cursor: pointer; transition: border-color 0.2s;
+}
+.sidebar-search:hover { border-color: rgba(124,58,237,0.4); }
+.sidebar-search span { font-size: 12px; color: var(--muted); }
+
 .now-playing { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-.np-label { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
-.np-title { font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 600; line-height: 1.2; margin-bottom: 3px; }
-.np-artist { font-size: 10px; color: var(--gold); letter-spacing: 0.05em; }
-.status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 9px; margin-top: 9px; }
-.status-pill.loading { background: rgba(200,150,42,0.1); color: var(--gold); border: 1px solid rgba(200,150,42,0.25); }
-.status-pill.ready { background: rgba(80,160,80,0.1); color: #80c880; border: 1px solid rgba(80,160,80,0.25); }
-.spinner { width: 9px; height: 9px; border: 1.5px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+.np-label { font-size: 9px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.np-title { font-size: 18px; font-weight: 800; line-height: 1.25; margin-bottom: 4px; color: var(--text); }
+.np-artist { font-size: 11px; color: var(--orange); font-weight: 700; }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px; font-size: 9px; font-weight: 700; margin-top: 8px;
+}
+.status-pill.loading { background: rgba(124,58,237,0.15); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.3); }
+.status-pill.ready { background: rgba(52,211,153,0.1); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.25); }
+.spinner { width: 8px; height: 8px; border: 1.5px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.sync-time { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; color: var(--gold); line-height: 1; margin-bottom: 9px; }
-.sync-time span { font-size: 17px; color: var(--muted); }
-.sync-btn { width: 100%; padding: 11px; border-radius: 8px; border: none; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; background: var(--gold); color: var(--ink); margin-bottom: 7px; }
-.sync-btn:hover { background: var(--gold-light); }
-.seek-row { display: flex; gap: 5px; }
-.seek-btn { flex: 1; padding: 7px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.15s; text-align: center; }
-.seek-btn:hover { color: var(--paper); border-color: rgba(200,150,42,0.4); }
-.sync-hint { font-size: 9px; color: #3a3028; line-height: 1.7; margin-top: 5px; }
+.sidebar-section-label {
+  font-size: 9px; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+}
 
-.toggle-section { display: flex; flex-direction: column; gap: 8px; }
+/* Toggles */
+.toggle-section { display: flex; flex-direction: column; gap: 10px; }
 .toggle-row { display: flex; align-items: center; justify-content: space-between; }
-.toggle-label { font-size: 10px; color: #8a7a6a; text-transform: uppercase; letter-spacing: 0.06em; }
-.toggle { position: relative; width: 36px; height: 19px; }
+.toggle-label { font-size: 12px; color: #9080b0; font-weight: 700; }
+.toggle { position: relative; width: 38px; height: 20px; }
 .toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider { position: absolute; inset: 0; background: #2a2018; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-.toggle-slider::before { content: ''; position: absolute; width: 13px; height: 13px; left: 3px; top: 3px; background: #4a3828; border-radius: 50%; transition: 0.2s; }
-.toggle input:checked + .toggle-slider { background: var(--gold); }
-.toggle input:checked + .toggle-slider::before { transform: translateX(17px); background: var(--ink); }
-.back-btn { padding: 10px; background: transparent; border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; margin-top: auto; }
-.back-btn:hover { color: var(--gold); border-color: rgba(200,150,42,0.4); }
+.toggle-slider { position: absolute; inset: 0; background: #2a1a4a; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #5a4a7a; border-radius: 50%; transition: 0.2s; }
+.toggle input:checked + .toggle-slider { background: var(--purple); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); background: white; }
 
-.karaoke-main { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; min-height: calc(100vh - 65px); position: relative; }
-.progress-track { position: absolute; right: 28px; top: 10%; bottom: 10%; width: 2px; background: rgba(200,150,42,0.08); border-radius: 2px; }
-.progress-fill { width: 100%; background: linear-gradient(to bottom, var(--gold), rgba(200,150,42,0.2)); border-radius: 2px; transition: height 0.5s ease; }
-.translating-notice { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(200,150,42,0.1); border: 1px solid rgba(200,150,42,0.2); border-radius: 20px; padding: 5px 14px; font-size: 10px; color: var(--gold); white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+/* Scroll buttons */
+.seek-row { display: flex; gap: 6px; }
+.seek-btn {
+  flex: 1; padding: 8px; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--muted); font-family: 'Nunito', sans-serif; font-size: 11px;
+  font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.seek-btn:hover { color: var(--text); border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.1); }
 
-.karaoke-lines { width: 100%; max-width: 680px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.k-line { width: 100%; text-align: center; padding: 10px 20px; border-radius: 10px; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); }
-.k-line.active { background: rgba(200,150,42,0.06); border: 1px solid rgba(200,150,42,0.12); }
-.k-line.dim { opacity: 0.25; transform: scale(0.88); }
-.k-word-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; margin-bottom: 5px; }
-.k-word { display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; padding: 3px 5px; border-radius: 5px; transition: background 0.15s; position: relative; }
-.k-word:hover { background: rgba(200,150,42,0.1); }
-.k-word.saved { background: rgba(200,150,42,0.08); }
-.k-word.saved::after { content: '·'; position: absolute; top: 0; right: 1px; color: var(--gold); font-size: 12px; }
-.k-char { font-family: 'Noto Serif SC', serif; line-height: 1; color: var(--paper); }
+.sync-time {
+  font-size: 38px; font-weight: 300; color: var(--purple2); line-height: 1;
+  margin-bottom: 10px; font-family: 'JetBrains Mono', monospace;
+}
+.sync-time span { font-size: 14px; color: var(--muted); }
+.sync-btn {
+  width: 100%; padding: 11px; border-radius: 10px; border: none;
+  font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800;
+  letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer;
+  transition: all 0.15s; margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--purple), var(--purple2));
+  color: white;
+}
+.sync-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.sync-hint { font-size: 9px; color: var(--dim); line-height: 1.7; margin-top: 4px; }
+
+.back-btn {
+  margin-top: auto; padding: 10px; background: transparent;
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--muted); font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.back-btn:hover { color: var(--text); border-color: rgba(124,58,237,0.4); }
+
+/* ── KARAOKE MAIN ──────────────────────────────────────────────────────── */
+.karaoke-main {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 48px; position: relative;
+  background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(124,58,237,0.08) 0%, transparent 70%);
+}
+
+.song-nav {
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px;
+  font-size: 13px; font-weight: 700; color: var(--muted);
+}
+.song-nav-btn {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 16px; padding: 4px 8px; border-radius: 6px; transition: all 0.15s;
+}
+.song-nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.song-nav-title { color: var(--text); font-weight: 800; }
+.song-nav-en { color: var(--muted); font-weight: 600; }
+
+.translating-notice {
+  position: absolute; top: 56px; left: 50%; transform: translateX(-50%);
+  background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25);
+  border-radius: 20px; padding: 5px 14px; font-size: 10px; font-weight: 700;
+  color: #c4b5fd; white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+
+.karaoke-lines {
+  width: 100%; max-width: 720px;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.k-line {
+  width: 100%; text-align: center; padding: 12px 24px;
+  border-radius: 14px; transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.k-line.active {
+  background: rgba(124,58,237,0.08);
+  border: 1px solid rgba(124,58,237,0.2);
+  box-shadow: 0 0 30px rgba(124,58,237,0.1);
+}
+.k-line.dim { opacity: 0.28; transform: scale(0.9); }
+
+.k-word-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin-bottom: 6px; }
+.k-word {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; padding: 4px 6px; border-radius: 8px;
+  transition: background 0.15s; position: relative;
+}
+.k-word:hover { background: rgba(124,58,237,0.15); }
+.k-word.saved { background: rgba(124,58,237,0.1); }
+.k-word.saved::after { content: '·'; position: absolute; top: -1px; right: 2px; color: var(--orange); font-size: 14px; }
+.k-char { font-family: 'Noto Serif SC', serif; line-height: 1; color: var(--text); }
 .active .k-char { color: #fff; font-weight: 700; }
-/* Pinyin — shown when toggle on; hover-only variant fades in on word hover */
-.k-pin { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gold); line-height: 1; }
-.k-pin-hover { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gold); line-height: 1; opacity: 0; transition: opacity 0.15s; }
+.k-pin { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--purple2); line-height: 1; }
+.k-pin-hover { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--purple2); line-height: 1; opacity: 0; transition: opacity 0.15s; }
 .k-word:hover .k-pin-hover { opacity: 1; }
-/* English — shown when toggle on; hover-only variant fades in on line hover */
-.k-eng-on { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; color: rgba(245,240,232,0.55); margin-top: 4px; }
-.active .k-eng-on { color: rgba(245,240,232,0.75); }
-.k-eng-hover { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; color: rgba(245,240,232,0.55); margin-top: 4px; opacity: 0; transition: opacity 0.2s; }
+.k-eng-on { font-family: 'Nunito', sans-serif; font-size: 14px; font-style: italic; font-weight: 600; color: rgba(240,234,250,0.5); margin-top: 4px; }
+.active .k-eng-on { color: rgba(240,234,250,0.7); }
+.k-eng-hover { font-family: 'Nunito', sans-serif; font-size: 14px; font-style: italic; font-weight: 600; color: rgba(240,234,250,0.5); margin-top: 4px; opacity: 0; transition: opacity 0.2s; }
 .k-line:hover .k-eng-hover { opacity: 1; }
-.k-chars-only { font-family: 'Noto Serif SC', serif; color: var(--paper); line-height: 1.3; }
 
-/* DECK */
-.flashcard-screen { padding: 36px; max-width: 780px; margin: 0 auto; }
+/* ── BOTTOM PLAYER BAR ───────────────────────────────────────────────────── */
+.player-bar {
+  grid-column: 2;
+  padding: 14px 40px 18px;
+  border-top: 1px solid var(--border);
+  background: rgba(14,8,24,0.85);
+  backdrop-filter: blur(16px);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.progress-bar-wrap {
+  display: flex; align-items: center; gap: 12px;
+}
+.progress-track-h {
+  flex: 1; height: 4px; background: rgba(255,255,255,0.1);
+  border-radius: 2px; position: relative; cursor: pointer;
+}
+.progress-fill-h {
+  height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple2));
+  border-radius: 2px; transition: width 0.5s ease; width: 0%;
+  position: relative;
+}
+.progress-fill-h::after {
+  content: ''; position: absolute; right: -4px; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px; border-radius: 50%; background: white;
+  box-shadow: 0 0 6px rgba(124,58,237,0.6);
+}
+.player-controls {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.ctrl-time { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); min-width: 44px; }
+.ctrl-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,0.07); color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 13px; transition: all 0.15s;
+}
+.ctrl-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+.ctrl-btn.primary {
+  width: 44px; height: 44px; font-size: 16px;
+  background: linear-gradient(135deg, var(--purple), var(--purple2));
+  color: white; box-shadow: 0 0 16px rgba(124,58,237,0.4);
+}
+.ctrl-btn.primary:hover { opacity: 0.9; transform: scale(1.05); }
+
+/* ── WORD TOOLTIP ──────────────────────────────────────────────────────── */
+#word-tooltip {
+  display: none; position: fixed; z-index: 100;
+  background: #1a0d30; border: 1px solid rgba(124,58,237,0.4);
+  border-radius: 14px; padding: 16px 20px; min-width: 200px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(124,58,237,0.1);
+}
+#tt-char { font-family: 'Noto Serif SC', serif; font-size: 38px; color: #fff; text-align: center; margin-bottom: 6px; }
+#tt-pin  { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--purple2); text-align: center; margin-bottom: 4px; }
+#tt-eng  { font-family: 'Nunito', sans-serif; font-size: 15px; font-style: italic; color: var(--muted); text-align: center; margin-bottom: 12px; }
+#tt-add  {
+  width: 100%; padding: 9px; border: none; border-radius: 8px; cursor: pointer;
+  font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 800;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: linear-gradient(135deg, var(--purple), var(--purple2)); color: white;
+  transition: opacity 0.15s;
+}
+#tt-add:hover { opacity: 0.9; }
+
+/* ── DECK ──────────────────────────────────────────────────────────────── */
+.flashcard-screen { padding: 36px; max-width: 820px; margin: 0 auto; }
 .fc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 36px; }
-.fc-title { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 300; font-style: italic; }
-.empty-deck { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 45vh; gap: 14px; text-align: center; }
-.empty-char { font-family: 'Noto Serif SC', serif; font-size: 64px; opacity: 0.1; }
-.card-stage { perspective: 1000px; height: 260px; margin-bottom: 28px; cursor: pointer; }
+.fc-title { font-size: 28px; font-weight: 900; color: var(--text); }
+.export-btn {
+  padding: 9px 18px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--muted); font-family: 'Nunito', sans-serif;
+  font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.export-btn:hover { color: var(--text); border-color: rgba(124,58,237,0.4); }
+
+.empty-deck { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 40vh; gap: 14px; text-align: center; }
+.empty-char { font-family: 'Noto Serif SC', serif; font-size: 64px; opacity: 0.08; }
+
+.card-stage { perspective: 1000px; height: 260px; margin-bottom: 24px; cursor: pointer; }
 .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); }
 .card-inner.flipped { transform: rotateY(180deg); }
-.card-face { position: absolute; inset: 0; border-radius: 14px; padding: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
-.card-back { transform: rotateY(180deg); background: rgba(200,150,42,0.04); border-color: rgba(200,150,42,0.25); }
-.card-big-char { font-family: 'Noto Serif SC', serif; font-size: 72px; color: var(--paper); line-height: 1; }
-.card-song { font-size: 9px; color: #3a3028; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 6px; }
-.card-tap { font-size: 10px; color: #3a3028; margin-top: 10px; }
-.card-pin { font-family: 'JetBrains Mono', monospace; font-size: 26px; color: var(--gold); }
-.card-eng { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-style: italic; color: var(--paper); }
-.card-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 36px; }
-.card-btn { padding: 10px 24px; border-radius: 7px; border: none; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
-.card-btn.again { background: rgba(255,255,255,0.05); color: var(--muted); }
-.card-btn.got { background: var(--gold); color: var(--ink); }
-.card-btn.del { background: transparent; color: #4a3828; border: 1px solid #2a2018; }
-.card-btn.del:hover { color: #e06060; border-color: #e06060; }
-.word-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin-top: 20px; }
-.word-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 7px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
-.wc-char { font-family: 'Noto Serif SC', serif; font-size: 20px; }
-.wc-pin { font-size: 9px; color: var(--gold); margin-top: 2px; }
-.wc-eng { font-size: 9px; color: var(--muted); }
-.wc-del { background: none; border: none; color: #3a2828; cursor: pointer; font-size: 15px; padding: 3px; transition: color 0.15s; }
-.word-card:hover { border-color: rgba(200,150,42,0.3); }
-.wc-active { border-color: rgba(200,150,42,0.6) !important; background: rgba(200,150,42,0.08) !important; }
-.export-btn { padding: 9px 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; }
-.export-btn:hover { color: var(--gold); border-color: rgba(200,150,42,0.4); }
+.card-face {
+  position: absolute; inset: 0; border-radius: 16px; padding: 36px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.2);
+}
+.card-back { transform: rotateY(180deg); background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.35); }
+.card-big-char { font-family: 'Noto Serif SC', serif; font-size: 72px; color: var(--text); line-height: 1; }
+.card-song { font-size: 9px; color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 6px; font-weight: 700; }
+.card-tap { font-size: 10px; color: var(--dim); margin-top: 10px; }
+.card-pin { font-family: 'JetBrains Mono', monospace; font-size: 26px; color: var(--purple2); }
+.card-eng { font-family: 'Nunito', sans-serif; font-size: 24px; font-style: italic; color: var(--text); font-weight: 600; }
+.card-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 32px; }
+.card-btn {
+  padding: 10px 24px; border-radius: 8px; border: none;
+  font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 800;
+  letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s;
+}
+.card-btn.again { background: rgba(255,255,255,0.06); color: var(--muted); }
+.card-btn.got   { background: linear-gradient(135deg, var(--purple), var(--purple2)); color: white; }
+.card-btn.del   { background: transparent; color: var(--dim); border: 1px solid rgba(255,255,255,0.08); }
+.card-btn.del:hover { color: #fca5a5; border-color: rgba(252,165,165,0.3); }
 
+.word-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-top: 16px; }
+.word-card {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; display: flex;
+  justify-content: space-between; align-items: center;
+  transition: all 0.15s;
+}
+.word-card:hover { border-color: rgba(124,58,237,0.3); background: rgba(124,58,237,0.06); }
+.wc-active { border-color: rgba(124,58,237,0.5) !important; background: rgba(124,58,237,0.12) !important; }
+.wc-char { font-family: 'Noto Serif SC', serif; font-size: 20px; }
+.wc-pin  { font-size: 9px; color: var(--purple2); margin-top: 2px; font-weight: 700; }
+.wc-eng  { font-size: 9px; color: var(--muted); }
+.wc-del  { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 15px; padding: 3px; transition: color 0.15s; }
+.wc-del:hover { color: #fca5a5; }
+.grid-label { font-size: 9px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-top: 24px; margin-bottom: 12px; }
+
+/* ── MISC ──────────────────────────────────────────────────────────────── */
 .hidden { display: none !important; }
+
 @media (max-width: 700px) {
-  .search-screen { flex-direction: column; }
-  .search-right { width: 100%; border-top: 1px solid var(--border); }
+  .hero { padding: 40px 20px 32px; }
+  .home-section { padding: 0 20px 36px; }
   .player-screen { grid-template-columns: 1fr; }
-  .player-sidebar { border-right: none; border-bottom: 1px solid var(--border); }
-  .karaoke-main { padding: 20px 12px; }
-  .progress-track { display: none; }
-  .search-row { grid-template-columns: 1fr; }
+  .player-sidebar { border-right: none; border-bottom: 1px solid var(--border); max-height: 220px; flex-direction: row; flex-wrap: wrap; gap: 12px; }
+  .karaoke-main { padding: 24px 16px; }
+  .player-bar { grid-column: 1; }
+  .search-fields { flex-direction: column; }
+  .search-divider { display: none; }
 }
 </style>
 </head>
@@ -175,9 +504,9 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 <div class="app">
 
 <header class="header">
-  <div>
-    <div class="logo-cn">聆听</div>
-    <div class="logo-en">Mandarin through music</div>
+  <div class="logo" onclick="showView('search')">
+    <div class="logo-icon">🎵</div>
+    <div class="logo-text"><span>Song</span><span>Lingo</span></div>
   </div>
   <nav class="nav">
     <button class="nav-btn active" id="nav-search" onclick="showView('search')">Songs</button>
@@ -186,73 +515,151 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
   </nav>
 </header>
 
-<!-- SEARCH / ADD SONG -->
+<!-- ── SEARCH / HOME ───────────────────────────────────────────────────── -->
 <div id="view-search" class="search-screen">
-  <div class="search-left">
-    <div>
-      <div class="screen-title">Find a song</div>
-      <div class="screen-sub">Search NetEase Music — the largest Chinese music library.</div>
+
+  <div class="hero">
+    <h1>Turn the songs you love into<br><em>languages you speak</em></h1>
+    <p>Search any song. Get synced lyrics, pinyin, and translation.<br>Tap words to save them. Actually remember them.</p>
+
+    <div class="search-bar">
+      <div class="search-fields">
+        <input id="inp-title"  placeholder="Search any Mandarin song or artist..." onkeydown="if(event.key==='Enter')startSearch()">
+        <div class="search-divider"></div>
+        <input id="inp-artist" placeholder="Artist (optional)" style="max-width:180px" onkeydown="if(event.key==='Enter')startSearch()">
+      </div>
+      <button class="search-go" id="search-btn" onclick="startSearch()">Search</button>
     </div>
 
-    <div class="search-row">
-      <div>
-        <div class="field-label">Song title</div>
-        <input class="text-input" id="inp-title" placeholder="告白氣球" onkeydown="if(event.key==='Enter')startSearch()">
-      </div>
-      <div>
-        <div class="field-label">Artist</div>
-        <input class="text-input" id="inp-artist" placeholder="周杰倫" onkeydown="if(event.key==='Enter')startSearch()">
-      </div>
+    <div class="lang-tabs">
+      <button class="lang-tab active">字元 Mandarin</button>
+      <button class="lang-tab soon">한국어 Korean</button>
+      <button class="lang-tab soon">日本語 Japanese</button>
+      <button class="lang-tab soon">Español</button>
+      <button class="lang-tab soon">+ more soon</button>
     </div>
 
-    <button class="go-btn" id="search-btn" onclick="startSearch()">→ Search &amp; Translate</button>
-
-    <div class="status-bar" id="search-status"></div>
-
+    <div class="search-status" id="search-status"></div>
   </div>
 
-  <div class="search-right">
-    <div>
-      <div class="section-label">How it works</div>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-text">Type the song title and hit <strong>Search</strong> — lyrics are fetched automatically from NetEase Music (网易云)</div>
+  <!-- API Key -->
+  <div class="api-section" style="max-width:560px;margin:0 auto 40px;">
+    <div class="api-label">API Key</div>
+    <input class="api-input" id="inp-apikey" type="password" placeholder="sk-ant-...">
+    <div class="api-hint">Required for translation. Free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> · ~$0.02 per song · saved in your browser.</div>
+  </div>
+
+  <!-- Popular songs -->
+  <div class="home-section">
+    <div class="section-heading">Popular right now</div>
+    <div class="song-cards">
+      <div class="song-card" onclick="quickSearch('告白气球','周杰伦')">
+        <div class="song-card-icon">🎵</div>
+        <div class="song-card-info">
+          <div class="song-card-title">告白气球</div>
+          <div class="song-card-artist">周杰伦 · Jay Chou</div>
         </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-text">Claude adds <strong>pinyin</strong> and <strong>English translation</strong> to every line</div>
+        <button class="song-card-play">▶</button>
+      </div>
+      <div class="song-card" onclick="quickSearch('待我如初','大头针')">
+        <div class="song-card-icon">🌙</div>
+        <div class="song-card-info">
+          <div class="song-card-title">待我如初</div>
+          <div class="song-card-artist">大头针</div>
         </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-text">Start the song on Spotify or Apple Music, press <strong>Start Sync</strong> at the same moment</div>
+        <button class="song-card-play">▶</button>
+      </div>
+      <div class="song-card" onclick="quickSearch('晴天','周杰伦')">
+        <div class="song-card-icon">☀️</div>
+        <div class="song-card-info">
+          <div class="song-card-title">晴天</div>
+          <div class="song-card-artist">周杰伦 · Jay Chou</div>
         </div>
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-text">Tap any word to save it to your flashcard deck</div>
+        <button class="song-card-play">▶</button>
+      </div>
+      <div class="song-card" onclick="quickSearch('稻香','周杰伦')">
+        <div class="song-card-icon">🌾</div>
+        <div class="song-card-info">
+          <div class="song-card-title">稻香</div>
+          <div class="song-card-artist">周杰伦 · Jay Chou</div>
         </div>
+        <button class="song-card-play">▶</button>
+      </div>
+      <div class="song-card" onclick="quickSearch('喜欢你','邓紫棋')">
+        <div class="song-card-icon">💜</div>
+        <div class="song-card-info">
+          <div class="song-card-title">喜欢你</div>
+          <div class="song-card-artist">邓紫棋</div>
+        </div>
+        <button class="song-card-play">▶</button>
+      </div>
+      <div class="song-card" onclick="quickSearch('突然好想你','五月天')">
+        <div class="song-card-icon">✨</div>
+        <div class="song-card-info">
+          <div class="song-card-title">突然好想你</div>
+          <div class="song-card-artist">五月天</div>
+        </div>
+        <button class="song-card-play">▶</button>
       </div>
     </div>
+  </div>
 
-    <div>
-      <div class="section-label">API Key</div>
-      <input class="text-input" id="inp-apikey" type="password" placeholder="sk-ant-..." style="font-size:11px;margin-bottom:6px">
-      <div class="api-hint">For translation. Free key at <a href="https://console.anthropic.com" target="_blank" style="color:#6a5a3a">console.anthropic.com</a> · ~$0.02/song · saved in your browser.</div>
+  <!-- Why it works -->
+  <div class="home-section">
+    <div class="section-heading">Why it works</div>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon">🎤</div>
+        <div class="why-title">Karaoke-style sync</div>
+        <div class="why-desc">Lyrics scroll in real time as the music plays — the current line is always front and centre.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">👆</div>
+        <div class="why-title">Tap to learn</div>
+        <div class="why-desc">Hover any word to instantly see its pinyin and meaning. Tap to save it to your deck.</div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">📖</div>
+        <div class="why-title">Vocab that sticks</div>
+        <div class="why-desc">Words you save are attached to the song you learned them from — context makes them memorable.</div>
+      </div>
     </div>
   </div>
+
 </div>
 
-<!-- PLAYER -->
+<!-- ── PLAYER ──────────────────────────────────────────────────────────── -->
 <div id="view-player" class="player-screen hidden">
+
   <aside class="player-sidebar">
+
+    <!-- Search shortcut -->
+    <div class="sidebar-search" onclick="showView('search')">
+      <span style="font-size:14px">🔍</span>
+      <span>Search Songs</span>
+    </div>
+
+    <!-- Now playing -->
     <div class="now-playing">
       <div class="np-label">Now learning</div>
       <div class="np-title" id="np-title">—</div>
       <div class="np-artist" id="np-artist"></div>
       <div id="status-pill" class="status-pill loading hidden"><span class="spinner"></span><span id="status-text">Translating...</span></div>
     </div>
+
+    <!-- Display toggles -->
     <div>
-      <div class="section-label">Sync with your music</div>
+      <div class="sidebar-section-label">Display</div>
+      <div class="toggle-section">
+        <div class="toggle-row"><span class="toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
+      </div>
+    </div>
+
+    <!-- Sync -->
+    <div>
+      <div class="sidebar-section-label">Sync with your music</div>
       <div class="sync-time"><span id="sync-min">0</span>:<span id="sync-sec">00</span><span> elapsed</span></div>
       <button class="sync-btn" id="sync-btn" onclick="toggleSync()">▶ Start Sync</button>
       <div class="seek-row">
@@ -263,46 +670,68 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
       </div>
       <div class="sync-hint">Press Start Sync when the song begins.<br>±2s / ±5s to adjust if drifting.</div>
     </div>
-    <div style="font-size:9px;color:var(--muted);line-height:1.8;letter-spacing:0.04em;text-transform:uppercase">
-      Hover a word → pinyin<br>
-      Hover a line → english<br>
-      Click a word → save to deck
-    </div>
-    <div class="toggle-section">
-      <div class="section-label">Display</div>
-      <div class="toggle-row"><span class="toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
-      <div class="toggle-row"><span class="toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
-      <div class="toggle-row"><span class="toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng" checked onchange="rerender()"><span class="toggle-slider"></span></label></div>
-    </div>
+
+    <!-- Manual scroll -->
     <div>
-      <div class="section-label">Manual scroll</div>
+      <div class="sidebar-section-label">Manual scroll</div>
       <div class="seek-row">
         <button class="seek-btn" onclick="manualScroll(-1)" style="font-size:16px">↑</button>
-        <button class="seek-btn" onclick="manualScroll(1)" style="font-size:16px">↓</button>
+        <button class="seek-btn" onclick="manualScroll(1)"  style="font-size:16px">↓</button>
       </div>
       <div class="sync-hint" style="margin-top:6px">Or scroll / arrow keys</div>
     </div>
+
     <button class="back-btn" onclick="showView('search')">← Add Another Song</button>
   </aside>
+
+  <!-- Karaoke area -->
   <main class="karaoke-main">
-    <div id="translating-notice" class="translating-notice hidden"><span class="spinner"></span><span id="translate-progress">Translating...</span></div>
-    <div class="karaoke-lines">
-      <div class="k-line dim" id="k-prev"></div>
-      <div class="k-line active" id="k-curr"></div>
-      <div class="k-line dim" id="k-next"></div>
+    <div class="song-nav" id="song-nav">
+      <button class="song-nav-btn">‹</button>
+      <span class="song-nav-title" id="nav-song-title">—</span>
+      <span class="song-nav-en" id="nav-song-en"></span>
+      <button class="song-nav-btn">›</button>
     </div>
-    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="height:0%"></div></div>
+
+    <div id="translating-notice" class="translating-notice hidden">
+      <span class="spinner"></span><span id="translate-progress">Translating...</span>
+    </div>
+
+    <div class="karaoke-lines">
+      <div class="k-line dim"    id="k-prev"></div>
+      <div class="k-line active" id="k-curr"></div>
+      <div class="k-line dim"    id="k-next"></div>
+    </div>
+
     <!-- Word tooltip -->
-    <div id="word-tooltip" onmouseenter="clearTimeout(tooltipHideTimer)" onmouseleave="hideTooltip()" style="display:none;position:fixed;z-index:100;background:#1a1410;border:1px solid rgba(200,150,42,0.4);border-radius:12px;padding:16px 20px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6)">
-      <div id="tt-char" style="font-family:'Noto Serif SC',serif;font-size:36px;color:#fff;text-align:center;margin-bottom:6px"></div>
-      <div id="tt-pin" style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#c8962a;text-align:center;margin-bottom:4px"></div>
-      <div id="tt-eng" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#a09080;text-align:center;margin-bottom:12px"></div>
-      <button id="tt-add" onclick="tooltipAddToDeck()" style="width:100%;padding:8px;background:#c8962a;color:#0a0806;border:none;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">+ Add to Deck</button>
+    <div id="word-tooltip" onmouseenter="clearTimeout(tooltipHideTimer)" onmouseleave="hideTooltip()">
+      <div id="tt-char"></div>
+      <div id="tt-pin"></div>
+      <div id="tt-eng"></div>
+      <button id="tt-add" onclick="tooltipAddToDeck()">+ Add to Deck</button>
     </div>
   </main>
+
+  <!-- Bottom player bar -->
+  <div class="player-bar">
+    <div class="progress-bar-wrap">
+      <span class="ctrl-time"><span id="bar-min">0</span>:<span id="bar-sec">00</span></span>
+      <div class="progress-track-h" id="progress-track-h">
+        <div class="progress-fill-h" id="progress-fill-h"></div>
+      </div>
+    </div>
+    <div class="player-controls">
+      <button class="ctrl-btn" onclick="manualScroll(-5)" title="Back 5 lines">⏮</button>
+      <button class="ctrl-btn" onclick="seekBy(-5)">⏪</button>
+      <button class="ctrl-btn primary" id="play-btn" onclick="toggleSync()">▶</button>
+      <button class="ctrl-btn" onclick="seekBy(5)">⏩</button>
+      <button class="ctrl-btn" onclick="manualScroll(5)" title="Forward 5 lines">⏭</button>
+    </div>
+  </div>
+
 </div>
 
-<!-- DECK -->
+<!-- ── DECK ───────────────────────────────────────────────────────────── -->
 <div id="view-deck" class="flashcard-screen hidden">
   <div class="fc-header">
     <div class="fc-title">Your Deck</div>
@@ -310,27 +739,36 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
   </div>
   <div class="empty-deck" id="deck-empty">
     <div class="empty-char">字</div>
-    <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#4a3828;font-style:italic">Your deck is empty</div>
-    <div style="font-size:10px;color:#3a2818;line-height:1.9">Tap any word in the player to save it here.</div>
+    <div style="font-size:18px;font-weight:700;color:#4a3870;font-style:italic">Your deck is empty</div>
+    <div style="font-size:11px;color:#3a2860;line-height:1.8">Hover any word in the player and tap Add to Deck.</div>
   </div>
   <div id="deck-cards" class="hidden">
     <div class="card-stage" onclick="flipCard()">
       <div class="card-inner" id="card-inner">
-        <div class="card-face"><div class="card-big-char" id="card-front-char">字</div><div class="card-song" id="card-front-song"></div><div class="card-tap">tap to reveal</div></div>
-        <div class="card-face card-back"><div class="card-pin" id="card-back-pin"></div><div class="card-eng" id="card-back-eng"></div><div class="card-big-char" id="card-back-char" style="font-size:38px;color:#3a3028;margin-top:6px"></div></div>
+        <div class="card-face">
+          <div class="card-big-char" id="card-front-char">字</div>
+          <div class="card-song"     id="card-front-song"></div>
+          <div class="card-tap">tap to reveal</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-pin" id="card-back-pin"></div>
+          <div class="card-eng" id="card-back-eng"></div>
+          <div class="card-big-char" id="card-back-char" style="font-size:38px;opacity:0.25;margin-top:6px"></div>
+        </div>
       </div>
     </div>
     <div class="card-btns" id="card-btns" style="display:none">
-      <button class="card-btn again" onclick="cardAction('again')">Again</button>
-      <button class="card-btn got" onclick="cardAction('got')">Got It ✓</button>
-      <button class="card-btn del" onclick="cardAction('remove')">Remove</button>
+      <button class="card-btn again"  onclick="cardAction('again')">Again</button>
+      <button class="card-btn got"    onclick="cardAction('got')">Got It ✓</button>
+      <button class="card-btn del"    onclick="cardAction('remove')">Remove</button>
     </div>
-    <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#3a3028;margin-bottom:12px" id="grid-label"></div>
+    <div class="grid-label" id="grid-label"></div>
     <div class="word-grid" id="word-grid"></div>
   </div>
 </div>
 
-</div>
+</div><!-- .app -->
+
 <script>
 const S = {
   apiKey: localStorage.getItem('ht_key') || '',
@@ -345,7 +783,30 @@ window.onload = () => {
   if (S.apiKey) document.getElementById('inp-apikey').value = S.apiKey;
   updateBadge();
   setInterval(tick, 250);
+
+  // Click progress bar to seek
+  document.getElementById('progress-track-h')?.addEventListener('click', e => {
+    if (!S.lyrics.length) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    const last = S.lyrics[S.lyrics.length-1]?.time || 1;
+    S.offset = pct * last;
+    S.activeIdx = 0;
+    for (let i = 0; i < S.lyrics.length; i++) {
+      if (S.lyrics[i].time <= S.offset) S.activeIdx = i; else break;
+    }
+    if (S.running) S.syncStart = Date.now() - S.offset * 1000;
+    rerender();
+  });
 };
+
+function quickSearch(title, artist) {
+  document.getElementById('inp-title').value = title;
+  document.getElementById('inp-artist').value = artist;
+  // scroll to search bar
+  document.getElementById('inp-title').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('inp-title').focus();
+}
 
 function showView(v) {
   ['search','player','deck'].forEach(id => {
@@ -355,7 +816,7 @@ function showView(v) {
   if (v === 'deck') renderDeck();
 }
 
-// ── SEARCH (NetEase via /api/lyrics serverless) ────────────────────────────
+// ── SEARCH ────────────────────────────────────────────────────────────────
 async function startSearch() {
   const title  = document.getElementById('inp-title').value.trim();
   const artist = document.getElementById('inp-artist').value.trim();
@@ -363,7 +824,7 @@ async function startSearch() {
   if (!title)  return alert('Please enter a song title.');
   if (!apiKey) return alert('Please enter your Anthropic API key.\nGet one free at console.anthropic.com');
 
-  setSearchStatus('loading', 'Searching NetEase Music...');
+  setSearchStatus('loading', 'Searching...');
   document.getElementById('search-btn').disabled = true;
 
   try {
@@ -372,14 +833,14 @@ async function startSearch() {
     const data = await r.json();
 
     if (data.error || !data.lrc) {
-      setSearchStatus('error', data.error || 'Song not found — try pasting lyrics manually below.');
+      setSearchStatus('error', data.error || 'Song not found — please try a different title.');
       document.getElementById('search-btn').disabled = false;
       return;
     }
 
     const lrcLines = parseLrc(data.lrc).filter(l => /[\u4e00-\u9fff\uAC00-\uD7AF]/.test(l.text));
     if (!lrcLines.length) {
-      setSearchStatus('error', 'No Chinese lyrics found — try pasting manually.');
+      setSearchStatus('error', 'No lyrics found for this song.');
       document.getElementById('search-btn').disabled = false;
       return;
     }
@@ -393,44 +854,44 @@ async function startSearch() {
   }
 }
 
-// ── SHARED: load lyrics + kick off translation ─────────────────────────────
+// ── LOAD + TRANSLATE ──────────────────────────────────────────────────────
 async function loadAndTranslate(title, artist, apiKey, lrcLines) {
   S.title = title; S.artist = artist; S.apiKey = apiKey;
   localStorage.setItem('ht_key', apiKey);
-  S.lyrics = lrcLines.map((l, i) => ({ ...l, characters: l.text, pinyin: null, english: null, words: null }));
-  S.activeIdx = 0;  // start at first line immediately
+  S.lyrics = lrcLines.map(l => ({ ...l, characters: l.text, pinyin: null, english: null, words: null }));
+  S.activeIdx = 0;
   S.syncStart = null; S.running = false; S.offset = 0;
 
   document.getElementById('np-title').textContent = title;
   document.getElementById('np-artist').textContent = artist;
+  document.getElementById('nav-song-title').textContent = title;
   document.getElementById('sync-btn').textContent = '▶ Start Sync';
+  document.getElementById('play-btn').textContent = '▶';
   document.getElementById('sync-min').textContent = '0';
   document.getElementById('sync-sec').textContent = '00';
+  document.getElementById('bar-min').textContent = '0';
+  document.getElementById('bar-sec').textContent = '00';
 
   const pill = document.getElementById('status-pill');
   pill.className = 'status-pill loading';
   pill.classList.remove('hidden');
-  pill.innerHTML = '<span class="spinner"></span><span id="status-text">Translating...</span>';
+  pill.innerHTML = '<span class="spinner"></span><span>Translating...</span>';
 
   document.getElementById('translating-notice').classList.remove('hidden');
   document.getElementById('translate-progress').textContent = `Translating ${lrcLines.length} lines...`;
 
   showView('player');
   rerender();
-
   document.getElementById('search-btn').disabled = false;
 
   await annotateInChunks(S.lyrics, apiKey);
 
   document.getElementById('translating-notice').classList.add('hidden');
-  const wordsAnnotated = S.lyrics.filter(l => l.words?.length).length;
-  const engAnnotated = S.lyrics.filter(l => l.english).length;
+  const ok = S.lyrics.filter(l => l.words?.length || l.english).length;
   pill.className = 'status-pill ready';
-  if (wordsAnnotated === 0 && engAnnotated === 0) {
-    pill.innerHTML = `<span style="color:#e08080">⚠ Translation failed — check your API key</span>`;
-  } else {
-    pill.innerHTML = `<span>✓ ${lrcLines.length} lines ready</span>`;
-  }
+  pill.innerHTML = ok === 0
+    ? `<span style="color:#fca5a5">⚠ Translation failed — check API key</span>`
+    : `<span>✓ ${lrcLines.length} lines ready</span>`;
   rerender();
 }
 
@@ -438,11 +899,10 @@ async function loadAndTranslate(title, artist, apiKey, lrcLines) {
 async function annotateInChunks(arr, apiKey) {
   if (!apiKey || !apiKey.startsWith('sk-ant-')) {
     const pill = document.getElementById('status-pill');
-    if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ Invalid API key — must start with sk-ant-</span>`;
+    if (pill) pill.innerHTML = `<span style="color:#fca5a5">⚠ Invalid API key</span>`;
     return;
   }
-
-  const SIZE = 8; // smaller chunks = less chance of truncation
+  const SIZE = 8;
   for (let i = 0; i < arr.length; i += SIZE) {
     const chunk = arr.slice(i, i + SIZE);
     const done = Math.min(i + SIZE, arr.length);
@@ -451,32 +911,28 @@ async function annotateInChunks(arr, apiKey) {
     try {
       const texts = chunk.map(l => l.text || l.characters);
       const result = await annotateChunk(texts, apiKey);
-      console.log('Annotation result sample:', result?.[0]);
-      // Use forEach index directly — most reliable
       result.forEach((item, j) => {
         const idx = i + j;
         if (arr[idx]) {
-          arr[idx].characters = item.characters || arr[idx].characters; // simplified
-          arr[idx].pinyin     = item.pinyin  || arr[idx].pinyin;
-          arr[idx].english    = item.english || arr[idx].english;
+          arr[idx].characters = item.characters || arr[idx].characters;
+          arr[idx].pinyin     = item.pinyin     || arr[idx].pinyin;
+          arr[idx].english    = item.english    || arr[idx].english;
           arr[idx].words      = item.words?.length ? item.words : arr[idx].words;
         }
       });
       rerender();
     } catch(e) {
-      console.error('Chunk failed at', i, e);
       const pill = document.getElementById('status-pill');
-      if (pill) pill.innerHTML = `<span style="color:#e08080">⚠ ${e.message}</span>`;
-      return; // stop trying more chunks
+      if (pill) pill.innerHTML = `<span style="color:#fca5a5">⚠ ${e.message}</span>`;
+      return;
     }
   }
 }
 
 async function annotateChunk(lines, apiKey) {
   const numbered = lines.map((l, i) => `${i+1}. ${l}`).join('\n');
-  const prompt = `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural English translation. IMPORTANT: Convert any traditional Chinese characters to simplified Chinese in the "characters" field and in each word's "char" field.\n\n${numbered}\n\nReturn a JSON array, one object per line:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks always required, group natural word units, keep English poetic for song lyrics, always output simplified Chinese characters.`;
+  const prompt = `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural English translation. IMPORTANT: Convert any traditional Chinese characters to simplified Chinese.\n\n${numbered}\n\nReturn a JSON array:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks required, simplified Chinese only, natural English, group words naturally.`;
 
-  // Try server-side proxy first
   try {
     const resp = await fetch('/api/annotate', {
       method: 'POST',
@@ -486,12 +942,9 @@ async function annotateChunk(lines, apiKey) {
     if (resp.ok) {
       const data = await resp.json();
       if (data.result?.length) return data.result;
-      if (data.error) console.warn('Server annotate error:', data.error);
     }
-  } catch(e) { console.warn('Server annotate failed:', e.message); }
+  } catch(e) {}
 
-  // Fall back to direct Anthropic call
-  console.log('Trying direct Anthropic call...');
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -501,31 +954,22 @@ async function annotateChunk(lines, apiKey) {
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 8000,
-      system: 'You are a Mandarin annotation tool. You output ONLY valid JSON — no markdown, no backticks, no explanation, nothing else.',
-      messages: [
-        { role: 'user', content: prompt }
-      ]
+      model: 'claude-sonnet-4-6', max_tokens: 8000,
+      system: 'You are a Mandarin annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
+      messages: [{ role: 'user', content: prompt }]
     })
   });
 
-  const responseText = await resp.text();
-  console.log('Direct API response status:', resp.status);
-  console.log('Direct API response:', responseText.slice(0, 300));
-
+  const txt = await resp.text();
   if (!resp.ok) {
-    let errMsg = `API error ${resp.status}`;
-    try { const e = JSON.parse(responseText); errMsg = e.error?.message || errMsg; } catch {}
-    throw new Error(errMsg);
+    let msg = `API error ${resp.status}`;
+    try { msg = JSON.parse(txt).error?.message || msg; } catch {}
+    throw new Error(msg);
   }
-
-  const data = JSON.parse(responseText);
-  let raw = data.content?.[0]?.text || '';
-  // Strip markdown fences if present
-  raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+  const data = JSON.parse(txt);
+  let raw = (data.content?.[0]?.text || '').replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
   try { return JSON.parse(raw); }
-  catch { try { return JSON.parse(raw + ']'); } catch { throw new Error('Could not parse Claude response: ' + raw.slice(0,100)); } }
+  catch { try { return JSON.parse(raw + ']'); } catch { throw new Error('Parse error'); } }
 }
 
 // ── LRC PARSER ────────────────────────────────────────────────────────────
@@ -540,35 +984,40 @@ function parseLrc(lrc) {
 
 // ── SYNC ──────────────────────────────────────────────────────────────────
 function toggleSync() {
-  if (S.running) { S.running=false; S.offset=getElapsed(); document.getElementById('sync-btn').textContent='▶ Resume'; }
-  else { S.syncStart=Date.now()-(S.offset*1000); S.running=true; document.getElementById('sync-btn').textContent='⏸ Pause'; }
+  if (S.running) {
+    S.running = false; S.offset = getElapsed();
+    document.getElementById('sync-btn').textContent = '▶ Resume';
+    document.getElementById('play-btn').textContent = '▶';
+  } else {
+    S.syncStart = Date.now() - (S.offset * 1000);
+    S.running = true;
+    document.getElementById('sync-btn').textContent = '⏸ Pause';
+    document.getElementById('play-btn').textContent = '⏸';
+  }
 }
-function seekBy(s) { S.offset=getElapsed()+s; if(S.running) S.syncStart=Date.now()-(S.offset*1000); }
-function getElapsed() { if(!S.running||!S.syncStart) return S.offset; return (Date.now()-S.syncStart)/1000; }
+function seekBy(s) { S.offset = getElapsed() + s; if(S.running) S.syncStart = Date.now() - (S.offset*1000); }
+function getElapsed() { if (!S.running || !S.syncStart) return S.offset; return (Date.now()-S.syncStart)/1000; }
 
 function tick() {
   const pos = getElapsed();
-  document.getElementById('sync-min').textContent = Math.floor(pos/60);
-  document.getElementById('sync-sec').textContent = String(Math.floor(pos%60)).padStart(2,'0');
+  const mm = Math.floor(pos/60);
+  const ss = String(Math.floor(pos%60)).padStart(2,'0');
+  document.getElementById('sync-min').textContent = mm;
+  document.getElementById('sync-sec').textContent = ss;
+  document.getElementById('bar-min').textContent  = mm;
+  document.getElementById('bar-sec').textContent  = ss;
+
   if (!S.lyrics.length) return;
-
-  // Progress bar
   const last = S.lyrics[S.lyrics.length-1]?.time || 1;
-  const pf = document.getElementById('progress-fill');
-  if (pf) pf.style.height = Math.min(100, (pos/last)*100) + '%';
-
-  // Only advance lines if sync is actually running
+  const pf = document.getElementById('progress-fill-h');
+  if (pf) pf.style.width = Math.min(100, (pos/last)*100) + '%';
   if (!S.running) return;
-
-  // Find which line we're on
   let idx = 0;
-  for (let i = 0; i < S.lyrics.length; i++) {
-    if (S.lyrics[i].time <= pos) idx = i;
-    else break;
-  }
+  for (let i = 0; i < S.lyrics.length; i++) { if (S.lyrics[i].time <= pos) idx = i; else break; }
   if (idx !== S.activeIdx) { S.activeIdx = idx; rerender(); }
 }
 
+// ── RENDER ────────────────────────────────────────────────────────────────
 function rerender() {
   renderLine('k-prev', S.lyrics[S.activeIdx-1], false);
   renderLine('k-curr', S.lyrics[S.activeIdx],   true);
@@ -579,64 +1028,52 @@ function renderLine(id, line, isActive) {
   const el = document.getElementById(id); if (!el) return;
   if (!line) { el.innerHTML = ''; return; }
   const showC = document.getElementById('tog-chars')?.checked ?? true;
-  const showP = document.getElementById('tog-pin')?.checked ?? true;
-  const showE = document.getElementById('tog-eng')?.checked ?? true;
+  const showP = document.getElementById('tog-pin')?.checked   ?? true;
+  const showE = document.getElementById('tog-eng')?.checked   ?? true;
   const sz = isActive ? '28px' : '20px';
   const text = line.characters || line.text || '';
-
   let html = '';
 
   if (line.words?.length) {
-    // ── Word-by-word (full annotation) ────────────────────────────────────
     html += '<div class="k-word-row">';
     line.words.forEach((w, wi) => {
       const sv = S.saved.some(s => s.char === w.char);
       html += `<span class="k-word ${sv?'saved':''}" onmouseenter="showTooltip(event,${S.activeIdx},${wi})" onmouseleave="hideTooltip()" onclick="showTooltip(event,${S.activeIdx},${wi})">`;
-      if (showP && w.pinyin) html += `<span class="k-pin">${esc(w.pinyin)}</span>`;
-      else if (w.pinyin)     html += `<span class="k-pin k-pin-hover">${esc(w.pinyin)}</span>`;
+      if (showP && w.pinyin)  html += `<span class="k-pin">${esc(w.pinyin)}</span>`;
+      else if (w.pinyin)      html += `<span class="k-pin k-pin-hover">${esc(w.pinyin)}</span>`;
       html += `<span class="k-char" style="font-size:${sz};${showC?'':'opacity:0.12'}">${esc(w.char)}</span>`;
       html += '</span>';
     });
     html += '</div>';
-    if (showE && line.english)      html += `<div class="k-eng-on">${esc(line.english)}</div>`;
-    else if (line.english)          html += `<div class="k-eng-hover">${esc(line.english)}</div>`;
-
+    if (showE && line.english)  html += `<div class="k-eng-on">${esc(line.english)}</div>`;
+    else if (line.english)      html += `<div class="k-eng-hover">${esc(line.english)}</div>`;
   } else if (line.pinyin || line.english) {
-    // ── Line-level annotation (no word split) — still show what we have ──
-    if (showP && line.pinyin) html += `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);margin-bottom:4px;letter-spacing:0.03em">${esc(line.pinyin)}</div>`;
-    if (showC)                html += `<div style="font-family:'Noto Serif SC',serif;font-size:${sz};line-height:1.3">${esc(text)}</div>`;
+    if (showP && line.pinyin) html += `<div style="font-size:10px;color:var(--purple2);margin-bottom:4px;font-family:'JetBrains Mono',monospace">${esc(line.pinyin)}</div>`;
+    if (showC) html += `<div style="font-family:'Noto Serif SC',serif;font-size:${sz};line-height:1.3">${esc(text)}</div>`;
     if (showE && line.english) html += `<div class="k-eng-on" style="margin-top:4px">${esc(line.english)}</div>`;
-
   } else {
-    // ── Not yet annotated ─────────────────────────────────────────────────
     html = `<span style="font-family:'Noto Serif SC',serif;font-size:${sz};opacity:0.5">${esc(text)}</span>`;
   }
-
   el.innerHTML = html;
 }
 
-// ── MANUAL SCROLL + KEYBOARD ─────────────────────────────────────────────
+// ── MANUAL SCROLL + KEYBOARD ──────────────────────────────────────────────
 function manualScroll(dir) {
-  // Pause auto-sync when manually scrolling
-  if (S.running) { S.running = false; S.offset = getElapsed(); document.getElementById('sync-btn').textContent = '▶ Resume'; }
-  S.activeIdx = Math.max(0, Math.min(S.lyrics.length - 1, S.activeIdx + dir));
+  if (S.running) { S.running = false; S.offset = getElapsed(); document.getElementById('sync-btn').textContent = '▶ Resume'; document.getElementById('play-btn').textContent = '▶'; }
+  S.activeIdx = Math.max(0, Math.min(S.lyrics.length-1, S.activeIdx + dir));
   rerender();
 }
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); manualScroll(-1); }
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); manualScroll(1); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); manualScroll(-1); }
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  { e.preventDefault(); manualScroll(1); }
 });
-
-// Mouse wheel scroll on the karaoke area
-document.addEventListener('wheel', (e) => {
+document.addEventListener('wheel', e => {
   const player = document.getElementById('view-player');
   if (!player || player.classList.contains('hidden')) return;
-  if (e.deltaY > 0) manualScroll(1);
-  else if (e.deltaY < 0) manualScroll(-1);
+  if (e.deltaY > 0) manualScroll(1); else if (e.deltaY < 0) manualScroll(-1);
 }, { passive: true });
 
-// ── WORD TOOLTIP ──────────────────────────────────────────────────────────
+// ── TOOLTIP ───────────────────────────────────────────────────────────────
 let tooltipWord = null;
 let tooltipHideTimer = null;
 
@@ -645,99 +1082,87 @@ function showTooltip(e, lineIdx, wordIdx) {
   const line = S.lyrics[lineIdx];
   const w = line?.words?.[wordIdx];
   if (!w) return;
-
-  tooltipWord = { lineIdx, wordIdx, char: w.char, pinyin: w.pinyin, english: w.english };
+  tooltipWord = { char: w.char, pinyin: w.pinyin, english: w.english };
   const saved = S.saved.some(s => s.char === w.char);
-
   document.getElementById('tt-char').textContent = w.char;
-  document.getElementById('tt-pin').textContent = w.pinyin || '';
-  document.getElementById('tt-eng').textContent = w.english || '';
-  document.getElementById('tt-add').textContent = saved ? '✓ In Deck' : '+ Add to Deck';
-  document.getElementById('tt-add').style.background = saved ? 'rgba(80,160,80,0.3)' : '#c8962a';
-
+  document.getElementById('tt-pin').textContent  = w.pinyin  || '';
+  document.getElementById('tt-eng').textContent  = w.english || '';
+  document.getElementById('tt-add').textContent  = saved ? '✓ In Deck' : '+ Add to Deck';
+  document.getElementById('tt-add').style.background = saved ? 'rgba(52,211,153,0.3)' : '';
   const tt = document.getElementById('word-tooltip');
   tt.style.display = 'block';
-  tt.style.pointerEvents = 'auto';
-
-  const x = Math.min(e.clientX + 12, window.innerWidth - 240);
-  const y = Math.min(e.clientY - 10, window.innerHeight - 180);
-  tt.style.left = x + 'px';
-  tt.style.top = y + 'px';
+  const x = Math.min(e.clientX+12, window.innerWidth-230);
+  const y = Math.min(e.clientY-10, window.innerHeight-180);
+  tt.style.left = x+'px'; tt.style.top = y+'px';
 }
-
 function hideTooltip() {
-  // Delay hiding so mouse can travel to tooltip
-  tooltipHideTimer = setTimeout(() => {
-    document.getElementById('word-tooltip').style.display = 'none';
-  }, 300);
+  tooltipHideTimer = setTimeout(() => { document.getElementById('word-tooltip').style.display = 'none'; }, 300);
 }
-
 function tooltipAddToDeck() {
   if (!tooltipWord) return;
   const { char, pinyin, english } = tooltipWord;
-  const exists = S.saved.findIndex(s => s.char === char);
-  if (exists >= 0) {
-    S.saved.splice(exists, 1);
-  } else {
-    S.saved.push({ char, pinyin, english, song: S.title });
-  }
+  const idx = S.saved.findIndex(s => s.char === char);
+  if (idx >= 0) S.saved.splice(idx, 1);
+  else S.saved.push({ char, pinyin, english, song: S.title });
   localStorage.setItem('ht_deck', JSON.stringify(S.saved));
-  updateBadge();
-  rerender();
-  // Update button
+  updateBadge(); rerender();
   const saved = S.saved.some(s => s.char === char);
   document.getElementById('tt-add').textContent = saved ? '✓ In Deck' : '+ Add to Deck';
-  document.getElementById('tt-add').style.background = saved ? 'rgba(80,160,80,0.3)' : '#c8962a';
+  document.getElementById('tt-add').style.background = saved ? 'rgba(52,211,153,0.3)' : '';
 }
-
-// Hide tooltip on click elsewhere
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('#word-tooltip') && !e.target.closest('.k-word')) {
+document.addEventListener('click', e => {
+  if (!e.target.closest('#word-tooltip') && !e.target.closest('.k-word'))
     document.getElementById('word-tooltip').style.display = 'none';
-  }
 });
 
+// ── DECK ──────────────────────────────────────────────────────────────────
 function toggleWord(li, wi) {
-  const w=S.lyrics[li]?.words?.[wi]; if(!w) return;
-  const idx=S.saved.findIndex(s=>s.char===w.char);
-  if(idx>=0) S.saved.splice(idx,1);
-  else S.saved.push({char:w.char,pinyin:w.pinyin,english:w.english,song:S.title});
-  localStorage.setItem('ht_deck',JSON.stringify(S.saved)); updateBadge(); rerender();
+  const w = S.lyrics[li]?.words?.[wi]; if (!w) return;
+  const idx = S.saved.findIndex(s => s.char === w.char);
+  if (idx >= 0) S.saved.splice(idx, 1);
+  else S.saved.push({ char: w.char, pinyin: w.pinyin, english: w.english, song: S.title });
+  localStorage.setItem('ht_deck', JSON.stringify(S.saved)); updateBadge(); rerender();
 }
-function updateBadge() { const n=S.saved.length; const el=document.getElementById('deck-badge'); el.textContent=n; el.classList.toggle('hidden',n===0); }
-
+function updateBadge() {
+  const n = S.saved.length;
+  const el = document.getElementById('deck-badge');
+  el.textContent = n; el.classList.toggle('hidden', n === 0);
+}
 function renderDeck() {
-  const words=S.saved;
-  document.getElementById('deck-empty').classList.toggle('hidden',words.length>0);
-  document.getElementById('deck-cards').classList.toggle('hidden',words.length===0);
-  if(!words.length) return;
-  if(S.cardIdx>=words.length) S.cardIdx=0;
-  const w=words[S.cardIdx]; S.cardFlipped=false;
+  const words = S.saved;
+  document.getElementById('deck-empty').classList.toggle('hidden', words.length > 0);
+  document.getElementById('deck-cards').classList.toggle('hidden', words.length === 0);
+  if (!words.length) return;
+  if (S.cardIdx >= words.length) S.cardIdx = 0;
+  const w = words[S.cardIdx]; S.cardFlipped = false;
   document.getElementById('card-inner').classList.remove('flipped');
-  document.getElementById('card-btns').style.display='none';
-  document.getElementById('card-front-char').textContent=w.char;
-  document.getElementById('card-front-song').textContent=w.song?'from: '+w.song:'';
-  document.getElementById('card-back-pin').textContent=w.pinyin;
-  document.getElementById('card-back-eng').textContent=w.english;
-  document.getElementById('card-back-char').textContent=w.char;
-  document.getElementById('grid-label').textContent=`All saved words (${words.length})`;
-  document.getElementById('word-grid').innerHTML=words.map((w,i)=>
-    `<div class="word-card ${i===S.cardIdx?'wc-active':''}" onclick="jumpToCard(${i})" style="cursor:pointer"><div><div class="wc-char">${esc(w.char)}</div><div class="wc-pin">${esc(w.pinyin)}</div><div class="wc-eng">${esc(w.english)}</div></div><button class="wc-del" onclick="event.stopPropagation();removeWord(${i})">×</button></div>`
+  document.getElementById('card-btns').style.display = 'none';
+  document.getElementById('card-front-char').textContent = w.char;
+  document.getElementById('card-front-song').textContent = w.song ? 'from: '+w.song : '';
+  document.getElementById('card-back-pin').textContent   = w.pinyin;
+  document.getElementById('card-back-eng').textContent   = w.english;
+  document.getElementById('card-back-char').textContent  = w.char;
+  document.getElementById('grid-label').textContent = `All saved words (${words.length})`;
+  document.getElementById('word-grid').innerHTML = words.map((w,i) =>
+    `<div class="word-card ${i===S.cardIdx?'wc-active':''}" onclick="jumpToCard(${i})" style="cursor:pointer">
+      <div><div class="wc-char">${esc(w.char)}</div><div class="wc-pin">${esc(w.pinyin)}</div><div class="wc-eng">${esc(w.english)}</div></div>
+      <button class="wc-del" onclick="event.stopPropagation();removeWord(${i})">×</button>
+    </div>`
   ).join('');
 }
 function jumpToCard(i) { S.cardIdx = i; renderDeck(); }
-function flipCard() { S.cardFlipped=!S.cardFlipped; document.getElementById('card-inner').classList.toggle('flipped',S.cardFlipped); document.getElementById('card-btns').style.display=S.cardFlipped?'flex':'none'; }
-function cardAction(a) { if(a==='remove'){removeWord(S.cardIdx);return;} S.cardIdx=(S.cardIdx+1)%Math.max(1,S.saved.length); renderDeck(); }
-function removeWord(i) { S.saved.splice(i,1); localStorage.setItem('ht_deck',JSON.stringify(S.saved)); updateBadge(); if(S.cardIdx>=S.saved.length)S.cardIdx=Math.max(0,S.saved.length-1); renderDeck(); }
+function flipCard() { S.cardFlipped = !S.cardFlipped; document.getElementById('card-inner').classList.toggle('flipped', S.cardFlipped); document.getElementById('card-btns').style.display = S.cardFlipped ? 'flex' : 'none'; }
+function cardAction(a) { if (a==='remove') { removeWord(S.cardIdx); return; } S.cardIdx = (S.cardIdx+1) % Math.max(1,S.saved.length); renderDeck(); }
+function removeWord(i) { S.saved.splice(i,1); localStorage.setItem('ht_deck',JSON.stringify(S.saved)); updateBadge(); if(S.cardIdx>=S.saved.length) S.cardIdx=Math.max(0,S.saved.length-1); renderDeck(); }
 function exportCSV() {
-  const rows=['Character,Pinyin,English,Song',...S.saved.map(w=>`"${w.char}","${w.pinyin}","${w.english}","${w.song||''}"`)];
-  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'})),download:'mandarin-deck.csv'});
+  const rows = ['Character,Pinyin,English,Song', ...S.saved.map(w=>`"${w.char}","${w.pinyin}","${w.english}","${w.song||''}"`)];
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([rows.join('\n')], {type:'text/csv'})), download: 'songlingo-deck.csv' });
   a.click();
 }
 function setSearchStatus(type, msg) {
-  const el=document.getElementById('search-status');
-  el.className='status-bar '+type;
-  el.innerHTML=(type==='loading'?'<span class="spinner"></span> ':'')+msg;
+  const el = document.getElementById('search-status');
+  el.className = 'search-status ' + type;
+  el.innerHTML = (type==='loading' ? '<span class="spinner"></span> ' : '') + msg;
 }
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
