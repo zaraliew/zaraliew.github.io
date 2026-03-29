@@ -505,7 +505,7 @@ body::before {
 
 <header class="header">
   <div class="logo" onclick="showView('search')">
-    <img src="/logo.png" alt="SongLingo" style="height:52px;width:auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <img src="/logo.png" alt="SongLingo" style="height:64px;width:auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
     <div style="display:none;align-items:center;gap:8px">
       <div class="logo-icon">🎵</div>
       <div class="logo-text"><span>Song</span><span>Lingo</span></div>
@@ -663,7 +663,7 @@ body::before {
     <!-- Sync -->
     <div>
       <div class="sidebar-section-label">Sync with your music</div>
-      <div class="sync-time"><span id="sync-min">0</span>:<span id="sync-sec">00</span><span> elapsed</span></div>
+      <div class="sync-time" id="sync-time-display">0:00<span> elapsed</span></div>
       <button class="sync-btn" id="sync-btn" onclick="toggleSync()">▶ Start Sync</button>
       <div class="seek-row">
         <button class="seek-btn" onclick="seekBy(-5)">−5s</button>
@@ -674,6 +674,26 @@ body::before {
       <div class="sync-hint">Press Start Sync when the song begins.<br>±2s / ±5s to adjust if drifting.</div>
     </div>
 
+    <!-- Sync speed — moved above manual scroll -->
+    <div>
+      <div class="sidebar-section-label">Sync speed</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--muted)">Slower</span>
+        <span id="speed-label" style="font-size:13px;font-weight:800;color:var(--purple2)">1.0×</span>
+        <span style="font-size:11px;color:var(--muted)">Faster</span>
+      </div>
+      <input type="range" id="speed-slider" min="0.5" max="2" step="0.05" value="1"
+        style="width:100%;accent-color:var(--purple2);cursor:pointer"
+        oninput="setSpeed(this.value)">
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span style="font-size:9px;color:var(--dim)">0.5×</span>
+        <span style="font-size:9px;color:var(--dim)">1×</span>
+        <span style="font-size:9px;color:var(--dim)">1.5×</span>
+        <span style="font-size:9px;color:var(--dim)">2×</span>
+      </div>
+      <div class="sync-hint" style="margin-top:6px">Slide to adjust how fast lyrics advance. Use 0.5× if lyrics are ahead of the song.</div>
+    </div>
+
     <!-- Manual scroll -->
     <div>
       <div class="sidebar-section-label">Manual scroll</div>
@@ -682,27 +702,6 @@ body::before {
         <button class="seek-btn" onclick="manualScroll(1)"  style="font-size:16px">↓</button>
       </div>
       <div class="sync-hint" style="margin-top:6px">Or scroll / arrow keys</div>
-    </div>
-
-    <!-- Playback speed -->
-    <div>
-      <div class="sidebar-section-label">Sync speed</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:11px;color:var(--muted)">Slower</span>
-        <span id="speed-label" style="font-size:13px;font-weight:800;color:var(--purple2)">1×</span>
-        <span style="font-size:11px;color:var(--muted)">Faster</span>
-      </div>
-      <input type="range" id="speed-slider" min="0" max="4" step="1" value="2"
-        style="width:100%;accent-color:var(--purple2);cursor:pointer"
-        oninput="setSpeed(this.value)">
-      <div style="display:flex;justify-content:space-between;margin-top:4px">
-        <span style="font-size:9px;color:var(--dim)">0.5×</span>
-        <span style="font-size:9px;color:var(--dim)">0.75×</span>
-        <span style="font-size:9px;color:var(--dim)">1×</span>
-        <span style="font-size:9px;color:var(--dim)">1.5×</span>
-        <span style="font-size:9px;color:var(--dim)">2×</span>
-      </div>
-      <div class="sync-hint" style="margin-top:6px">Adjusts how fast lyrics advance — use 0.5× to slow down and catch up, 2× to speed through.</div>
     </div>
 
     <button class="back-btn" onclick="showView('search')">← Add Another Song</button>
@@ -891,10 +890,8 @@ async function loadAndTranslate(title, artist, apiKey, lrcLines) {
   document.getElementById('nav-song-title').textContent = title;
   document.getElementById('sync-btn').textContent = '▶ Start Sync';
   document.getElementById('play-btn').textContent = '▶';
-  document.getElementById('sync-min').textContent = '0';
-  document.getElementById('sync-sec').textContent = '00';
-  document.getElementById('bar-min').textContent = '0';
-  document.getElementById('bar-sec').textContent = '00';
+  const td = document.getElementById('sync-time-display');
+  if (td) td.innerHTML = '0:00<span> elapsed</span>';
 
   const pill = document.getElementById('status-pill');
   pill.className = 'status-pill loading';
@@ -1009,11 +1006,12 @@ function parseLrc(lrc) {
 // ── SYNC ──────────────────────────────────────────────────────────────────
 function toggleSync() {
   if (S.running) {
-    S.running = false; S.offset = getElapsed();
+    S.offset = getElapsed(); // capture position
+    S.running = false;
     document.getElementById('sync-btn').textContent = '▶ Resume';
     document.getElementById('play-btn').textContent = '▶';
   } else {
-    S.syncStart = Date.now(); // we track raw wall-clock start; getElapsed applies speed
+    S.syncStart = Date.now(); // start clock from S.offset
     S.running = true;
     document.getElementById('sync-btn').textContent = '⏸ Pause';
     document.getElementById('play-btn').textContent = '⏸';
@@ -1027,12 +1025,15 @@ function seekBy(s) {
 
 function tick() {
   const pos = getElapsed();
-  const mm = Math.floor(pos/60);
-  const ss = String(Math.floor(pos%60)).padStart(2,'0');
-  document.getElementById('sync-min').textContent = mm;
-  document.getElementById('sync-sec').textContent = ss;
-  document.getElementById('bar-min').textContent  = mm;
-  document.getElementById('bar-sec').textContent  = ss;
+  const mm = Math.floor(pos / 60);
+  const ss = String(Math.floor(pos % 60)).padStart(2, '0');
+  const timeStr = `${mm}:${ss}`;
+  const td = document.getElementById('sync-time-display');
+  if (td) td.innerHTML = `${timeStr}<span> elapsed</span>`;
+  const bm = document.getElementById('bar-min');
+  const bs = document.getElementById('bar-sec');
+  if (bm) bm.textContent = mm;
+  if (bs) bs.textContent = ss;
 
   if (!S.lyrics.length) return;
   const last = S.lyrics[S.lyrics.length-1]?.time || 1;
@@ -1086,8 +1087,8 @@ function renderLine(id, line, isActive) {
 
 // ── MANUAL SCROLL + KEYBOARD ──────────────────────────────────────────────
 function manualScroll(dir) {
-  if (S.running) { S.running = false; S.offset = getElapsed(); document.getElementById('sync-btn').textContent = '▶ Resume'; document.getElementById('play-btn').textContent = '▶'; }
-  S.activeIdx = Math.max(0, Math.min(S.lyrics.length-1, S.activeIdx + dir));
+  // Don't pause sync — just move the index
+  S.activeIdx = Math.max(0, Math.min(S.lyrics.length - 1, S.activeIdx + dir));
   rerender();
 }
 document.addEventListener('keydown', e => {
@@ -1095,30 +1096,37 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  { e.preventDefault(); manualScroll(1); }
 });
 
-// Throttled wheel scroll — fires at most once per 400ms to avoid jumping
+// Throttled wheel scroll — 350ms cooldown, low threshold for trackpad
 let wheelTimer = null;
 document.addEventListener('wheel', e => {
   const player = document.getElementById('view-player');
   if (!player || player.classList.contains('hidden')) return;
-  if (wheelTimer) return; // ignore until cooldown expires
-  if (e.deltaY > 30) { manualScroll(1); wheelTimer = setTimeout(() => { wheelTimer = null; }, 400); }
-  else if (e.deltaY < -30) { manualScroll(-1); wheelTimer = setTimeout(() => { wheelTimer = null; }, 400); }
+  if (wheelTimer) return;
+  if (e.deltaY > 0) {
+    manualScroll(1);
+    wheelTimer = setTimeout(() => { wheelTimer = null; }, 350);
+  } else if (e.deltaY < 0) {
+    manualScroll(-1);
+    wheelTimer = setTimeout(() => { wheelTimer = null; }, 350);
+  }
 }, { passive: true });
 
 // ── SPEED CONTROL ─────────────────────────────────────────────────────────
-const SPEEDS = [0.5, 0.75, 1, 1.5, 2];
 S.speed = 1;
 function setSpeed(val) {
-  S.speed = SPEEDS[parseInt(val)];
-  document.getElementById('speed-label').textContent = S.speed + '×';
-  // If running, adjust syncStart so the current position stays correct
+  const newSpeed = parseFloat(parseFloat(val).toFixed(2));
   if (S.running) {
+    // Capture current position BEFORE changing speed, then restart clock from there
     S.offset = getElapsed();
-    S.syncStart = Date.now() - (S.offset * 1000 / S.speed);
+    S.speed = newSpeed;
+    S.syncStart = Date.now(); // reset wall clock; offset holds our position
+  } else {
+    S.speed = newSpeed;
   }
+  document.getElementById('speed-label').textContent = newSpeed.toFixed(2).replace(/\.?0+$/, '') + '×';
 }
 
-// Override getElapsed and tick to respect speed
+// getElapsed: current lyric position in seconds
 function getElapsed() {
   if (!S.running || !S.syncStart) return S.offset;
   return S.offset + ((Date.now() - S.syncStart) / 1000) * S.speed;
