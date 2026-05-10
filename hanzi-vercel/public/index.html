@@ -474,11 +474,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="mobile-np-title" id="mobile-np-title">—</div>
     <div class="mobile-np-pill" id="mobile-np-pill">0:00 elapsed</div>
   </div>
-  <!-- Spotify status chip (shown when connected) -->
   <div id="mobile-spotify-chip" style="display:none;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;border:1px solid rgba(30,215,96,0.35);background:rgba(30,215,96,0.08);cursor:pointer;flex-shrink:0" onclick="openSheet()">
     <svg width="10" height="10" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
     <span style="font-size:9px;font-weight:800;color:#1ed760" id="mobile-spotify-status">synced</span>
   </div>
+  <button class="mobile-controls-btn" id="mobile-playpause-btn" onclick="handlePlayPause()" style="background:linear-gradient(135deg,var(--purple),var(--purple2));border-color:transparent;color:white;font-size:18px;width:36px;height:36px;">▶</button>
   <button class="mobile-controls-btn" id="mobile-gear-btn" onclick="openSheet()" title="Settings">⚙</button>
 </div>
 
@@ -486,6 +486,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <div class="sheet-backdrop" id="sheet-backdrop" onclick="closeSheet()"></div>
 <div class="bottom-sheet" id="bottom-sheet">
   <div class="sheet-handle" onclick="closeSheet()"></div>
+
+  <!-- Big play/pause button -->
+  <button id="sheet-playpause-btn" onclick="handlePlayPause()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:20px;letter-spacing:0.04em;">▶ Play</button>
 
   <!-- Mobile Spotify section -->
   <div class="sheet-section">
@@ -529,6 +532,8 @@ const S = {
   spotifyPollInterval: null,
   spotifyIsPlaying: false,
   spotifyOffsetAdjust: 0,
+  spotifyCurrentTrackId: null,
+  spotifyAutoLoading: false,
 };
 
 // ── INIT ───────────────────────────────────────────────────────────────────
@@ -841,7 +846,14 @@ async function pollSpotify() {
 
     const trackName=data.item?.name||'—';
     const artistName=data.item?.artists?.[0]?.name||'';
+    const trackId=data.item?.id||null;
     updateSpotifyTrackUI(trackName,artistName,null);
+
+    // Auto-load lyrics when track changes
+    if(trackId && trackId!==S.spotifyCurrentTrackId && !S.spotifyAutoLoading){
+      S.spotifyCurrentTrackId=trackId;
+      autoLoadSpotifyTrack(trackName, artistName);
+    }
 
     // Advance lyrics
     if(S.lyrics.length){
@@ -850,6 +862,47 @@ async function pollSpotify() {
       if(idx!==S.activeIdx){S.activeIdx=idx;rerender();}
     }
   } catch(e) {}
+}
+
+// ── SPOTIFY: AUTO-LOAD LYRICS ──────────────────────────────────────────────
+async function autoLoadSpotifyTrack(title, artist) {
+  const apiKey = S.apiKey;
+  if (!apiKey || !title || title === '—') return;
+  S.spotifyAutoLoading = true;
+
+  // Update now-playing display immediately
+  const mnt = document.getElementById('mobile-np-title');
+  if (mnt) mnt.textContent = title;
+  document.getElementById('np-title').textContent = title;
+  document.getElementById('np-artist').textContent = artist;
+  document.getElementById('nav-song-title').textContent = title;
+
+  // Show loading pill
+  const pill = document.getElementById('status-pill');
+  if (pill) { pill.className='status-pill loading'; pill.classList.remove('hidden'); pill.innerHTML='<span class="spinner"></span><span>Finding lyrics...</span>'; }
+
+  // Switch to player view so user sees it loading
+  showView('player');
+
+  try {
+    const r = await fetch(`/api/lyrics?${new URLSearchParams({title, artist})}`);
+    const data = await r.json();
+    if (data.error || !data.lrc) {
+      if (pill) { pill.className='status-pill loading'; pill.innerHTML=`<span style="color:#fca5a5">⚠ No lyrics found for this song</span>`; }
+      S.spotifyAutoLoading = false;
+      return;
+    }
+    const lrcLines = parseLrc(data.lrc).filter(l => /[\u4e00-\u9fff\uAC00-\uD7AF]/.test(l.text));
+    if (!lrcLines.length) {
+      if (pill) { pill.innerHTML=`<span style="color:#fca5a5">⚠ No Mandarin lyrics found</span>`; }
+      S.spotifyAutoLoading = false;
+      return;
+    }
+    await loadAndTranslate(data.title || title, data.artist || artist, apiKey, lrcLines);
+  } catch(e) {
+    if (pill) { pill.innerHTML=`<span style="color:#fca5a5">⚠ Could not fetch lyrics</span>`; }
+  }
+  S.spotifyAutoLoading = false;
 }
 
 // ── SPOTIFY: CONTROLS ──────────────────────────────────────────────────────
@@ -963,8 +1016,14 @@ function updateSpotifyTrackUI(name, artist, fallback) {
 
 function updatePlayButtons() {
   const isPlaying = S.spotifyIsPlaying;
-  const playBtn=document.getElementById('play-btn');
-  if(playBtn) playBtn.textContent=isPlaying?'⏸':'▶';
+  const icon = isPlaying ? '⏸' : '▶';
+  const label = isPlaying ? '⏸ Pause' : '▶ Play';
+  const playBtn = document.getElementById('play-btn');
+  if (playBtn) playBtn.textContent = icon;
+  const mobileBtn = document.getElementById('mobile-playpause-btn');
+  if (mobileBtn) mobileBtn.textContent = icon;
+  const sheetBtn = document.getElementById('sheet-playpause-btn');
+  if (sheetBtn) sheetBtn.textContent = label;
 }
 
 // ── TICK (250ms) ───────────────────────────────────────────────────────────
