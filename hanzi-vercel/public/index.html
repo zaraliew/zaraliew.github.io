@@ -394,30 +394,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
           <div id="spotify-track-name" style="font-size:11px;font-weight:700;color:var(--text)">—</div>
           <div id="spotify-track-artist" style="font-size:10px;color:var(--muted);margin-top:2px"></div>
         </div>
-        <div class="seek-row" style="margin-top:8px">
-          <button class="seek-btn" onclick="adjustOffset(-0.5)" title="Lyrics −0.5s">−½s</button>
-          <button class="seek-btn" onclick="adjustOffset(0.5)" title="Lyrics +0.5s">+½s</button>
-        </div>
-        <button class="resync-btn" onclick="resyncToSpotify()">↺ Re-sync to Spotify</button>
-        <div class="offset-row">
-          <span class="offset-label">Lyric offset</span>
-          <span class="offset-val" id="offset-display">+0.0s</span>
-        </div>
         <button class="disconnect-btn" onclick="disconnectSpotify()">Disconnect Spotify</button>
       </div>
       <div id="spotify-no-client" style="display:none">
         <div class="spotify-idle-note">Add <code style="font-size:9px;background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px">SPOTIFY_CLIENT_ID</code> to Vercel env vars to enable auto-sync.</div>
       </div>
-    </div>
-
-    <!-- Manual Scroll -->
-    <div>
-      <div class="sidebar-section-label">Manual scroll</div>
-      <div class="seek-row">
-        <button class="seek-btn" onclick="manualScroll(-1)" style="font-size:16px">↑</button>
-        <button class="seek-btn" onclick="manualScroll(1)" style="font-size:16px">↓</button>
-      </div>
-      <div class="sync-hint" style="margin-top:6px">Or use ← → / ↑ ↓ keys</div>
     </div>
 
     <button class="back-btn" onclick="showView('search')" style="margin-top:auto">← Add Another Song</button>
@@ -449,9 +430,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="progress-track-h" id="progress-track-h"><div class="progress-fill-h" id="progress-fill-h"></div></div>
     </div>
     <div class="player-controls">
-      <button class="ctrl-btn" onclick="manualScroll(-1)" title="Previous line">↑</button>
       <button class="ctrl-btn primary" id="play-btn" onclick="handlePlayPause()">▶</button>
-      <button class="ctrl-btn" onclick="manualScroll(1)" title="Next line">↓</button>
     </div>
   </div>
 </div>
@@ -520,11 +499,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </button>
     <div id="sheet-spotify-connected" style="display:none">
       <div class="sheet-spotify-track" id="sheet-spotify-track">—</div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="seek-btn" onclick="adjustOffset(-0.5)">Lyrics −½s</button>
-        <button class="resync-btn" style="flex:1;margin:0" onclick="resyncToSpotify()">↺ Re-sync</button>
-        <button class="seek-btn" onclick="adjustOffset(0.5)">+½s</button>
-      </div>
       <button class="disconnect-btn" onclick="disconnectSpotify();closeSheet()" style="margin-top:8px">Disconnect Spotify</button>
     </div>
   </div>
@@ -910,16 +884,6 @@ async function toggleSpotifyPlayback() {
   } catch(e){}
 }
 
-function resyncToSpotify() {
-  S.spotifyOffsetAdjust=0;
-  updateOffsetDisplay();
-}
-
-function adjustOffset(delta) {
-  S.spotifyOffsetAdjust+=delta;
-  updateOffsetDisplay();
-}
-
 function disconnectSpotify() {
   stopSpotifyPolling();
   S.spotifyToken=null; S.spotifyRefreshToken=null; S.spotifyOffsetAdjust=0;
@@ -981,8 +945,6 @@ function updateSpotifyConnectedUI(connected) {
   // Mobile chip
   const chip=document.getElementById('mobile-spotify-chip');
   if(chip) chip.style.display=connected?'flex':'none';
-
-  updateOffsetDisplay();
 }
 
 function updateSpotifyTrackUI(name, artist, fallback) {
@@ -1000,15 +962,6 @@ function updateSpotifyTrackUI(name, artist, fallback) {
     if(trackArtist) trackArtist.textContent='';
     if(sheetTrack) sheetTrack.textContent=fallback;
     if(mobileChipStatus) mobileChipStatus.textContent='idle';
-  }
-}
-
-function updateOffsetDisplay() {
-  const el=document.getElementById('offset-display');
-  if(el){
-    const adj=S.spotifyOffsetAdjust;
-    el.textContent=(adj>=0?'+':'')+adj.toFixed(1)+'s';
-    el.style.color=Math.abs(adj)>0.05?'var(--orange)':'var(--muted)';
   }
 }
 
