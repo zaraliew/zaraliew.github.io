@@ -410,38 +410,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       </div>
     </div>
 
-    <!-- Manual Sync (shown when Spotify not connected) -->
-    <div id="manual-sync-section">
-      <div class="sidebar-section-label">Manual sync</div>
-      <div class="sync-time" id="sync-time-display">0:00<span> elapsed</span></div>
-      <button class="sync-btn" id="sync-btn" onclick="handlePlayPause()">▶ Start Sync</button>
-      <div class="seek-row">
-        <button class="seek-btn" onclick="seekBy(-5)">−5s</button>
-        <button class="seek-btn" onclick="seekBy(-2)">−2s</button>
-        <button class="seek-btn" onclick="seekBy(2)">+2s</button>
-        <button class="seek-btn" onclick="seekBy(5)">+5s</button>
-      </div>
-      <div class="sync-hint">Press Start when the song begins.<br>±2s / ±5s to adjust if drifting.</div>
-    </div>
-
-    <!-- Speed -->
-    <div>
-      <div class="sidebar-section-label">Sync speed</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:11px;color:var(--muted)">Slower</span>
-        <span id="speed-label" style="font-size:13px;font-weight:800;color:var(--purple2)">1.0×</span>
-        <span style="font-size:11px;color:var(--muted)">Faster</span>
-      </div>
-      <input type="range" id="speed-slider" min="0.5" max="2" step="0.05" value="1" style="width:100%;accent-color:var(--purple2);cursor:pointer" oninput="setSpeed(this.value)">
-      <div style="display:flex;justify-content:space-between;margin-top:4px">
-        <span style="font-size:9px;color:var(--dim)">0.5×</span>
-        <span style="font-size:9px;color:var(--dim)">1×</span>
-        <span style="font-size:9px;color:var(--dim)">1.5×</span>
-        <span style="font-size:9px;color:var(--dim)">2×</span>
-      </div>
-      <div class="sync-hint" style="margin-top:6px">Use 0.5× if lyrics run ahead of the song.</div>
-    </div>
-
     <!-- Manual Scroll -->
     <div>
       <div class="sidebar-section-label">Manual scroll</div>
@@ -481,11 +449,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="progress-track-h" id="progress-track-h"><div class="progress-fill-h" id="progress-fill-h"></div></div>
     </div>
     <div class="player-controls">
-      <button class="ctrl-btn" onclick="manualScroll(-5)" title="Back 5 lines">⏮</button>
-      <button class="ctrl-btn" onclick="seekBy(-5)" title="−5 seconds">⏪</button>
+      <button class="ctrl-btn" onclick="manualScroll(-1)" title="Previous line">↑</button>
       <button class="ctrl-btn primary" id="play-btn" onclick="handlePlayPause()">▶</button>
-      <button class="ctrl-btn" onclick="seekBy(5)" title="+5 seconds">⏩</button>
-      <button class="ctrl-btn" onclick="manualScroll(5)" title="Forward 5 lines">⏭</button>
+      <button class="ctrl-btn" onclick="manualScroll(1)" title="Next line">↓</button>
     </div>
   </div>
 </div>
@@ -540,19 +506,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   <button class="mobile-controls-btn" id="mobile-gear-btn" onclick="openSheet()" title="Settings">⚙</button>
 </div>
 
-<div class="mobile-sync-bar" id="mobile-sync-bar" style="display:none">
-  <div class="mobile-sync-main">
-    <div class="mobile-time" id="mobile-time">0:00</div>
-    <button class="mobile-play-btn" id="mobile-play-btn" onclick="handlePlayPause()">▶ Start Sync</button>
-  </div>
-  <div class="mobile-seek-row">
-    <button class="mobile-seek-btn" onclick="seekBy(-5)">−5s</button>
-    <button class="mobile-seek-btn" onclick="seekBy(-2)">−2s</button>
-    <button class="mobile-seek-btn" onclick="seekBy(2)">+2s</button>
-    <button class="mobile-seek-btn" onclick="seekBy(5)">+5s</button>
-  </div>
-</div>
-
 <!-- ── BOTTOM SHEET (mobile settings) ── -->
 <div class="sheet-backdrop" id="sheet-backdrop" onclick="closeSheet()"></div>
 <div class="bottom-sheet" id="bottom-sheet">
@@ -581,27 +534,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="sheet-toggle-row"><span class="sheet-toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars-m" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label></div>
     <div class="sheet-toggle-row"><span class="sheet-toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin-m" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label></div>
     <div class="sheet-toggle-row"><span class="sheet-toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng-m" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label></div>
-  </div>
-  <div class="sheet-section">
-    <div class="sheet-label">Sync Speed</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span style="font-size:12px;color:var(--muted)">Slower</span>
-      <span id="speed-label-m" style="font-size:14px;font-weight:800;color:var(--purple2)">1.0×</span>
-      <span style="font-size:12px;color:var(--muted)">Faster</span>
-    </div>
-    <input type="range" id="speed-slider-m" min="0.5" max="2" step="0.05" value="1" style="width:100%;accent-color:var(--purple2);cursor:pointer" oninput="setSpeedMobile(this.value)">
-    <div style="display:flex;justify-content:space-between;margin-top:6px">
-      <span style="font-size:10px;color:var(--dim)">0.5×</span><span style="font-size:10px;color:var(--dim)">1×</span>
-      <span style="font-size:10px;color:var(--dim)">1.5×</span><span style="font-size:10px;color:var(--dim)">2×</span>
-    </div>
-    <div style="font-size:10px;color:var(--dim);margin-top:8px;line-height:1.6">Use 0.5× if lyrics move ahead of the song.</div>
-  </div>
-  <div class="sheet-section">
-    <div class="sheet-label">Manual Scroll</div>
-    <div style="display:flex;gap:10px">
-      <button class="seek-btn" onclick="manualScroll(-1);closeSheet()" style="flex:1;font-size:18px;padding:12px">↑</button>
-      <button class="seek-btn" onclick="manualScroll(1);closeSheet()" style="flex:1;font-size:18px;padding:12px">↓</button>
-    </div>
   </div>
   <button class="back-btn" onclick="showView('search');closeSheet()" style="width:100%;margin-top:8px">← Add Another Song</button>
 </div>
@@ -682,9 +614,7 @@ function showView(v) {
   });
   const inPlayer = v==='player';
   const mb = document.getElementById('mobile-bar');
-  const msb = document.getElementById('mobile-sync-bar');
-  if (mb)  mb.style.display  = inPlayer ? 'flex' : 'none';
-  if (msb) msb.style.display = inPlayer ? 'flex' : 'none';
+  if (mb) mb.style.display = inPlayer ? 'flex' : 'none';
   if (v==='deck') renderDeck();
 }
 
@@ -725,7 +655,6 @@ async function loadAndTranslate(title, artist, apiKey, lrcLines) {
   document.getElementById('nav-song-title').textContent = title;
   const mnt = document.getElementById('mobile-np-title'); if(mnt) mnt.textContent=title;
   updatePlayButtons();
-  const td = document.getElementById('sync-time-display'); if(td) td.innerHTML='0:00<span> elapsed</span>';
   const pill = document.getElementById('status-pill');
   pill.className='status-pill loading'; pill.classList.remove('hidden');
   pill.innerHTML='<span class="spinner"></span><span>Translating...</span>';
@@ -800,27 +729,6 @@ function parseLrc(lrc) {
     if(m){const time=parseInt(m[1])*60+parseFloat(m[2]);const text=m[3].trim();if(text)lines.push({time,text});}
   }
   return lines;
-}
-
-// ── MANUAL SYNC ────────────────────────────────────────────────────────────
-function toggleSync() {
-  if(S.running){
-    S.offset=getElapsed(); S.running=false;
-  } else {
-    S.syncStart=Date.now(); S.running=true;
-  }
-  updatePlayButtons();
-}
-
-function seekBy(s){
-  S.offset=getElapsed()+s;
-  if(S.offset<0) S.offset=0;
-  if(S.running) S.syncStart=Date.now();
-}
-
-function getElapsed(){
-  if(!S.running||!S.syncStart) return S.offset;
-  return S.offset+((Date.now()-S.syncStart)/1000)*S.speed;
 }
 
 // ── SPOTIFY: PKCE AUTH ─────────────────────────────────────────────────────
@@ -979,28 +887,27 @@ async function handlePlayPause() {
   if(S.spotifyToken){
     await toggleSpotifyPlayback();
   } else {
-    toggleSync();
+    alert('Connect Spotify to control playback.');
   }
 }
 
 async function toggleSpotifyPlayback() {
   const token=await getValidToken();
-  if(!token){ toggleSync(); return; }
+  if(!token) return;
   try {
     const endpoint=S.spotifyIsPlaying
       ?'https://api.spotify.com/v1/me/player/pause'
       :'https://api.spotify.com/v1/me/player/play';
     const resp=await fetch(endpoint,{method:'PUT',headers:{'Authorization':'Bearer '+token}});
     if(resp.status===403){
-      // Non-Premium user — fall back to manual
-      alert('Spotify playback control requires a Premium account.\n\nYou can still use manual sync below.');
+      alert('Playback control requires a Spotify Premium account.');
       return;
     }
     S.spotifyIsPlaying=!S.spotifyIsPlaying;
     S.running=S.spotifyIsPlaying;
     if(S.running) S.syncStart=Date.now();
     updatePlayButtons();
-  } catch(e){ toggleSync(); }
+  } catch(e){}
 }
 
 function resyncToSpotify() {
@@ -1050,7 +957,6 @@ function updateSpotifyConnectedUI(connected) {
     connectBtn.style.display=(noClient&&noClient.style.display==='block'&&!connected)?'none':'block';
   }
   if(connectedUI) connectedUI.style.display=connected?'block':'none';
-  if(manualSync) manualSync.style.display=connected?'none':'block';
 
   // Sheet
   if(sheetBtn){
@@ -1107,35 +1013,23 @@ function updateOffsetDisplay() {
 }
 
 function updatePlayButtons() {
-  const isPlaying=S.spotifyToken?S.spotifyIsPlaying:S.running;
-  const syncBtn=document.getElementById('sync-btn');
-  if(syncBtn) syncBtn.textContent=isPlaying?'⏸ Pause':(S.offset>0?'▶ Resume':'▶ Start Sync');
+  const isPlaying = S.spotifyIsPlaying;
   const playBtn=document.getElementById('play-btn');
   if(playBtn) playBtn.textContent=isPlaying?'⏸':'▶';
-  const mPlayBtn=document.getElementById('mobile-play-btn');
-  if(mPlayBtn) mPlayBtn.textContent=isPlaying?'⏸ Pause':(S.offset>0||S.spotifyToken?'▶ Resume':'▶ Start Sync');
 }
 
 // ── TICK (250ms) ───────────────────────────────────────────────────────────
 function tick() {
-  const pos=getElapsed();
+  const pos = S.offset;
   const mm=Math.floor(pos/60); const ss=String(Math.floor(pos%60)).padStart(2,'0');
   const timeStr=`${mm}:${ss}`;
-  const td=document.getElementById('sync-time-display'); if(td) td.innerHTML=`${timeStr}<span> elapsed</span>`;
   const bm=document.getElementById('bar-min'); const bs=document.getElementById('bar-sec');
   if(bm) bm.textContent=mm; if(bs) bs.textContent=ss;
   const pill=document.getElementById('mobile-np-pill');
-  if(pill) pill.textContent=S.spotifyToken?(S.spotifyIsPlaying?'▶ '+timeStr:'⏸ '+timeStr):timeStr+' elapsed';
-  const mt=document.getElementById('mobile-time'); if(mt) mt.textContent=timeStr;
+  if(pill) pill.textContent=S.spotifyToken?(S.spotifyIsPlaying?'▶ '+timeStr:'⏸ '+timeStr):timeStr;
   if(!S.lyrics.length) return;
   const last=S.lyrics[S.lyrics.length-1]?.time||1;
   const pf=document.getElementById('progress-fill-h'); if(pf) pf.style.width=Math.min(100,(pos/last)*100)+'%';
-  // Manual mode line advance
-  if(S.running&&!S.spotifyToken){
-    let idx=0;
-    for(let i=0;i<S.lyrics.length;i++){if(S.lyrics[i].time<=pos)idx=i;else break;}
-    if(idx!==S.activeIdx){S.activeIdx=idx;rerender();}
-  }
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
@@ -1197,19 +1091,6 @@ document.addEventListener('wheel',e=>{
   if(e.deltaY>0){manualScroll(1);wheelTimer=setTimeout(()=>{wheelTimer=null;},350);}
   else if(e.deltaY<0){manualScroll(-1);wheelTimer=setTimeout(()=>{wheelTimer=null;},350);}
 },{passive:true});
-
-// ── SPEED ──────────────────────────────────────────────────────────────────
-function setSpeed(val){
-  const newSpeed=parseFloat(parseFloat(val).toFixed(2));
-  if(S.running){S.offset=getElapsed();S.speed=newSpeed;S.syncStart=Date.now();}else{S.speed=newSpeed;}
-  const label=newSpeed.toFixed(2).replace(/\.?0+$/,'')+'×';
-  document.getElementById('speed-label').textContent=label;
-  const sl=document.getElementById('speed-label-m');if(sl)sl.textContent=label;
-}
-function setSpeedMobile(val){
-  const ds=document.getElementById('speed-slider');if(ds)ds.value=val;
-  setSpeed(val);
-}
 
 // ── TOGGLES ────────────────────────────────────────────────────────────────
 function syncToggles(which){
