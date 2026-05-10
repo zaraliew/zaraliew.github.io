@@ -263,6 +263,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   .sheet-spotify-btn.connected{border-color:rgba(30,215,96,0.4);color:var(--green);background:rgba(30,215,96,0.08)}
   .sheet-spotify-track{font-size:11px;color:var(--text);margin-top:8px;padding:8px;background:rgba(30,215,96,0.06);border:1px solid rgba(30,215,96,0.15);border-radius:8px;font-weight:600}
 }
+
+/* ── SPOTIFY HOME BANNER ── */
+.spotify-home-banner{max-width:560px;margin:0 auto 28px;padding:14px 18px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s}
+.spotify-home-banner:hover{border-color:rgba(30,215,96,0.35);background:rgba(30,215,96,0.05)}
+.spotify-home-banner.connected{border-color:rgba(30,215,96,0.4);background:rgba(30,215,96,0.07)}
+.shb-icon{width:36px;height:36px;border-radius:50%;background:rgba(30,215,96,0.12);border:1px solid rgba(30,215,96,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.shb-text{flex:1;min-width:0}
+.shb-title{font-size:13px;font-weight:800;color:var(--text)}
+.shb-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.shb-sub.connected{color:var(--green)}
+.shb-arrow{font-size:16px;color:var(--muted);flex-shrink:0}
+
 </style>
 </head>
 <body>
@@ -304,6 +316,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <button class="lang-tab soon">+ more soon</button>
     </div>
     <div class="search-status" id="search-status"></div>
+  </div>
+
+  <!-- Spotify Home Banner -->
+  <div class="spotify-home-banner" id="spotify-home-banner" onclick="handleSpotifyHomeClick()">
+    <div class="shb-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    </div>
+    <div class="shb-text">
+      <div class="shb-title" id="shb-title">Connect Spotify for auto-sync</div>
+      <div class="shb-sub" id="shb-sub">Lyrics scroll automatically with your music</div>
+    </div>
+    <div class="shb-arrow" id="shb-arrow">→</div>
   </div>
 
   <div class="api-section">
@@ -508,7 +532,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="mobile-np-title" id="mobile-np-title">—</div>
     <div class="mobile-np-pill" id="mobile-np-pill">0:00 elapsed</div>
   </div>
-  <button class="mobile-controls-btn" onclick="openSheet()" title="Settings">⚙</button>
+  <!-- Spotify status chip (shown when connected) -->
+  <div id="mobile-spotify-chip" style="display:none;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;border:1px solid rgba(30,215,96,0.35);background:rgba(30,215,96,0.08);cursor:pointer;flex-shrink:0" onclick="openSheet()">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    <span style="font-size:9px;font-weight:800;color:#1ed760" id="mobile-spotify-status">synced</span>
+  </div>
+  <button class="mobile-controls-btn" id="mobile-gear-btn" onclick="openSheet()" title="Settings">⚙</button>
 </div>
 
 <div class="mobile-sync-bar" id="mobile-sync-bar" style="display:none">
@@ -997,6 +1026,15 @@ function disconnectSpotify() {
 }
 
 // ── SPOTIFY: UI ────────────────────────────────────────────────────────────
+function handleSpotifyHomeClick() {
+  if (S.spotifyToken) {
+    // Already connected — go to player to use it
+    showView('player');
+  } else {
+    handleSpotifyConnect();
+  }
+}
+
 function updateSpotifyConnectedUI(connected) {
   const connectBtn=document.getElementById('spotify-connect-btn');
   const connectedUI=document.getElementById('spotify-connected-ui');
@@ -1005,6 +1043,7 @@ function updateSpotifyConnectedUI(connected) {
   const sheetBtn=document.getElementById('sheet-spotify-btn');
   const sheetConnected=document.getElementById('sheet-spotify-connected');
 
+  // Sidebar
   if(connectBtn){
     connectBtn.textContent=connected?'✓ Spotify Connected':'⟨ Connect Spotify';
     connectBtn.className=connected?'spotify-btn connected':'spotify-btn';
@@ -1012,11 +1051,31 @@ function updateSpotifyConnectedUI(connected) {
   }
   if(connectedUI) connectedUI.style.display=connected?'block':'none';
   if(manualSync) manualSync.style.display=connected?'none':'block';
+
+  // Sheet
   if(sheetBtn){
     sheetBtn.textContent=connected?'✓ Spotify Connected':'⟨ Connect Spotify';
     sheetBtn.className=connected?'sheet-spotify-btn connected':'sheet-spotify-btn';
   }
   if(sheetConnected) sheetConnected.style.display=connected?'block':'none';
+
+  // Home screen banner
+  const banner=document.getElementById('spotify-home-banner');
+  const shbTitle=document.getElementById('shb-title');
+  const shbSub=document.getElementById('shb-sub');
+  const shbArrow=document.getElementById('shb-arrow');
+  if(banner){
+    banner.className=connected?'spotify-home-banner connected':'spotify-home-banner';
+    if(shbTitle) shbTitle.textContent=connected?'✓ Spotify Connected':'Connect Spotify for auto-sync';
+    if(shbSub){ shbSub.textContent=connected?'Lyrics will scroll automatically with your music':'Lyrics scroll automatically with your music'; shbSub.className=connected?'shb-sub connected':'shb-sub'; }
+    if(shbArrow) shbArrow.textContent=connected?'→ Open Player':'→';
+    if(!S.spotifyClientId) banner.style.display='none';
+  }
+
+  // Mobile chip
+  const chip=document.getElementById('mobile-spotify-chip');
+  if(chip) chip.style.display=connected?'flex':'none';
+
   updateOffsetDisplay();
 }
 
@@ -1024,14 +1083,17 @@ function updateSpotifyTrackUI(name, artist, fallback) {
   const trackName=document.getElementById('spotify-track-name');
   const trackArtist=document.getElementById('spotify-track-artist');
   const sheetTrack=document.getElementById('sheet-spotify-track');
+  const mobileChipStatus=document.getElementById('mobile-spotify-status');
   if(name){
     if(trackName) trackName.textContent=name;
     if(trackArtist) trackArtist.textContent=artist||'';
     if(sheetTrack) sheetTrack.textContent=name+(artist?' · '+artist:'');
+    if(mobileChipStatus) mobileChipStatus.textContent=S.spotifyIsPlaying?'▶ synced':'⏸ paused';
   } else if(fallback){
     if(trackName) trackName.textContent=fallback;
     if(trackArtist) trackArtist.textContent='';
     if(sheetTrack) sheetTrack.textContent=fallback;
+    if(mobileChipStatus) mobileChipStatus.textContent='idle';
   }
 }
 
