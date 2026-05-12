@@ -264,7 +264,23 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   .sheet-spotify-track{font-size:11px;color:var(--text);margin-top:8px;padding:8px;background:rgba(30,215,96,0.06);border:1px solid rgba(30,215,96,0.15);border-radius:8px;font-weight:600}
 }
 
-/* ── SPOTIFY HOME BANNER ── */
+/* ── SEARCH AUTOCOMPLETE ── */
+.search-wrap{position:relative;max-width:560px;margin:0 auto 20px}
+.search-dropdown{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#1a0d2e;border:1px solid rgba(124,58,237,0.45);border-radius:14px;overflow:hidden;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.6);display:none}
+.search-dropdown.open{display:block}
+.sd-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:background 0.15s;border-bottom:1px solid rgba(255,255,255,0.05)}
+.sd-item:last-child{border-bottom:none}
+.sd-item:hover,.sd-item.highlighted{background:rgba(124,58,237,0.18)}
+.sd-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#2d1b69,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.sd-info{min-width:0}
+.sd-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd-artist{font-size:11px;color:var(--muted);margin-top:2px}
+.sd-loading{padding:12px 16px;font-size:12px;color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center;gap:8px}
+/* ── LANGUAGE SELECTOR ── */
+.translate-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px}
+.translate-label{font-size:12px;color:var(--muted);font-weight:700}
+.lang-select{background:rgba(255,255,255,0.07);border:1px solid rgba(124,58,237,0.35);border-radius:20px;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:6px 14px 6px 12px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;transition:border-color 0.2s}
+.lang-select:focus{border-color:var(--purple2)}
 .spotify-home-banner{max-width:560px;margin:0 auto 28px;padding:14px 18px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s}
 .spotify-home-banner:hover{border-color:rgba(30,215,96,0.35);background:rgba(30,215,96,0.05)}
 .spotify-home-banner.connected{border-color:rgba(30,215,96,0.4);background:rgba(30,215,96,0.07)}
@@ -300,13 +316,33 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   <div class="hero">
     <h1>Turn the songs you love into<br><em>languages you speak</em></h1>
     <p>Search any Mandarin song. Get karaoke lyrics with pinyin and translation.<br>Tap words to save them. Actually remember them.</p>
-    <div class="search-bar">
-      <div class="search-fields">
-        <input id="inp-title" placeholder="Search any Mandarin song or artist..." onkeydown="if(event.key==='Enter')startSearch()">
-        <div class="search-divider"></div>
-        <input id="inp-artist" placeholder="Artist (optional)" style="max-width:180px" onkeydown="if(event.key==='Enter')startSearch()">
+    <div class="search-wrap">
+      <div class="search-bar" style="margin:0">
+        <div class="search-fields">
+          <input id="inp-title" placeholder="Search any Mandarin song or artist..." autocomplete="off"
+            oninput="handleSearchInput(event)"
+            onkeydown="handleSearchKeydown(event)">
+          <div class="search-divider"></div>
+          <input id="inp-artist" placeholder="Artist (optional)" style="max-width:180px" onkeydown="if(event.key==='Enter')startSearch()">
+        </div>
+        <button class="search-go" id="search-btn" onclick="startSearch()">Search</button>
       </div>
-      <button class="search-go" id="search-btn" onclick="startSearch()">Search</button>
+      <div class="search-dropdown" id="search-dropdown"></div>
+    </div>
+    <div class="translate-row">
+      <span class="translate-label">Translate to</span>
+      <select class="lang-select" id="target-lang-select" onchange="setTargetLanguage(this.value)">
+        <option value="English">🇬🇧 English</option>
+        <option value="Malay">🇲🇾 Malay</option>
+        <option value="Indonesian">🇮🇩 Indonesian</option>
+        <option value="Thai">🇹🇭 Thai</option>
+        <option value="Japanese">🇯🇵 Japanese</option>
+        <option value="Korean">🇰🇷 Korean</option>
+        <option value="Spanish">🇪🇸 Spanish</option>
+        <option value="French">🇫🇷 French</option>
+        <option value="German">🇩🇪 German</option>
+        <option value="Arabic">🇸🇦 Arabic</option>
+      </select>
     </div>
     <div class="lang-tabs">
       <button class="lang-tab active">字元 Mandarin</button>
@@ -337,8 +373,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   </div>
 
   <div class="home-section">
-    <div class="section-heading">Popular right now</div>
-    <div class="song-cards">
+    <div class="section-heading" id="popular-heading">Popular right now</div>
+    <div class="song-cards" id="popular-grid">
       <div class="song-card" onclick="quickSearch('告白气球','周杰伦')"><div class="song-card-icon">🎵</div><div class="song-card-info"><div class="song-card-title">告白气球</div><div class="song-card-artist">周杰伦 · Jay Chou</div></div><button class="song-card-play">▶</button></div>
       <div class="song-card" onclick="quickSearch('待我如初','大头针')"><div class="song-card-icon">🌙</div><div class="song-card-info"><div class="song-card-title">待我如初</div><div class="song-card-artist">大头针</div></div><button class="song-card-play">▶</button></div>
       <div class="song-card" onclick="quickSearch('晴天','周杰伦')"><div class="song-card-icon">☀️</div><div class="song-card-info"><div class="song-card-title">晴天</div><div class="song-card-artist">周杰伦 · Jay Chou</div></div><button class="song-card-play">▶</button></div>
@@ -377,7 +413,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="toggle-section">
         <div class="toggle-row"><span class="toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label></div>
         <div class="toggle-row"><span class="toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label></div>
-        <div class="toggle-row"><span class="toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label" id="eng-toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label></div>
       </div>
     </div>
 
@@ -507,7 +543,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="sheet-label">Display</div>
     <div class="sheet-toggle-row"><span class="sheet-toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars-m" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label></div>
     <div class="sheet-toggle-row"><span class="sheet-toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin-m" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label></div>
-    <div class="sheet-toggle-row"><span class="sheet-toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng-m" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label></div>
+    <div class="sheet-toggle-row"><span class="sheet-toggle-label" id="eng-toggle-label-m">English</span><label class="toggle"><input type="checkbox" id="tog-eng-m" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label></div>
   </div>
   <button class="back-btn" onclick="showView('search');closeSheet()" style="width:100%;margin-top:8px">← Add Another Song</button>
 </div>
@@ -534,6 +570,7 @@ const S = {
   spotifyOffsetAdjust: 0,
   spotifyCurrentTrackId: null,
   spotifyAutoLoading: false,
+  targetLanguage: localStorage.getItem('sl_lang') || 'English',
 };
 
 // ── INIT ───────────────────────────────────────────────────────────────────
@@ -541,6 +578,8 @@ window.onload = async () => {
   if (S.apiKey) document.getElementById('inp-apikey').value = S.apiKey;
   updateBadge();
   setInterval(tick, 250);
+  // Restore target language
+  setTargetLanguage(S.targetLanguage, true);
 
   // Progress bar click
   document.getElementById('progress-track-h')?.addEventListener('click', e => {
@@ -561,6 +600,7 @@ window.onload = async () => {
   } else if (S.spotifyToken) {
     startSpotifyPolling();
     updateSpotifyConnectedUI(true);
+    fetchPopularMandarin();
   }
 
   // Register service worker
@@ -665,8 +705,9 @@ async function annotateInChunks(arr, apiKey) {
 }
 
 async function annotateChunk(lines, apiKey) {
+  const lang = S.targetLanguage || 'English';
   const numbered = lines.map((l,i)=>`${i+1}. ${l}`).join('\n');
-  const prompt = `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural English translation. IMPORTANT: Convert any traditional Chinese characters to simplified Chinese.\n\n${numbered}\n\nReturn a JSON array:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks required, simplified Chinese only, natural English, group words naturally.`;
+  const prompt = `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural ${lang} translation. IMPORTANT: Convert any traditional Chinese characters to simplified Chinese.\n\n${numbered}\n\nReturn a JSON array:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks required, simplified Chinese only, natural ${lang} translation in the "english" field, group words naturally.`;
   // Try backend proxy first
   try {
     const resp=await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey},body:JSON.stringify({lines})});
@@ -773,6 +814,7 @@ async function handleSpotifyCallback(code) {
       localStorage.removeItem('spotify_verifier');
       startSpotifyPolling();
       updateSpotifyConnectedUI(true);
+      fetchPopularMandarin();
     }
   } catch(e) { console.error('Spotify token exchange failed',e); }
 }
@@ -862,6 +904,68 @@ async function pollSpotify() {
       if(idx!==S.activeIdx){S.activeIdx=idx;rerender();}
     }
   } catch(e) {}
+}
+
+// ── SPOTIFY: POPULAR TRACKS ────────────────────────────────────────────────
+async function fetchPopularMandarin() {
+  const token = await getValidToken();
+  if (!token) return;
+  try {
+    // Search Spotify for popular Mandopop tracks (Taiwan market gives best C-pop results)
+    const r = await fetch(
+      'https://api.spotify.com/v1/search?q=genre:mandopop&type=track&limit=12&market=TW',
+      { headers: { 'Authorization': 'Bearer ' + token } }
+    );
+    if (!r.ok) return;
+    const data = await r.json();
+    const tracks = (data.tracks?.items || []).filter(t => t.album?.images?.length > 0);
+    if (tracks.length < 3) return;
+    renderPopularCards(tracks.slice(0, 6));
+    const heading = document.getElementById('popular-heading');
+    if (heading) {
+      heading.innerHTML = `Popular on <svg style="vertical-align:-2px;margin-left:4px" width="12" height="12" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg> Spotify`;
+    }
+  } catch(e) {}
+}
+
+function renderPopularCards(tracks) {
+  const grid = document.getElementById('popular-grid');
+  if (!grid) return;
+  grid.innerHTML = tracks.map(t => {
+    const img = t.album.images[2]?.url || t.album.images[1]?.url || t.album.images[0]?.url;
+    const title = esc(t.name);
+    const artist = esc(t.artists.map(a => a.name).join(', '));
+    // Encode for safe inline onclick
+    const safeTitle = t.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const safeArtist = (t.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const safeUri = t.uri;
+    return `<div class="song-card" onclick="playSpotifyCard('${safeUri}','${safeTitle}','${safeArtist}')">
+      <div class="song-card-icon" style="padding:0;overflow:hidden;background:none">
+        <img src="${img}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:10px;display:block" onerror="this.parentNode.innerHTML='🎵';this.parentNode.style.background='linear-gradient(135deg,#2d1b69,#7c3aed)'">
+      </div>
+      <div class="song-card-info">
+        <div class="song-card-title">${title}</div>
+        <div class="song-card-artist">${artist}</div>
+      </div>
+      <button class="song-card-play">▶</button>
+    </div>`;
+  }).join('');
+}
+
+async function playSpotifyCard(uri, title, artist) {
+  const token = await getValidToken();
+  if (token) {
+    try {
+      await fetch('https://api.spotify.com/v1/me/player/play', {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uris: [uri] })
+      });
+    } catch(e) {}
+  }
+  // Reset track ID so auto-load triggers even if it's the same track
+  S.spotifyCurrentTrackId = null;
+  autoLoadSpotifyTrack(title, artist);
 }
 
 // ── SPOTIFY: AUTO-LOAD LYRICS ──────────────────────────────────────────────
@@ -1218,6 +1322,122 @@ function closeSheet(){
   document.getElementById('sheet-backdrop').classList.remove('open');
   document.body.style.overflow='';
 }
+
+// ── TARGET LANGUAGE ────────────────────────────────────────────────────────
+function setTargetLanguage(lang, silent=false) {
+  S.targetLanguage = lang;
+  if (!silent) localStorage.setItem('sl_lang', lang);
+  // Update select
+  const sel = document.getElementById('target-lang-select');
+  if (sel) sel.value = lang;
+  // Update toggle labels
+  const label = lang === 'English' ? 'English' : lang;
+  const el1 = document.getElementById('eng-toggle-label');
+  const el2 = document.getElementById('eng-toggle-label-m');
+  if (el1) el1.textContent = label;
+  if (el2) el2.textContent = label;
+}
+
+// ── SEARCH AUTOCOMPLETE ────────────────────────────────────────────────────
+let searchDebounceTimer = null;
+let dropdownHighlight = -1;
+
+function handleSearchInput(e) {
+  const q = e.target.value.trim();
+  clearTimeout(searchDebounceTimer);
+  if (q.length < 1) { closeDropdown(); return; }
+  searchDebounceTimer = setTimeout(() => fetchSuggestions(q), 320);
+}
+
+function handleSearchKeydown(e) {
+  const dd = document.getElementById('search-dropdown');
+  const items = dd.querySelectorAll('.sd-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    dropdownHighlight = Math.min(dropdownHighlight + 1, items.length - 1);
+    highlightItem(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    dropdownHighlight = Math.max(dropdownHighlight - 1, -1);
+    highlightItem(items);
+  } else if (e.key === 'Enter') {
+    if (dropdownHighlight >= 0 && items[dropdownHighlight]) {
+      items[dropdownHighlight].click();
+    } else {
+      startSearch();
+    }
+  } else if (e.key === 'Escape') {
+    closeDropdown();
+  }
+}
+
+function highlightItem(items) {
+  items.forEach((el, i) => el.classList.toggle('highlighted', i === dropdownHighlight));
+  if (items[dropdownHighlight]) items[dropdownHighlight].scrollIntoView({block:'nearest'});
+}
+
+async function fetchSuggestions(q) {
+  const dd = document.getElementById('search-dropdown');
+  dd.innerHTML = `<div class="sd-loading"><span class="spinner"></span> Searching...</div>`;
+  dd.classList.add('open');
+  dropdownHighlight = -1;
+  try {
+    const r = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(q)}`);
+    const results = await r.json();
+    // Filter to tracks with synced lyrics and Chinese characters
+    const filtered = results
+      .filter(t => t.syncedLyrics && /[\u4e00-\u9fff]/.test(t.trackName + (t.artistName||'')))
+      .slice(0, 7);
+    if (!filtered.length) {
+      // Fallback: show all with synced lyrics
+      const fallback = results.filter(t => t.syncedLyrics).slice(0, 7);
+      renderDropdown(fallback.length ? fallback : results.slice(0, 7));
+    } else {
+      renderDropdown(filtered);
+    }
+  } catch(e) {
+    dd.innerHTML = `<div class="sd-loading" style="color:var(--muted)">Could not reach search — type to search manually</div>`;
+    setTimeout(closeDropdown, 2000);
+  }
+}
+
+function renderDropdown(results) {
+  const dd = document.getElementById('search-dropdown');
+  if (!results.length) {
+    dd.innerHTML = `<div class="sd-loading" style="color:var(--muted)">No results found</div>`;
+    return;
+  }
+  dd.innerHTML = results.map((t, i) => {
+    const title = esc(t.trackName || '');
+    const artist = esc(t.artistName || '');
+    return `<div class="sd-item" onclick="selectSuggestion(${JSON.stringify(t.trackName)},${JSON.stringify(t.artistName||'')})">
+      <div class="sd-icon">🎵</div>
+      <div class="sd-info">
+        <div class="sd-title">${title}</div>
+        <div class="sd-artist">${artist}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectSuggestion(title, artist) {
+  document.getElementById('inp-title').value = title;
+  document.getElementById('inp-artist').value = artist;
+  closeDropdown();
+  startSearch();
+}
+
+function closeDropdown() {
+  const dd = document.getElementById('search-dropdown');
+  dd.classList.remove('open');
+  dd.innerHTML = '';
+  dropdownHighlight = -1;
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) closeDropdown();
+});
 </script>
 </body>
 </html>
