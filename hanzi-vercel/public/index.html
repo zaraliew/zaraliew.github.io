@@ -1352,11 +1352,11 @@ function closeSheet(){
 
 // ── SOURCE LANGUAGE ────────────────────────────────────────────────────────
 const LANG_CONFIG = {
-  zh: { pinyin: 'Pinyin',          charLabel: 'Characters', genre: 'genre:mandopop',    market: 'TW', charFilter: /[\u4e00-\u9fff]/ },
-  ko: { pinyin: 'Romanization',    charLabel: 'Hangul',     genre: 'genre:k-pop',       market: 'KR', charFilter: /[\uAC00-\uD7AF]/ },
-  ja: { pinyin: 'Romaji',          charLabel: 'Characters', genre: 'genre:j-pop',       market: 'JP', charFilter: /[\u3040-\u30FF]/ },
-  es: { pinyin: 'Phonetics',       charLabel: 'Lyrics',     genre: 'genre:latin',       market: 'ES', charFilter: null },
-  pt: { pinyin: 'Phonetics',       charLabel: 'Lyrics',     genre: 'genre:mpb OR bossa nova sertanejo', market: 'BR', charFilter: null },
+  zh: { pinyin: 'Pinyin',       charLabel: 'Characters', genre: 'genre:mandopop',    market: 'TW', charFilter: /[\u4e00-\u9fff]/, placeholder: 'Search any Mandarin song or artist...' },
+  ko: { pinyin: 'Romanization', charLabel: 'Hangul',     genre: 'genre:k-pop',       market: 'KR', charFilter: /[\uAC00-\uD7AF]/, placeholder: 'Search any Korean song or artist...' },
+  ja: { pinyin: 'Romaji',       charLabel: 'Characters', genre: 'genre:j-pop',       market: 'JP', charFilter: /[\u3040-\u30FF]/, placeholder: 'Search any Japanese song or artist...' },
+  es: { pinyin: 'Phonetics',    charLabel: 'Lyrics',     genre: 'genre:latin',       market: 'ES', charFilter: null,              placeholder: 'Search any Spanish song or artist...' },
+  pt: { pinyin: 'Phonetics',    charLabel: 'Lyrics',     genre: 'genre:mpb OR bossa nova sertanejo', market: 'BR', charFilter: null, placeholder: 'Search any Portuguese song or artist...' },
 };
 
 function setSourceLang(lang, silent=false) {
@@ -1378,6 +1378,9 @@ function setSourceLang(lang, silent=false) {
     const el = document.getElementById(id);
     if (el) el.textContent = cfg.charLabel;
   });
+  // Update search placeholder
+  const inp = document.getElementById('inp-title');
+  if (inp) inp.placeholder = cfg.placeholder;
   // Refresh popular tracks if Spotify connected
   if (!silent && S.spotifyToken) fetchPopularMandarin();
 }
