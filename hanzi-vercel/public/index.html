@@ -345,11 +345,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       </select>
     </div>
     <div class="lang-tabs">
-      <button class="lang-tab active">字元 Mandarin</button>
-      <button class="lang-tab soon">한국어 Korean</button>
-      <button class="lang-tab soon">日本語 Japanese</button>
-      <button class="lang-tab soon">Español</button>
-      <button class="lang-tab soon">+ more soon</button>
+      <button class="lang-tab active" id="tab-zh" onclick="setSourceLang('zh')">中文 Mandarin</button>
+      <button class="lang-tab" id="tab-ko" onclick="setSourceLang('ko')">한국어 Korean</button>
+      <button class="lang-tab" id="tab-ja" onclick="setSourceLang('ja')">日本語 Japanese</button>
+      <button class="lang-tab" id="tab-es" onclick="setSourceLang('es')">Español</button>
+      <button class="lang-tab" id="tab-pt" onclick="setSourceLang('pt')">Português</button>
     </div>
     <div class="search-status" id="search-status"></div>
   </div>
@@ -411,8 +411,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div>
       <div class="sidebar-section-label">Display</div>
       <div class="toggle-section">
-        <div class="toggle-row"><span class="toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label></div>
-        <div class="toggle-row"><span class="toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label" id="chars-toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-label" id="pin-toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label></div>
         <div class="toggle-row"><span class="toggle-label" id="eng-toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label></div>
       </div>
     </div>
@@ -541,8 +541,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
   <div class="sheet-section">
     <div class="sheet-label">Display</div>
-    <div class="sheet-toggle-row"><span class="sheet-toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars-m" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label></div>
-    <div class="sheet-toggle-row"><span class="sheet-toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin-m" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label></div>
+    <div class="sheet-toggle-row"><span class="sheet-toggle-label" id="chars-toggle-label-m">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars-m" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label></div>
+    <div class="sheet-toggle-row"><span class="sheet-toggle-label" id="pin-toggle-label-m">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin-m" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label></div>
     <div class="sheet-toggle-row"><span class="sheet-toggle-label" id="eng-toggle-label-m">English</span><label class="toggle"><input type="checkbox" id="tog-eng-m" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label></div>
   </div>
   <button class="back-btn" onclick="showView('search');closeSheet()" style="width:100%;margin-top:8px">← Add Another Song</button>
@@ -571,6 +571,7 @@ const S = {
   spotifyCurrentTrackId: null,
   spotifyAutoLoading: false,
   targetLanguage: localStorage.getItem('sl_lang') || 'English',
+  sourceLang: localStorage.getItem('sl_source') || 'zh',
 };
 
 // ── INIT ───────────────────────────────────────────────────────────────────
@@ -578,8 +579,9 @@ window.onload = async () => {
   if (S.apiKey) document.getElementById('inp-apikey').value = S.apiKey;
   updateBadge();
   setInterval(tick, 250);
-  // Restore target language
+  // Restore target language and source language
   setTargetLanguage(S.targetLanguage, true);
+  setSourceLang(S.sourceLang, true);
 
   // Progress bar click
   document.getElementById('progress-track-h')?.addEventListener('click', e => {
@@ -641,7 +643,15 @@ async function startSearch() {
     const r = await fetch(`/api/lyrics?${new URLSearchParams({title,artist})}`);
     const data = await r.json();
     if (data.error||!data.lrc) { setSearchStatus('error',data.error||'Song not found.'); document.getElementById('search-btn').disabled=false; return; }
-    const lrcLines = parseLrc(data.lrc).filter(l=>/[\u4e00-\u9fff\uAC00-\uD7AF]/.test(l.text));
+    const LANG_FILTER = {
+      zh: l => /[\u4e00-\u9fff]/.test(l.text),
+      ko: l => /[\uAC00-\uD7AF]/.test(l.text),
+      ja: l => /[\u3040-\u30FF\u4e00-\u9fff]/.test(l.text),
+      es: l => l.text.trim().length > 2,
+      pt: l => l.text.trim().length > 2,
+    };
+    const filterFn = LANG_FILTER[S.sourceLang] || LANG_FILTER.zh;
+    const lrcLines = parseLrc(data.lrc).filter(filterFn);
     if (!lrcLines.length) { setSearchStatus('error','No lyrics found for this song.'); document.getElementById('search-btn').disabled=false; return; }
     setSearchStatus('ok',`Found! ${lrcLines.length} lines — translating now...`);
     await loadAndTranslate(data.title||title, data.artist||artist, apiKey, lrcLines);
@@ -705,9 +715,26 @@ async function annotateInChunks(arr, apiKey) {
 }
 
 async function annotateChunk(lines, apiKey) {
-  const lang = S.targetLanguage || 'English';
+  const targetLang = S.targetLanguage || 'English';
+  const src = S.sourceLang || 'zh';
   const numbered = lines.map((l,i)=>`${i+1}. ${l}`).join('\n');
-  const prompt = `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural ${lang} translation. IMPORTANT: Convert any traditional Chinese characters to simplified Chinese.\n\n${numbered}\n\nReturn a JSON array:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks required, simplified Chinese only, natural ${lang} translation in the "english" field, group words naturally.`;
+
+  const PROMPTS = {
+    zh: `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural ${targetLang} translation. Convert any traditional Chinese to simplified.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks required, simplified Chinese only, natural ${targetLang} in "english" field, group words naturally.`,
+    ko: `Annotate these Korean song lyric lines with Revised Romanization of Korean pronunciation and natural ${targetLang} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"안녕하세요","pinyin":"annyeonghaseyo","english":"hello","words":[{"char":"안녕","pinyin":"annyeong","english":"hello"},{"char":"하세요","pinyin":"haseyo","english":"(polite ending)"}]}]\n\nRules: accurate Revised Romanization in "pinyin" field, natural ${targetLang} in "english" field, group into meaningful word chunks.`,
+    ja: `Annotate these Japanese song lyric lines with Hepburn romaji pronunciation and natural ${targetLang} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"こんにちは","pinyin":"konnichiwa","english":"hello","words":[{"char":"こんにちは","pinyin":"konnichiwa","english":"hello"}]}]\n\nRules: accurate Hepburn romaji in "pinyin" field, natural ${targetLang} in "english" field, group words naturally.`,
+    es: `Annotate these Spanish song lyric lines with English phonetic pronunciation (written so an English speaker can sound it out) and natural ${targetLang} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"corazón","pinyin":"koh-rah-SON","english":"heart","words":[{"char":"corazón","pinyin":"koh-rah-SON","english":"heart"}]}]\n\nRules: English phonetics in "pinyin" field (e.g. "koh-rah-SON" not IPA), capitalise stressed syllable, natural ${targetLang} in "english" field, group words naturally.`,
+    pt: `Annotate these Portuguese song lyric lines with English phonetic pronunciation (written so an English speaker can sound it out) and natural ${targetLang} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"saudade","pinyin":"sow-DAH-ji","english":"longing","words":[{"char":"saudade","pinyin":"sow-DAH-ji","english":"longing/nostalgia"}]}]\n\nRules: English phonetics in "pinyin" field (e.g. "sow-DAH-ji" not IPA), capitalise stressed syllable, natural ${targetLang} in "english" field, group words naturally.`,
+  };
+  const SYSTEM = {
+    zh: 'You are a Mandarin annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
+    ko: 'You are a Korean language annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
+    ja: 'You are a Japanese language annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
+    es: 'You are a Spanish language annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
+    pt: 'You are a Portuguese language annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
+  };
+  const prompt = PROMPTS[src] || PROMPTS.zh;
+  const systemMsg = SYSTEM[src] || SYSTEM.zh;
   // Try backend proxy first
   try {
     const resp=await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey},body:JSON.stringify({lines})});
@@ -717,7 +744,7 @@ async function annotateChunk(lines, apiKey) {
   const resp=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:'You are a Mandarin annotation tool. Output ONLY valid JSON — no markdown, no backticks.',messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})
   });
   const txt=await resp.text();
   if(!resp.ok){let msg=`API error ${resp.status}`;try{msg=JSON.parse(txt).error?.message||msg;}catch{}throw new Error(msg);}
@@ -910,10 +937,10 @@ async function pollSpotify() {
 async function fetchPopularMandarin() {
   const token = await getValidToken();
   if (!token) return;
+  const cfg = LANG_CONFIG[S.sourceLang] || LANG_CONFIG.zh;
   try {
-    // Search Spotify for popular Mandopop tracks (Taiwan market gives best C-pop results)
     const r = await fetch(
-      'https://api.spotify.com/v1/search?q=genre:mandopop&type=track&limit=12&market=TW',
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(cfg.genre)}&type=track&limit=12&market=${cfg.market}`,
       { headers: { 'Authorization': 'Bearer ' + token } }
     );
     if (!r.ok) return;
@@ -1323,6 +1350,38 @@ function closeSheet(){
   document.body.style.overflow='';
 }
 
+// ── SOURCE LANGUAGE ────────────────────────────────────────────────────────
+const LANG_CONFIG = {
+  zh: { pinyin: 'Pinyin',          charLabel: 'Characters', genre: 'genre:mandopop',    market: 'TW', charFilter: /[\u4e00-\u9fff]/ },
+  ko: { pinyin: 'Romanization',    charLabel: 'Hangul',     genre: 'genre:k-pop',       market: 'KR', charFilter: /[\uAC00-\uD7AF]/ },
+  ja: { pinyin: 'Romaji',          charLabel: 'Characters', genre: 'genre:j-pop',       market: 'JP', charFilter: /[\u3040-\u30FF]/ },
+  es: { pinyin: 'Phonetics',       charLabel: 'Lyrics',     genre: 'genre:latin',       market: 'ES', charFilter: null },
+  pt: { pinyin: 'Phonetics',       charLabel: 'Lyrics',     genre: 'genre:mpb OR bossa nova sertanejo', market: 'BR', charFilter: null },
+};
+
+function setSourceLang(lang, silent=false) {
+  S.sourceLang = lang;
+  if (!silent) localStorage.setItem('sl_source', lang);
+  // Update active tab
+  ['zh','ko','ja','es','pt'].forEach(l => {
+    const el = document.getElementById('tab-'+l);
+    if (el) el.classList.toggle('active', l===lang);
+  });
+  // Update Pinyin toggle label
+  const cfg = LANG_CONFIG[lang] || LANG_CONFIG.zh;
+  ['pin-toggle-label','pin-toggle-label-m'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = cfg.pinyin;
+  });
+  // Update Characters toggle label
+  ['chars-toggle-label','chars-toggle-label-m'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = cfg.charLabel;
+  });
+  // Refresh popular tracks if Spotify connected
+  if (!silent && S.spotifyToken) fetchPopularMandarin();
+}
+
 // ── TARGET LANGUAGE ────────────────────────────────────────────────────────
 function setTargetLanguage(lang, silent=false) {
   S.targetLanguage = lang;
@@ -1384,17 +1443,12 @@ async function fetchSuggestions(q) {
   try {
     const r = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(q)}`);
     const results = await r.json();
-    // Filter to tracks with synced lyrics and Chinese characters
-    const filtered = results
-      .filter(t => t.syncedLyrics && /[\u4e00-\u9fff]/.test(t.trackName + (t.artistName||'')))
-      .slice(0, 7);
-    if (!filtered.length) {
-      // Fallback: show all with synced lyrics
-      const fallback = results.filter(t => t.syncedLyrics).slice(0, 7);
-      renderDropdown(fallback.length ? fallback : results.slice(0, 7));
-    } else {
-      renderDropdown(filtered);
-    }
+    const cfg = LANG_CONFIG[S.sourceLang] || LANG_CONFIG.zh;
+    // Filter to tracks matching source language characters (if applicable)
+    const filtered = cfg.charFilter
+      ? results.filter(t => t.syncedLyrics && cfg.charFilter.test(t.trackName + (t.artistName||'')))
+      : results.filter(t => t.syncedLyrics);
+    renderDropdown(filtered.length ? filtered.slice(0, 7) : results.filter(t => t.syncedLyrics).slice(0, 7));
   } catch(e) {
     dd.innerHTML = `<div class="sd-loading" style="color:var(--muted)">Could not reach search — type to search manually</div>`;
     setTimeout(closeDropdown, 2000);
