@@ -2,1499 +2,1493 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SongLingo — Learn Languages Through Music</title>
-
-<!-- PWA -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SongLingo</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0e0818">
+<meta name="theme-color" content="#0a0612">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SongLingo">
 <link rel="apple-touch-icon" href="/logo.png">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#0e0818; --bg2:#160d24; --surface:rgba(255,255,255,0.05); --border:rgba(255,255,255,0.08);
-  --purple:#7c3aed; --purple2:#9d5ff5; --orange:#f59e0b; --orange2:#fbbf24;
-  --blue:#60a5fa; --text:#f0eafa; --muted:#9080b0; --dim:#4a3870; --pink:#e879f9;
-  --green:#1ed760; --green2:rgba(30,215,96,0.15);
+:root{
+  --bg:#0a0612;--bg2:#150e22;--bg3:#1e1535;
+  --s1:rgba(255,255,255,0.05);--s2:rgba(255,255,255,0.09);
+  --b1:rgba(184,153,255,0.12);--b2:rgba(184,153,255,0.22);
+  --text:#f5eee5;--soft:rgba(245,238,229,0.72);--muted:rgba(245,238,229,0.45);--dim:rgba(245,238,229,0.22);
+  --a:#f5a44c;--a2:#ffb96a;--abg:rgba(245,164,76,0.14);
+  --p:#b899ff;--pbg:rgba(184,153,255,0.12);
+  --g:#1ed760;--gbg:rgba(30,215,96,0.14);
+  --ink:#1a1206;
+  --r:20px;--rs:12px;
+  --tab-h:82px;--sb:env(safe-area-inset-bottom,0px);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 60% 50% at 15% 20%,rgba(124,58,237,0.18) 0%,transparent 60%),
-    radial-gradient(ellipse 50% 40% at 85% 80%,rgba(232,121,249,0.1) 0%,transparent 55%),
-    radial-gradient(ellipse 40% 60% at 70% 10%,rgba(96,165,250,0.08) 0%,transparent 50%)}
-.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
-
-/* ── HEADER ── */
-.logo{display:flex;align-items:center;gap:8px;cursor:pointer}
-.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#7c3aed,#e879f9);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 16px rgba(124,58,237,0.5)}
-.logo-text{font-size:26px;font-weight:800;line-height:1}
-.logo-text span:first-child{color:var(--orange)}
-.logo-text span:last-child{color:var(--blue)}
-.header{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid var(--border);backdrop-filter:blur(12px);background:rgba(14,8,24,0.7);position:sticky;top:0;z-index:50}
-.nav{display:flex;align-items:center;gap:4px}
-.nav-btn{padding:7px 18px;border-radius:20px;border:none;background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s}
-.nav-btn.active{background:rgba(124,58,237,0.25);color:var(--text)}
-.nav-btn:hover:not(.active){color:var(--text);background:rgba(255,255,255,0.06)}
-.deck-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;padding:0 5px;background:var(--orange);color:#1a0a00;font-size:10px;font-weight:900;margin-left:5px}
-
-/* ── SEARCH SCREEN ── */
-.search-screen{flex:1}
-.hero{text-align:center;padding:72px 32px 48px;max-width:700px;margin:0 auto}
-.hero h1{font-size:clamp(28px,5vw,44px);font-weight:900;line-height:1.15;margin-bottom:16px}
-.hero h1 em{color:var(--orange);font-style:normal}
-.hero p{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:36px}
-.search-bar{display:flex;background:rgba(255,255,255,0.07);border:1px solid rgba(124,58,237,0.4);border-radius:14px;overflow:hidden;max-width:560px;margin:0 auto 20px;transition:border-color 0.2s,box-shadow 0.2s}
-.search-bar:focus-within{border-color:var(--purple2);box-shadow:0 0 0 3px rgba(124,58,237,0.2)}
-.search-fields{display:flex;flex:1}
-.search-fields input{flex:1;background:transparent;border:none;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;padding:14px 16px;outline:none}
-.search-fields input::placeholder{color:var(--dim);font-weight:400}
-.search-divider{width:1px;background:rgba(255,255,255,0.08);align-self:stretch;margin:8px 0}
-.search-go{padding:12px 22px;background:linear-gradient(135deg,var(--purple),var(--purple2));border:none;color:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;margin:5px;border-radius:10px}
-.search-go:hover{opacity:0.9}
-.search-go:disabled{opacity:0.4;cursor:not-allowed}
-.lang-tabs{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.lang-tab{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
-.lang-tab.active{background:rgba(124,58,237,0.2);border-color:rgba(124,58,237,0.5);color:var(--text)}
-.lang-tab.soon{opacity:0.4;cursor:default}
-.search-status{max-width:560px;margin:10px auto 0;font-size:12px;padding:10px 16px;border-radius:10px;border:1px solid;display:none}
-.search-status.loading{background:rgba(124,58,237,0.1);border-color:rgba(124,58,237,0.3);color:#c4b5fd;display:flex;align-items:center;gap:8px}
-.search-status.error{background:rgba(220,60,60,0.08);border-color:rgba(220,60,60,0.2);color:#fca5a5;display:block}
-.search-status.ok{background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.2);color:#6ee7b7;display:block}
-.home-section{max-width:860px;margin:0 auto;padding:0 32px 48px}
-.section-heading{font-size:10px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
-.song-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
-.song-card{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all 0.2s}
-.song-card:hover{background:rgba(124,58,237,0.12);border-color:rgba(124,58,237,0.35);transform:translateY(-1px)}
-.song-card-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#2d1b69,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.song-card-info{min-width:0}
-.song-card-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.song-card-artist{font-size:11px;color:var(--muted);margin-top:2px}
-.song-card-play{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--orange);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:#1a0a00;flex-shrink:0}
-.why-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.why-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:18px}
-.why-icon{font-size:22px;margin-bottom:10px}
-.why-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px}
-.why-desc{font-size:11px;color:var(--muted);line-height:1.6}
-.api-section{max-width:560px;margin:0 auto 48px;padding:16px 20px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px}
-.api-label{font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.api-input{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px 12px;outline:none;transition:border-color 0.2s}
-.api-input:focus{border-color:var(--purple2)}
-.api-hint{font-size:10px;color:var(--dim);margin-top:7px;line-height:1.6}
-.api-hint a{color:#7c5fbc;text-decoration:none}
-
-/* ── PLAYER ── */
-.player-screen{flex:1;display:grid;grid-template-columns:260px 1fr;grid-template-rows:1fr auto;min-height:calc(100vh - 65px)}
-.player-sidebar{grid-row:1/3;padding:24px 18px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:22px;overflow-y:auto;background:rgba(14,8,24,0.6);backdrop-filter:blur(8px)}
-.sidebar-search{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:8px 12px;cursor:pointer}
-.sidebar-search span{font-size:12px;color:var(--muted)}
-.now-playing{padding-bottom:18px;border-bottom:1px solid var(--border)}
-.np-label{font-size:9px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.np-title{font-size:18px;font-weight:800;line-height:1.25;margin-bottom:4px;color:var(--text)}
-.np-artist{font-size:11px;color:var(--orange);font-weight:700}
-.status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:9px;font-weight:700;margin-top:8px}
-.status-pill.loading{background:rgba(124,58,237,0.15);color:#c4b5fd;border:1px solid rgba(124,58,237,0.3)}
-.status-pill.ready{background:rgba(52,211,153,0.1);color:#6ee7b7;border:1px solid rgba(52,211,153,0.25)}
-.spinner{width:8px;height:8px;border:1.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block}
-@keyframes spin{to{transform:rotate(360deg)}}
-.sidebar-section-label{font-size:9px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.toggle-section{display:flex;flex-direction:column;gap:10px}
-.toggle-row{display:flex;align-items:center;justify-content:space-between}
-.toggle-label{font-size:12px;color:#9080b0;font-weight:700}
-.toggle{position:relative;width:38px;height:20px}
-.toggle input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:#2a1a4a;border-radius:10px;cursor:pointer;transition:0.2s}
-.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#5a4a7a;border-radius:50%;transition:0.2s}
-.toggle input:checked+.toggle-slider{background:var(--purple)}
-.toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:white}
-.seek-row{display:flex;gap:6px}
-.seek-btn{flex:1;padding:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;text-align:center}
-.seek-btn:hover{color:var(--text);border-color:rgba(124,58,237,0.4);background:rgba(124,58,237,0.1)}
-.sync-time{font-size:38px;font-weight:300;color:var(--purple2);line-height:1;margin-bottom:10px;font-family:'JetBrains Mono',monospace}
-.sync-time span{font-size:14px;color:var(--muted)}
-.sync-btn{width:100%;padding:11px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;margin-bottom:8px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:white}
-.sync-hint{font-size:9px;color:var(--dim);line-height:1.7;margin-top:4px}
-.back-btn{padding:10px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;text-align:center;width:100%}
-
-/* ── SPOTIFY SECTION ── */
-.spotify-btn{width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.03em}
-.spotify-btn:hover{border-color:rgba(30,215,96,0.4);color:var(--green);background:rgba(30,215,96,0.06)}
-.spotify-btn.connected{border-color:rgba(30,215,96,0.4);color:var(--green);background:rgba(30,215,96,0.08)}
-.spotify-track-info{font-size:11px;color:var(--text);font-weight:700;line-height:1.4;padding:8px 10px;background:rgba(30,215,96,0.06);border:1px solid rgba(30,215,96,0.15);border-radius:8px;margin-top:8px}
-.spotify-track-artist{font-size:10px;color:var(--muted);margin-top:2px}
-.offset-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border)}
-.offset-label{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
-.offset-val{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--muted);transition:color 0.2s}
-.resync-btn{width:100%;padding:9px;border-radius:8px;border:1px solid rgba(30,215,96,0.3);background:rgba(30,215,96,0.08);color:var(--green);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;transition:all 0.15s;margin-top:8px;letter-spacing:0.04em;text-transform:uppercase}
-.resync-btn:hover{background:rgba(30,215,96,0.15);border-color:rgba(30,215,96,0.5)}
-.disconnect-btn{width:100%;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;cursor:pointer;transition:all 0.15s;margin-top:6px}
-.disconnect-btn:hover{color:var(--muted);border-color:rgba(255,255,255,0.15)}
-.spotify-idle-note{font-size:10px;color:var(--dim);line-height:1.6;margin-top:8px;text-align:center}
-
-/* ── KARAOKE MAIN ── */
-.karaoke-main{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 48px;position:relative;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(124,58,237,0.08) 0%,transparent 70%)}
-.song-nav{position:absolute;top:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;font-size:13px;font-weight:700;color:var(--muted)}
-.song-nav-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px 8px;border-radius:6px}
-.song-nav-title{color:var(--text);font-weight:800}
-.translating-notice{position:absolute;top:56px;left:50%;transform:translateX(-50%);background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);border-radius:20px;padding:5px 14px;font-size:10px;font-weight:700;color:#c4b5fd;white-space:nowrap;display:flex;align-items:center;gap:6px}
-.karaoke-lines{width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center;gap:20px}
-.k-line{width:100%;text-align:center;padding:12px 24px;border-radius:14px;transition:all 0.4s cubic-bezier(0.4,0,0.2,1)}
-.k-line.active{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);box-shadow:0 0 30px rgba(124,58,237,0.1)}
-.k-line.dim{opacity:0.28;transform:scale(0.9)}
-.k-word-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 16px;margin-bottom:6px}
-.k-word{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 6px;border-radius:8px;transition:background 0.15s;position:relative}
-.k-word:hover{background:rgba(124,58,237,0.15)}
-.k-word.saved{background:rgba(124,58,237,0.1)}
-.k-word.saved::after{content:'·';position:absolute;top:-1px;right:2px;color:var(--orange);font-size:14px}
-.k-char{font-family:'Noto Serif SC',serif;line-height:1;color:var(--text)}
-.active .k-char{color:#fff;font-weight:700}
-.k-pin{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--purple2);line-height:1}
-.k-pin-hover{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--purple2);line-height:1;opacity:0;transition:opacity 0.15s}
-.k-word:hover .k-pin-hover{opacity:1}
-.k-eng-on{font-family:'Nunito',sans-serif;font-size:14px;font-style:italic;font-weight:600;color:rgba(240,234,250,0.5);margin-top:4px}
-.active .k-eng-on{color:rgba(240,234,250,0.7)}
-.k-eng-hover{font-family:'Nunito',sans-serif;font-size:14px;font-style:italic;font-weight:600;color:rgba(240,234,250,0.5);margin-top:4px;opacity:0;transition:opacity 0.2s}
-.k-line:hover .k-eng-hover{opacity:1}
-
-/* ── BOTTOM PLAYER BAR ── */
-.player-bar{grid-column:2;padding:14px 40px 18px;border-top:1px solid var(--border);background:rgba(14,8,24,0.85);backdrop-filter:blur(16px);display:flex;flex-direction:column;gap:10px}
-.progress-bar-wrap{display:flex;align-items:center;gap:12px}
-.progress-track-h{flex:1;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;cursor:pointer}
-.progress-fill-h{height:100%;background:linear-gradient(90deg,var(--purple),var(--purple2));border-radius:2px;transition:width 0.5s ease;width:0%;position:relative}
-.progress-fill-h::after{content:'';position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:white;box-shadow:0 0 6px rgba(124,58,237,0.6)}
-.player-controls{display:flex;align-items:center;justify-content:center;gap:8px}
-.ctrl-time{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);min-width:44px}
-.ctrl-btn{width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.07);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all 0.15s}
-.ctrl-btn.primary{width:44px;height:44px;font-size:16px;background:linear-gradient(135deg,var(--purple),var(--purple2));color:white}
-.ctrl-btn:hover{background:rgba(124,58,237,0.2);color:var(--text)}
-.ctrl-btn.primary:hover{opacity:0.9}
-
-/* ── WORD TOOLTIP ── */
-#word-tooltip{display:none;position:fixed;z-index:100;background:#1a0d30;border:1px solid rgba(124,58,237,0.4);border-radius:14px;padding:16px 20px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.6)}
-#tt-char{font-family:'Noto Serif SC',serif;font-size:38px;color:#fff;text-align:center;margin-bottom:6px}
-#tt-pin{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--purple2);text-align:center;margin-bottom:4px}
-#tt-eng{font-family:'Nunito',sans-serif;font-size:15px;font-style:italic;color:var(--muted);text-align:center;margin-bottom:12px}
-#tt-add{width:100%;padding:9px;border:none;border-radius:8px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;background:linear-gradient(135deg,var(--purple),var(--purple2));color:white}
-
-/* ── FLASHCARD DECK ── */
-.flashcard-screen{padding:36px;max-width:820px;margin:0 auto}
-.fc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:36px}
-.fc-title{font-size:28px;font-weight:900;color:var(--text)}
-.export-btn{padding:9px 18px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer}
-.empty-deck{display:flex;flex-direction:column;align-items:center;justify-content:center;height:40vh;gap:14px;text-align:center}
-.empty-char{font-family:'Noto Serif SC',serif;font-size:64px;opacity:0.08}
-.card-stage{perspective:1000px;height:260px;margin-bottom:24px;cursor:pointer}
-.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1)}
-.card-inner.flipped{transform:rotateY(180deg)}
-.card-face{position:absolute;inset:0;border-radius:16px;padding:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.2)}
-.card-back{transform:rotateY(180deg);background:rgba(124,58,237,0.1);border-color:rgba(124,58,237,0.35)}
-.card-big-char{font-family:'Noto Serif SC',serif;font-size:72px;color:var(--text);line-height:1}
-.card-song{font-size:9px;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;margin-top:6px;font-weight:700}
-.card-tap{font-size:10px;color:var(--dim);margin-top:10px}
-.card-pin{font-family:'JetBrains Mono',monospace;font-size:26px;color:var(--purple2)}
-.card-eng{font-family:'Nunito',sans-serif;font-size:24px;font-style:italic;color:var(--text);font-weight:600}
-.card-btns{display:flex;gap:10px;justify-content:center;margin-bottom:32px}
-.card-btn{padding:10px 24px;border-radius:8px;border:none;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer}
-.card-btn.again{background:rgba(255,255,255,0.06);color:var(--muted)}
-.card-btn.got{background:linear-gradient(135deg,var(--purple),var(--purple2));color:white}
-.card-btn.del{background:transparent;color:var(--dim);border:1px solid rgba(255,255,255,0.08)}
-.word-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:16px}
-.word-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;transition:all 0.15s}
-.word-card:hover{border-color:rgba(124,58,237,0.3);background:rgba(124,58,237,0.06)}
-.wc-active{border-color:rgba(124,58,237,0.5)!important;background:rgba(124,58,237,0.12)!important}
-.wc-char{font-family:'Noto Serif SC',serif;font-size:20px}
-.wc-pin{font-size:9px;color:var(--purple2);margin-top:2px;font-weight:700}
-.wc-eng{font-size:9px;color:var(--muted)}
-.wc-del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:15px;padding:3px}
-.grid-label{font-size:9px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-top:24px;margin-bottom:12px}
-
-/* ── BOTTOM SHEET ── */
-.sheet-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:60;backdrop-filter:blur(4px)}
-.sheet-backdrop.open{display:block}
-.bottom-sheet{position:fixed;bottom:0;left:0;right:0;background:#160d24;border-top:1px solid rgba(124,58,237,0.3);border-radius:20px 20px 0 0;z-index:70;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);max-height:80vh;overflow-y:auto;padding:0 20px 40px}
-.bottom-sheet.open{transform:translateY(0)}
-.sheet-handle{width:36px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:12px auto 20px;cursor:pointer}
-.sheet-section{margin-bottom:24px}
-.sheet-label{font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
-.sheet-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.sheet-toggle-label{font-size:14px;font-weight:700;color:var(--text)}
-
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html{height:100%;overflow:hidden}
+body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',-apple-system,sans-serif;font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select{font:inherit;color:inherit;background:none;border:none;outline:none}
 .hidden{display:none!important}
+.cjk{font-family:'Noto Serif SC',Georgia,serif}
+.mono{font-family:'JetBrains Mono',monospace}
+.sora{font-family:'Sora',system-ui,sans-serif}
 
-/* ── MOBILE ── */
-@media(max-width:700px){
-  .hero{padding:28px 20px 20px}
-  .hero h1{font-size:24px}
-  .hero p{font-size:13px}
-  .home-section{padding:0 20px 28px}
-  .search-fields{flex-direction:column}
-  .search-divider{display:none}
-  .api-section{margin:0 20px 28px}
-  .player-screen{display:block;min-height:0;height:calc(100vh - 65px);position:relative}
-  .player-sidebar{display:none}
-  .player-bar{display:none}
-  .karaoke-main{position:absolute;inset:0;padding-top:52px;padding-bottom:108px;padding-left:16px;padding-right:16px;overflow:hidden}
-  .song-nav{position:static;transform:none;font-size:11px;gap:8px;margin-bottom:8px;flex-shrink:0}
-  .song-nav-title{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .translating-notice{position:static;transform:none;margin:0 auto 8px;flex-shrink:0}
-  .progress-track{display:none}
-  .k-line.active{padding:12px}
-  .mobile-bar{display:flex!important;align-items:center;gap:10px;position:fixed;top:65px;left:0;right:0;z-index:40;padding:8px 16px;background:rgba(14,8,24,0.96);border-bottom:1px solid rgba(124,58,237,0.2);backdrop-filter:blur(16px)}
-  .mobile-np{min-width:0;flex:1}
-  .mobile-np-title{font-size:12px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mobile-np-pill{font-size:9px;font-weight:700;color:var(--muted);display:block;margin-top:2px}
-  .mobile-controls-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid var(--border);color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .mobile-sync-bar{display:flex!important;flex-direction:column;gap:8px;position:fixed;bottom:0;left:0;right:0;z-index:40;padding:10px 16px 20px;background:rgba(14,8,24,0.96);border-top:1px solid rgba(124,58,237,0.25);backdrop-filter:blur(16px)}
-  .mobile-sync-main{display:flex;align-items:center;gap:10px}
-  .mobile-time{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:300;color:var(--purple2);min-width:52px;flex-shrink:0}
-  .mobile-play-btn{flex:1;padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer}
-  .mobile-seek-row{display:flex;gap:6px}
-  .mobile-seek-btn{flex:1;padding:8px 4px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-align:center}
-  .mobile-seek-btn:active{background:rgba(124,58,237,0.2);color:var(--text)}
-  /* Spotify section in mobile sheet */
-  .sheet-spotify-btn{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04);color:var(--muted);font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-  .sheet-spotify-btn.connected{border-color:rgba(30,215,96,0.4);color:var(--green);background:rgba(30,215,96,0.08)}
-  .sheet-spotify-track{font-size:11px;color:var(--text);margin-top:8px;padding:8px;background:rgba(30,215,96,0.06);border:1px solid rgba(30,215,96,0.15);border-radius:8px;font-weight:600}
-}
+/* stardust */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 45% at 75% 12%,rgba(120,85,200,.32) 0%,transparent 55%),radial-gradient(ellipse 50% 40% at 15% 88%,rgba(245,164,76,.10) 0%,transparent 60%)}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g fill='%23b899ff'><circle cx='12' cy='18' r='0.3'/><circle cx='28' cy='6' r='0.25'/><circle cx='44' cy='22' r='0.35'/><circle cx='61' cy='9' r='0.2'/><circle cx='78' cy='17' r='0.3'/><circle cx='90' cy='30' r='0.25'/><circle cx='8' cy='42' r='0.2'/><circle cx='22' cy='58' r='0.3'/><circle cx='38' cy='48' r='0.22'/><circle cx='53' cy='62' r='0.3'/><circle cx='69' cy='52' r='0.25'/><circle cx='83' cy='65' r='0.3'/><circle cx='95' cy='48' r='0.2'/><circle cx='14' cy='75' r='0.28'/><circle cx='30' cy='88' r='0.25'/><circle cx='47' cy='80' r='0.3'/><circle cx='62' cy='92' r='0.22'/><circle cx='76' cy='80' r='0.3'/><circle cx='88' cy='90' r='0.25'/></g><g fill='%23f5a44c'><circle cx='35' cy='14' r='0.3'/><circle cx='73' cy='38' r='0.32'/><circle cx='18' cy='30' r='0.25'/><circle cx='58' cy='70' r='0.3'/><circle cx='5' cy='65' r='0.22'/></g></svg>");background-size:350px 350px}
 
-/* ── SEARCH AUTOCOMPLETE ── */
-.search-wrap{position:relative;max-width:560px;margin:0 auto 20px}
-.search-dropdown{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#1a0d2e;border:1px solid rgba(124,58,237,0.45);border-radius:14px;overflow:hidden;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.6);display:none}
-.search-dropdown.open{display:block}
-.sd-item{display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer;transition:background 0.15s;border-bottom:1px solid rgba(255,255,255,0.05)}
-.sd-item:last-child{border-bottom:none}
-.sd-item:hover,.sd-item.highlighted{background:rgba(124,58,237,0.18)}
-.sd-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#2d1b69,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.sd-info{min-width:0}
-.sd-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sd-artist{font-size:11px;color:var(--muted);margin-top:2px}
-.sd-loading{padding:12px 16px;font-size:12px;color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center;gap:8px}
-/* ── LANGUAGE SELECTOR ── */
-.translate-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px}
-.translate-label{font-size:12px;color:var(--muted);font-weight:700}
-.lang-select{background:rgba(255,255,255,0.07);border:1px solid rgba(124,58,237,0.35);border-radius:20px;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:6px 14px 6px 12px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;transition:border-color 0.2s}
-.lang-select:focus{border-color:var(--purple2)}
-.spotify-home-banner{max-width:560px;margin:0 auto 28px;padding:14px 18px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s}
-.spotify-home-banner:hover{border-color:rgba(30,215,96,0.35);background:rgba(30,215,96,0.05)}
-.spotify-home-banner.connected{border-color:rgba(30,215,96,0.4);background:rgba(30,215,96,0.07)}
-.shb-icon{width:36px;height:36px;border-radius:50%;background:rgba(30,215,96,0.12);border:1px solid rgba(30,215,96,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.shb-text{flex:1;min-width:0}
-.shb-title{font-size:13px;font-weight:800;color:var(--text)}
-.shb-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.shb-sub.connected{color:var(--green)}
-.shb-arrow{font-size:16px;color:var(--muted);flex-shrink:0}
+/* === APP SHELL === */
+#app{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;overflow:hidden;max-width:430px;margin:0 auto}
+@media(min-width:431px){#app{border-left:0.5px solid var(--b1);border-right:0.5px solid var(--b1)}}
 
+/* === SCREENS === */
+.screen{position:absolute;inset:0;overflow:hidden;background:transparent;transition:opacity .22s,transform .22s}
+.screen.hidden{opacity:0;pointer-events:none;transform:translateY(8px)}
+.tab-screen{bottom:var(--tab-h)}
+
+/* scroll */
+.scr{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.scr::-webkit-scrollbar{display:none}
+
+/* === BUTTONS === */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:999px;font:700 14px/1 'Plus Jakarta Sans';letter-spacing:-.01em;cursor:pointer;transition:transform .1s,opacity .15s;border:none}
+.btn:active{transform:scale(.96)}
+.btn-a{background:var(--a);color:var(--ink);box-shadow:0 8px 24px -6px rgba(245,164,76,.5)}
+.btn-a:hover{background:var(--a2)}
+.btn-g{background:var(--s2);color:var(--text);border:0.5px solid var(--b2)}
+.btn-lg{padding:16px 28px;font-size:16px}
+.ic-btn{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--soft);border:none;transition:background .15s}
+.ic-btn:active{background:rgba(255,255,255,.18)}
+.eyebrow{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+
+/* === ONBOARDING === */
+#screen-onboarding{bottom:0;display:flex;flex-direction:column;padding:60px 28px calc(28px + var(--sb))}
+.ob-top{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
+.ob-progress{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;flex:1;margin-right:16px}
+.ob-progress-fill{height:100%;background:var(--a);border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.ob-count{font:600 12px/1 'JetBrains Mono';color:var(--muted)}
+.ob-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 0 20px;gap:18px}
+.ob-icon{width:72px;height:72px;border-radius:22px;background:linear-gradient(150deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px -8px rgba(245,164,76,.4);margin-bottom:6px}
+.ob-title{font:800 38px/1.05 'Sora';letter-spacing:-.03em}
+.ob-title em{font-style:normal;color:var(--a)}
+.ob-sub{font-size:16px;color:var(--soft);line-height:1.65}
+.ob-options{display:flex;flex-direction:column;gap:10px}
+.ob-opt{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:16px;background:var(--s1);border:1.5px solid var(--b2);cursor:pointer;transition:all .15s}
+.ob-opt.sel{border-color:var(--a);background:var(--abg)}
+.ob-opt-ic{width:44px;height:44px;border-radius:13px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.ob-opt-label{font:700 15px/1 'Plus Jakarta Sans'}
+.ob-opt-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.ob-field{background:var(--s1);border:1.5px solid var(--b2);border-radius:14px;padding:15px 16px;display:flex;align-items:center;gap:10px;transition:border-color .15s}
+.ob-field:focus-within{border-color:var(--a)}
+.ob-field input{flex:1;font-size:14px;color:var(--text)}
+.ob-field input::placeholder{color:var(--dim)}
+.ob-sp-card{background:linear-gradient(160deg,var(--gbg) 0%,var(--s1) 80%);border:1.5px solid rgba(30,215,96,.3);border-radius:20px;padding:22px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s}
+.ob-sp-card.done{border-color:rgba(30,215,96,.5);background:rgba(30,215,96,.10)}
+.ob-sp-ic{width:52px;height:52px;border-radius:16px;background:var(--gbg);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--g)}
+.ob-sp-title{font:700 16px/1 'Plus Jakarta Sans';margin-bottom:4px}
+.ob-sp-sub{font-size:12px;color:var(--muted)}
+.ob-levels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.ob-lvl{padding:18px 10px;border-radius:14px;background:var(--s1);border:1.5px solid var(--b1);text-align:center;cursor:pointer;transition:all .15s}
+.ob-lvl.sel{border-color:var(--a);background:var(--abg)}
+.ob-lvl-emoji{font-size:24px;margin-bottom:8px}
+.ob-lvl-name{font:700 13px/1 'Plus Jakarta Sans'}
+.ob-lvl-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.ob-footer{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:16px}
+.ob-skip{font:600 15px/1 'Plus Jakarta Sans';color:var(--muted);cursor:pointer;padding:8px}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin:14px 0}
+.ob-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:all .2s}
+.ob-dot.active{background:var(--a);width:20px;border-radius:3px}
+.select-field{width:100%;padding:14px 36px 14px 16px;background:var(--s1);border:1.5px solid var(--b2);border-radius:14px;font:600 15px/1 'Plus Jakarta Sans';color:var(--text);appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23f5a44c' stroke-width='2' stroke-linecap='round'><path d='M3 5l3 3 3-3'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:12px;cursor:pointer}
+
+/* === TAB BAR === */
+#tab-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;max-width:430px;margin:0 auto;height:var(--tab-h);padding-bottom:var(--sb);background:rgba(10,6,18,.93);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-top:0.5px solid var(--b1);display:flex;align-items:flex-start;justify-content:space-around;padding-top:12px}
+#tab-bar.hidden{display:none!important}
+.tab-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 18px;border-radius:10px;cursor:pointer;transition:color .15s;color:var(--muted);position:relative;background:none;border:none}
+.tab-item.active{color:var(--a)}
+.tab-item svg{width:24px;height:24px}
+.tab-item span{font:600 10px/1 'Plus Jakarta Sans';letter-spacing:.02em}
+.tab-badge{position:absolute;top:0;right:6px;min-width:16px;height:16px;border-radius:8px;padding:0 4px;background:var(--a);color:var(--ink);font:800 9px/16px 'Plus Jakarta Sans';display:none}
+.tab-badge.show{display:block}
+
+/* === HOME SCREEN === */
+#screen-home{top:0;left:0;right:0;bottom:var(--tab-h);display:flex;flex-direction:column;overflow:hidden}
+.home-hdr{padding:56px 22px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.home-logo{display:flex;align-items:center;gap:10px}
+.home-logo-ic{width:36px;height:36px;border-radius:10px;background:linear-gradient(150deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center}
+.home-logo-name{font:800 20px/1 'Sora';background:linear-gradient(90deg,var(--a),var(--p));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.live-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--abg);border:0.5px solid rgba(245,164,76,.3);font:700 11px/1 'Plus Jakarta Sans';color:var(--a)}
+.live-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--a);animation:pulse 1.6s ease-in-out infinite}
+.home-prof-btn{width:36px;height:36px;border-radius:50%;background:var(--s2);border:0.5px solid var(--b2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--soft)}
+.home-scroll{flex:1;overflow-y:auto;padding:0 22px calc(20px);-webkit-overflow-scrolling:touch}
+.home-scroll::-webkit-scrollbar{display:none}
+.home-greet-1{font:700 36px/1.1 'Sora';letter-spacing:-.025em}
+.home-greet-2{font:800 36px/1.1 'Sora';letter-spacing:-.025em;color:var(--a)}
+.home-stats{font-size:13px;color:var(--muted);margin:8px 0 24px}
+.home-stats b{color:var(--soft);font-weight:600}
+/* Now playing card */
+.np-card{background:radial-gradient(ellipse 80% 60% at 85% 20%,var(--pbg) 0%,transparent 55%),var(--s1);border:0.5px solid var(--b2);border-radius:var(--r);padding:18px;margin-bottom:28px;cursor:pointer}
+.np-eyebrow{display:flex;align-items:center;gap:7px;margin-bottom:14px}
+.np-main{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.np-art{width:72px;height:72px;border-radius:14px;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,var(--a) 0%,#1b1208 100%);position:relative}
+.np-art::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#1b1208;box-shadow:0 0 0 4px rgba(245,164,76,.5)}
+.np-art img{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block;position:relative;z-index:1}
+.np-info{flex:1;min-width:0}
+.np-song{font:500 22px/1.2 'Noto Serif SC';color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-eng{font-size:13px;color:var(--soft);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-artist{font-size:12px;color:var(--muted)}
+.np-open{flex-shrink:0;padding:10px 16px;border-radius:999px;background:var(--a);color:var(--ink);font:700 13px/1 'Plus Jakarta Sans';display:flex;align-items:center;gap:6px;border:none;cursor:pointer}
+.np-footer-row{display:flex;align-items:center;gap:8px;font:400 12px/1 'JetBrains Mono';color:var(--muted)}
+.np-bars{display:flex;gap:2px;align-items:flex-end}
+.np-bar{width:3px;background:var(--a);border-radius:2px}
+.np-bar:nth-child(1){height:8px;animation:b-bounce .9s ease-in-out -.2s infinite alternate}
+.np-bar:nth-child(2){height:14px;animation:b-bounce .9s ease-in-out 0s infinite alternate}
+.np-bar:nth-child(3){height:10px;animation:b-bounce .9s ease-in-out -.1s infinite alternate}
+@keyframes b-bounce{from{opacity:1}to{opacity:.25}}
+/* Idle card */
+.np-idle{display:flex;align-items:center;gap:12px;padding:16px;border-radius:16px;background:var(--s2);border:0.5px solid var(--b1);cursor:pointer;margin-bottom:28px}
+.np-idle-ic{width:44px;height:44px;border-radius:12px;background:var(--gbg);display:flex;align-items:center;justify-content:center;color:var(--g);flex-shrink:0}
+.np-idle-title{font:700 14px/1 'Plus Jakarta Sans';color:var(--text);margin-bottom:3px}
+.np-idle-sub{font-size:12px;color:var(--muted)}
+/* Sections */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-label{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sec-genre{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.08em;text-transform:uppercase;color:var(--a)}
+.song-row{display:flex;align-items:center;gap:14px;padding:12px;border-radius:14px;background:var(--s1);border:0.5px solid var(--b1);margin-bottom:8px;cursor:pointer;transition:background .15s}
+.song-row:active{background:var(--s2)}
+.sr-art{width:52px;height:52px;border-radius:12px;flex-shrink:0;overflow:hidden;position:relative}
+.sr-art img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.sr-art-fallback{width:100%;height:100%;border-radius:12px}
+.sr-info{flex:1;min-width:0}
+.sr-title{font:600 15px/1.2 'Noto Serif SC';color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.sr-play{width:36px;height:36px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--a);flex-shrink:0}
+.home-sec{margin-bottom:28px}
+
+/* === PLAYER SCREEN === */
+#screen-player{top:0;left:0;right:0;bottom:0;z-index:20;display:flex;flex-direction:column}
+.pl-hdr{display:flex;align-items:center;justify-content:space-between;padding:54px 20px 16px;flex-shrink:0}
+.pl-hdr-center{flex:1;text-align:center;padding:0 10px;min-width:0}
+.pl-title{font:500 17px/1.2 'Noto Serif SC';color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-artist{font-size:12px;color:var(--muted);margin-top:2px}
+.pl-synced-wrap{display:flex;justify-content:center;padding:0 20px 14px;flex-shrink:0}
+.pl-synced{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:999px;background:rgba(245,164,76,.12);border:0.5px solid rgba(245,164,76,.3);font:700 11px/1 'Plus Jakarta Sans';color:var(--a)}
+.pl-synced .dot{width:6px;height:6px;border-radius:50%;background:var(--a);animation:pulse 1.6s ease-in-out infinite;flex-shrink:0}
+.pl-translating{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;background:var(--pbg);border:0.5px solid rgba(184,153,255,.25);font:600 12px/1 'Plus Jakarta Sans';color:var(--p);margin:0 20px 14px;flex-shrink:0}
+.pl-lyrics{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 28px;gap:22px;overflow:hidden;min-height:0}
+.k-line{width:100%;text-align:center;transition:all .4s cubic-bezier(.4,0,.2,1)}
+.k-line .pin{font:400 12px/1.5 'JetBrains Mono';color:var(--a);opacity:.75;margin-bottom:6px;letter-spacing:.04em;word-spacing:4px}
+.k-line .chars{font:400 26px/1.4 'Noto Serif SC';color:var(--text);letter-spacing:.02em}
+.k-line .eng{font:500 14px/1.4 'Plus Jakarta Sans';color:var(--soft);margin-top:6px;font-style:italic}
+#k-prev,#k-next{opacity:.3;transform:scale(.88)}
+#k-prev .chars,#k-next .chars{font-size:18px}
+#k-curr{opacity:1;transform:scale(1)}
+#k-curr .chars{font-size:34px;font-weight:500}
+#k-curr .pin{font-size:13px;opacity:1}
+.k-word{display:inline;cursor:pointer;border-radius:6px;padding:1px 3px;transition:background .15s}
+.k-word:active{background:var(--abg)}
+.k-word.is-saved{background:var(--abg);color:var(--a)}
+.pl-prog{padding:12px 24px 8px;flex-shrink:0}
+.prog-track{height:3px;background:rgba(255,255,255,.08);border-radius:2px;cursor:pointer;position:relative}
+.prog-fill{height:100%;background:var(--a);border-radius:2px;width:0%;position:absolute;top:0;left:0;pointer-events:none}
+.prog-times{display:flex;justify-content:space-between;margin-top:6px;font:400 11px/1 'JetBrains Mono';color:var(--dim)}
+.pl-transport{display:flex;align-items:center;justify-content:space-evenly;padding:8px 20px calc(32px + var(--sb));flex-shrink:0}
+.tp-btn{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--soft);transition:background .15s;border:none}
+.tp-btn:active{background:rgba(255,255,255,.16)}
+#play-btn{width:68px;height:68px;border-radius:50%;background:var(--a);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;box-shadow:0 8px 28px -6px rgba(245,164,76,.55);transition:transform .1s,background .15s}
+#play-btn:active{transform:scale(.94)}
+
+/* === DECK SCREEN === */
+#screen-deck{top:0;left:0;right:0;bottom:var(--tab-h);display:flex;flex-direction:column;padding:54px 22px 0}
+.dk-hdr{display:flex;align-items:center;padding:0 0 16px;flex-shrink:0}
+.dk-close{width:36px;height:36px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--soft);border:none}
+.dk-count{flex:1;text-align:center;font:600 14px/1 'JetBrains Mono';color:var(--muted)}
+.dk-prog-wrap{flex-shrink:0;margin-bottom:12px}
+.dk-prog{height:3px;background:rgba(255,255,255,.08);border-radius:2px}
+.dk-prog-fill{height:100%;background:var(--a);border-radius:2px;transition:width .4s}
+.dk-hint{text-align:center;font:500 10px/1 'JetBrains Mono';letter-spacing:.12em;color:var(--dim);margin-bottom:16px;flex-shrink:0}
+.dk-card-area{flex:1;display:flex;flex-direction:column;justify-content:center;perspective:1100px;min-height:0;cursor:pointer}
+#card-inner{width:100%;height:100%;max-height:400px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+#card-inner.is-flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:24px;padding:32px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse 70% 50% at 50% 30%,var(--pbg) 0%,transparent 65%),var(--bg3);border:0.5px solid var(--b2);text-align:center}
+.card-face.back{transform:rotateY(180deg);background:radial-gradient(ellipse 70% 50% at 50% 30%,var(--abg) 0%,transparent 65%),var(--bg3)}
+#card-front-char{font:400 96px/1 'Noto Serif SC';color:var(--text)}
+.card-tap{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:20px}
+#card-front-song{font:600 10px/1 'JetBrains Mono';letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-top:14px}
+#card-back-pin{font:400 22px/1 'JetBrains Mono';color:var(--a);letter-spacing:.04em;margin-bottom:8px}
+#card-back-eng{font:700 32px/1.1 'Sora';letter-spacing:-.02em}
+#card-back-char{font:400 36px/1 'Noto Serif SC';opacity:.28;margin-top:14px}
+.card-ctx{margin-top:18px;padding-top:18px;border-top:0.5px solid var(--b1);width:100%}
+.card-ctx-label{font:700 9px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.card-ctx-pin{font:400 11px/1.6 'JetBrains Mono';color:var(--a);margin-bottom:3px}
+.card-ctx-chars{font:400 16px/1.4 'Noto Serif SC';color:var(--text);margin-bottom:3px}
+.card-ctx-eng{font:400 13px/1.4 'Plus Jakarta Sans';color:var(--soft);font-style:italic}
+#card-btns{display:flex;gap:10px;padding:14px 0 10px;flex-shrink:0}
+.dk-btn{flex:1;padding:16px 8px;border-radius:16px;font:700 14px/1 'Plus Jakarta Sans';cursor:pointer;border:0.5px solid var(--b2);background:var(--s1);color:var(--text);transition:all .15s}
+.dk-btn:active{transform:scale(.97)}
+.dk-btn.got{background:var(--a);color:var(--ink);border-color:var(--a);box-shadow:0 6px 20px -4px rgba(245,164,76,.4)}
+.dk-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px}
+.dk-empty-ic{width:72px;height:72px;border-radius:22px;background:var(--abg);display:flex;align-items:center;justify-content:center;color:var(--a);margin-bottom:6px}
+.dk-empty h3{font:700 22px/1.2 'Sora';letter-spacing:-.02em}
+.dk-empty p{font-size:14px;color:var(--soft);line-height:1.6;max-width:260px}
+
+/* === PROFILE SCREEN === */
+#screen-profile{top:0;left:0;right:0;bottom:var(--tab-h);display:flex;flex-direction:column;overflow:hidden}
+.prof-scroll{flex:1;overflow-y:auto;padding:54px 22px calc(24px);-webkit-overflow-scrolling:touch}
+.prof-scroll::-webkit-scrollbar{display:none}
+.prof-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.prof-user{display:flex;align-items:center;gap:14px}
+.prof-av{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;font:800 20px/1 'Sora';color:var(--ink)}
+.prof-name{font:700 20px/1.2 'Sora';letter-spacing:-.02em}
+.prof-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.streak-sec{text-align:center;padding:28px 0 24px}
+.streak-flame{font-size:68px;line-height:1;filter:drop-shadow(0 0 20px rgba(245,164,76,.5))}
+.streak-num{font:800 52px/1 'Sora';letter-spacing:-.03em;margin:6px 0 0}
+.streak-lbl{font:700 14px/1 'Plus Jakarta Sans';color:var(--soft);margin-top:4px}
+.prof-section{margin-bottom:24px}
+.prof-section-label{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.prof-card{background:var(--s1);border:0.5px solid var(--b2);border-radius:var(--r);overflow:hidden}
+.prof-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:0.5px solid var(--b1);cursor:pointer;transition:background .15s}
+.prof-row:last-child{border-bottom:none}
+.prof-row:active{background:var(--s2)}
+.prof-row-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prof-row-ic.a{background:var(--abg);color:var(--a)}
+.prof-row-ic.g{background:var(--gbg);color:var(--g)}
+.prof-row-ic.p{background:var(--pbg);color:var(--p)}
+.prof-row-txt{flex:1}
+.prof-row-label{font:600 15px/1 'Plus Jakarta Sans'}
+.prof-row-value{font-size:12px;color:var(--muted);margin-top:3px}
+.prof-disconnect{width:100%;padding:14px;border-radius:14px;background:transparent;border:0.5px solid rgba(255,100,100,.3);color:#ff8080;font:700 14px/1 'Plus Jakarta Sans';cursor:pointer;margin-top:8px}
+
+/* === SHEETS === */
+#sheet-backdrop{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(4px)}
+#sheet-backdrop.open{opacity:1;pointer-events:auto}
+.bsheet{position:fixed;left:0;right:0;bottom:0;z-index:80;max-width:430px;margin:0 auto;background:#1b1430;border-top:0.5px solid var(--b2);border-radius:26px 26px 0 0;padding:0 22px calc(28px + var(--sb));transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:88vh;overflow-y:auto}
+.bsheet::-webkit-scrollbar{display:none}
+.bsheet.open{transform:translateY(0)}
+.sh-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:12px auto 20px}
+.sh-title{font:700 18px/1.2 'Sora';letter-spacing:-.02em;margin-bottom:20px}
+
+/* Word sheet */
+#sheet-word .w-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+#sheet-word .w-big{display:flex;align-items:baseline;gap:16px;margin-bottom:22px}
+#sheet-word .w-char{font:400 72px/1 'Noto Serif SC'}
+#sheet-word .w-right{display:flex;flex-direction:column;gap:6px}
+#sheet-word .w-pin{font:400 22px/1 'JetBrains Mono';color:var(--a);letter-spacing:.04em}
+#sheet-word .w-eng{font:700 24px/1 'Sora';letter-spacing:-.02em}
+#sheet-word .w-ctx{background:var(--s1);border:0.5px solid var(--b1);border-radius:14px;padding:14px;margin-bottom:20px}
+#sheet-word .w-ctx-label{font:700 9px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+#sheet-word .w-ctx-pin{font:400 12px/1.6 'JetBrains Mono';color:var(--a);margin-bottom:4px}
+#sheet-word .w-ctx-chars{font:400 17px/1.4 'Noto Serif SC';color:var(--text);margin-bottom:4px}
+#sheet-word .w-ctx-eng{font:400 13px/1.5 'Plus Jakarta Sans';color:var(--soft);font-style:italic}
+#sheet-word .w-actions{display:flex;gap:10px}
+#sheet-word .w-actions .btn{flex:1}
+
+/* Display sheet */
+#sheet-display .dt-row{display:flex;align-items:center;padding:15px 0;border-bottom:0.5px solid var(--b1)}
+#sheet-display .dt-row:last-of-type{border-bottom:none}
+#sheet-display .dt-label{flex:1;font:600 16px/1 'Plus Jakarta Sans'}
+#sheet-display .dt-state{font:700 12px/1 'Plus Jakarta Sans';color:var(--a);margin-right:12px}
+.tog{position:relative;width:50px;height:28px;border-radius:999px;background:var(--s2);border:0.5px solid var(--b2);cursor:pointer;transition:all .2s;flex-shrink:0}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tog.on{background:var(--a);border-color:var(--a)}
+.tog.on::after{transform:translateX(22px);background:var(--ink)}
+.dt-tip{font-size:12px;color:var(--dim);margin-top:14px;line-height:1.6}
+
+/* Song info sheet */
+#sheet-info .si-hdr{display:flex;gap:16px;align-items:flex-start;margin-bottom:22px}
+#sheet-info .si-art{width:72px;height:72px;border-radius:16px;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,var(--a) 0%,#1b1208 100%);position:relative}
+#sheet-info .si-art::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:#1b1208;box-shadow:0 0 0 3px rgba(245,164,76,.5)}
+#sheet-info .si-art img{width:100%;height:100%;object-fit:cover;border-radius:16px;position:relative;z-index:1}
+#sheet-info .si-title{font:500 22px/1.2 'Noto Serif SC';margin-bottom:3px}
+#sheet-info .si-roman{font:400 12px/1 'JetBrains Mono';color:var(--a);margin-bottom:3px;letter-spacing:.03em}
+#sheet-info .si-eng{font-size:13px;color:var(--soft)}
+#sheet-info .si-rows{background:var(--s1);border:0.5px solid var(--b1);border-radius:16px;overflow:hidden;margin-bottom:18px}
+#sheet-info .si-row{display:flex;justify-content:space-between;padding:13px 16px;border-bottom:0.5px solid var(--b1)}
+#sheet-info .si-row:last-child{border-bottom:none}
+#sheet-info .si-row-l{font-size:14px;color:var(--muted)}
+#sheet-info .si-row-r{font:600 14px/1 'Plus Jakarta Sans'}
+#sheet-info .si-actions{display:flex;flex-direction:column;gap:8px}
+#sheet-info .si-act{display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;background:var(--s1);border:0.5px solid var(--b1);cursor:pointer;transition:background .15s}
+#sheet-info .si-act:active{background:var(--s2)}
+#sheet-info .si-act-ic{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#sheet-info .si-act-ic.g{background:var(--gbg);color:var(--g)}
+#sheet-info .si-act-ic.a{background:var(--abg);color:var(--a)}
+#sheet-info .si-act-ic.p{background:var(--pbg);color:var(--p)}
+#sheet-info .si-act-title{font:700 14px/1 'Plus Jakarta Sans';margin-bottom:3px}
+#sheet-info .si-act-sub{font-size:12px;color:var(--muted)}
+#sheet-info .si-act-arrow{color:var(--dim);margin-left:auto}
+
+/* Art tile fallback */
+.art-a{background:linear-gradient(135deg,#e8a44c 0%,#1b1208 100%)}
+.art-t{background:linear-gradient(135deg,#3b9c92 0%,#0d2624 100%)}
+.art-r{background:linear-gradient(135deg,#c45a82 0%,#241019 100%)}
+.art-i{background:linear-gradient(135deg,#7a6bd8 0%,#1a1530 100%)}
+.art-s{background:linear-gradient(135deg,#7a9362 0%,#171f10 100%)}
+
+/* utils */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
 </style>
 </head>
 <body>
-<div class="app">
+<div id="app">
 
-<header class="header">
-  <div class="logo" onclick="showView('search')">
-    <img src="/logo.png" alt="SongLingo" style="height:44px;width:auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-    <div style="display:none;align-items:center;gap:8px">
-      <div class="logo-icon">🎵</div>
-      <div class="logo-text"><span>Song</span><span>Lingo</span></div>
-    </div>
+<!-- ══════════════════════════════════
+     ONBOARDING
+══════════════════════════════════ -->
+<div id="screen-onboarding" class="screen">
+  <div class="ob-top">
+    <div class="ob-progress"><div class="ob-progress-fill" id="ob-prog" style="width:20%"></div></div>
+    <div class="ob-count" id="ob-count">1/5</div>
   </div>
-  <nav class="nav">
-    <button class="nav-btn active" id="nav-search" onclick="showView('search')">Songs</button>
-    <button class="nav-btn" id="nav-player" onclick="showView('player')">Player</button>
-    <button class="nav-btn" id="nav-deck" onclick="showView('deck')">Deck<span class="deck-badge hidden" id="deck-badge">0</span></button>
-  </nav>
-</header>
 
-<!-- ── SEARCH VIEW ── -->
-<div id="view-search" class="search-screen">
-  <div class="hero">
-    <h1>Turn the songs you love into<br><em>languages you speak</em></h1>
-    <p>Search any Mandarin song. Get karaoke lyrics with pinyin and translation.<br>Tap words to save them. Actually remember them.</p>
-    <div class="search-wrap">
-      <div class="search-bar" style="margin:0">
-        <div class="search-fields">
-          <input id="inp-title" placeholder="Search any Mandarin song or artist..." autocomplete="off"
-            oninput="handleSearchInput(event)"
-            onkeydown="handleSearchKeydown(event)">
-          <div class="search-divider"></div>
-          <input id="inp-artist" placeholder="Artist (optional)" style="max-width:180px" onkeydown="if(event.key==='Enter')startSearch()">
-        </div>
-        <button class="search-go" id="search-btn" onclick="startSearch()">Search</button>
+  <!-- Step 1: Welcome -->
+  <div class="ob-body" id="ob-1">
+    <div class="ob-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg></div>
+    <div class="ob-title">Turn the songs you love<br><em>into languages you speak.</em></div>
+    <div class="ob-sub">Four quick questions to tune your lyrics, vocabulary, and translations to you. Takes about 30 seconds.</div>
+  </div>
+
+  <!-- Step 2: Source language -->
+  <div class="ob-body hidden" id="ob-2">
+    <div class="eyebrow" style="color:var(--a)">WHICH LANGUAGE?</div>
+    <div class="ob-title" style="font-size:30px">What are you<br>learning?</div>
+    <div class="ob-options">
+      <div class="ob-opt sel" data-lang="zh" onclick="obSelectLang(this)">
+        <div class="ob-opt-ic">🇨🇳</div>
+        <div><div class="ob-opt-label">中文 Mandarin</div><div class="ob-opt-sub">Pinyin pronunciation guide</div></div>
       </div>
-      <div class="search-dropdown" id="search-dropdown"></div>
-    </div>
-    <div class="translate-row">
-      <span class="translate-label">Translate to</span>
-      <select class="lang-select" id="target-lang-select" onchange="setTargetLanguage(this.value)">
-        <option value="English">🇬🇧 English</option>
-        <option value="Malay">🇲🇾 Malay</option>
-        <option value="Indonesian">🇮🇩 Indonesian</option>
-        <option value="Thai">🇹🇭 Thai</option>
-        <option value="Japanese">🇯🇵 Japanese</option>
-        <option value="Korean">🇰🇷 Korean</option>
-        <option value="Spanish">🇪🇸 Spanish</option>
-        <option value="French">🇫🇷 French</option>
-        <option value="German">🇩🇪 German</option>
-        <option value="Arabic">🇸🇦 Arabic</option>
-      </select>
-    </div>
-    <div class="lang-tabs">
-      <button class="lang-tab active" id="tab-zh" onclick="setSourceLang('zh')">中文 Mandarin</button>
-      <button class="lang-tab" id="tab-ko" onclick="setSourceLang('ko')">한국어 Korean</button>
-      <button class="lang-tab" id="tab-ja" onclick="setSourceLang('ja')">日本語 Japanese</button>
-      <button class="lang-tab" id="tab-es" onclick="setSourceLang('es')">Español</button>
-      <button class="lang-tab" id="tab-pt" onclick="setSourceLang('pt')">Português</button>
-    </div>
-    <div class="search-status" id="search-status"></div>
-  </div>
-
-  <!-- Spotify Home Banner -->
-  <div class="spotify-home-banner" id="spotify-home-banner" onclick="handleSpotifyHomeClick()">
-    <div class="shb-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-    </div>
-    <div class="shb-text">
-      <div class="shb-title" id="shb-title">Connect Spotify for auto-sync</div>
-      <div class="shb-sub" id="shb-sub">Lyrics scroll automatically with your music</div>
-    </div>
-    <div class="shb-arrow" id="shb-arrow">→</div>
-  </div>
-
-  <div class="api-section">
-    <div class="api-label">Anthropic API Key</div>
-    <input class="api-input" id="inp-apikey" type="password" placeholder="sk-ant-...">
-    <div class="api-hint">Required for translation · Free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> · ~$0.02 per song · saved in your browser only.</div>
-  </div>
-
-  <div class="home-section">
-    <div class="section-heading" id="popular-heading">Popular right now</div>
-    <div class="song-cards" id="popular-grid">
-      <div class="song-card" onclick="quickSearch('告白气球','周杰伦')"><div class="song-card-icon">🎵</div><div class="song-card-info"><div class="song-card-title">告白气球</div><div class="song-card-artist">周杰伦 · Jay Chou</div></div><button class="song-card-play">▶</button></div>
-      <div class="song-card" onclick="quickSearch('待我如初','大头针')"><div class="song-card-icon">🌙</div><div class="song-card-info"><div class="song-card-title">待我如初</div><div class="song-card-artist">大头针</div></div><button class="song-card-play">▶</button></div>
-      <div class="song-card" onclick="quickSearch('晴天','周杰伦')"><div class="song-card-icon">☀️</div><div class="song-card-info"><div class="song-card-title">晴天</div><div class="song-card-artist">周杰伦 · Jay Chou</div></div><button class="song-card-play">▶</button></div>
-      <div class="song-card" onclick="quickSearch('稻香','周杰伦')"><div class="song-card-icon">🌾</div><div class="song-card-info"><div class="song-card-title">稻香</div><div class="song-card-artist">周杰伦 · Jay Chou</div></div><button class="song-card-play">▶</button></div>
-      <div class="song-card" onclick="quickSearch('喜欢你','邓紫棋')"><div class="song-card-icon">💜</div><div class="song-card-info"><div class="song-card-title">喜欢你</div><div class="song-card-artist">邓紫棋</div></div><button class="song-card-play">▶</button></div>
-      <div class="song-card" onclick="quickSearch('突然好想你','五月天')"><div class="song-card-icon">✨</div><div class="song-card-info"><div class="song-card-title">突然好想你</div><div class="song-card-artist">五月天</div></div><button class="song-card-play">▶</button></div>
+      <div class="ob-opt" data-lang="ko" onclick="obSelectLang(this)">
+        <div class="ob-opt-ic">🇰🇷</div>
+        <div><div class="ob-opt-label">한국어 Korean</div><div class="ob-opt-sub">Romanization pronunciation guide</div></div>
+      </div>
+      <div class="ob-opt" data-lang="ja" onclick="obSelectLang(this)">
+        <div class="ob-opt-ic">🇯🇵</div>
+        <div><div class="ob-opt-label">日本語 Japanese</div><div class="ob-opt-sub">Romaji pronunciation guide</div></div>
+      </div>
     </div>
   </div>
 
-  <div class="home-section">
-    <div class="section-heading">Why it works</div>
-    <div class="why-grid">
-      <div class="why-card"><div class="why-icon">🎤</div><div class="why-title">Karaoke-style sync</div><div class="why-desc">Lyrics scroll in real time. With Spotify connected, they sync automatically — no tapping required.</div></div>
-      <div class="why-card"><div class="why-icon">👆</div><div class="why-title">Tap to learn</div><div class="why-desc">Hover any character to instantly see its pinyin and meaning. Tap to save it to your personal deck.</div></div>
-      <div class="why-card"><div class="why-icon">📖</div><div class="why-title">Vocab that sticks</div><div class="why-desc">Words saved with song context are far more memorable than abstract flashcard lists.</div></div>
+  <!-- Step 3: Translate to -->
+  <div class="ob-body hidden" id="ob-3">
+    <div class="eyebrow" style="color:var(--a)">YOUR LANGUAGE</div>
+    <div class="ob-title" style="font-size:30px">Translate lyrics<br>into…</div>
+    <select class="select-field" id="ob-target-lang" onchange="S.targetLanguage=this.value;localStorage.setItem('sl_lang',this.value)">
+      <option value="English">🇬🇧 English</option>
+      <option value="Malay">🇲🇾 Malay</option>
+      <option value="Indonesian">🇮🇩 Indonesian</option>
+      <option value="Thai">🇹🇭 Thai</option>
+      <option value="Japanese">🇯🇵 Japanese</option>
+      <option value="Korean">🇰🇷 Korean</option>
+      <option value="Spanish">🇪🇸 Spanish</option>
+      <option value="French">🇫🇷 French</option>
+      <option value="German">🇩🇪 German</option>
+      <option value="Arabic">🇸🇦 Arabic</option>
+    </select>
+    <div class="ob-sub" style="margin-top:4px">Line-by-line translations appear below each lyric.</div>
+  </div>
+
+  <!-- Step 4: Spotify -->
+  <div class="ob-body hidden" id="ob-4">
+    <div class="eyebrow" style="color:var(--g)">AUTO-SYNC</div>
+    <div class="ob-title" style="font-size:30px">Connect<br>Spotify</div>
+    <div class="ob-sp-card" id="ob-sp-card" onclick="handleSpotifyConnect()">
+      <div class="ob-sp-ic">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>
+      </div>
+      <div class="ob-sp-text">
+        <div class="ob-sp-title" id="ob-sp-title">Connect Spotify</div>
+        <div class="ob-sp-sub" id="ob-sp-sub">Lyrics scroll automatically with your music</div>
+      </div>
     </div>
+    <div class="ob-sub">SongLingo reads what's playing. No need to search or type song names.</div>
+  </div>
+
+  <!-- Step 5: API key -->
+  <div class="ob-body hidden" id="ob-5">
+    <div class="eyebrow" style="color:var(--p)">AI TRANSLATION</div>
+    <div class="ob-title" style="font-size:30px">Add your<br>Anthropic key</div>
+    <div class="ob-field">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      <input id="ob-apikey" type="password" placeholder="sk-ant-…" oninput="S.apiKey=this.value;localStorage.setItem('ht_key',this.value)">
+    </div>
+    <div class="ob-sub">Free at <span style="color:var(--a)">console.anthropic.com</span> · ~$0.02 per song · stored only in your browser.</div>
+  </div>
+
+  <div class="ob-dots">
+    <div class="ob-dot active" id="od-1"></div>
+    <div class="ob-dot" id="od-2"></div>
+    <div class="ob-dot" id="od-3"></div>
+    <div class="ob-dot" id="od-4"></div>
+    <div class="ob-dot" id="od-5"></div>
+  </div>
+  <div class="ob-footer">
+    <span class="ob-skip" onclick="skipOnboarding()">Skip setup</span>
+    <button class="btn btn-a btn-lg" onclick="obNext()">Continue →</button>
   </div>
 </div>
 
-<!-- ── PLAYER VIEW ── -->
-<div id="view-player" class="player-screen hidden">
-  <aside class="player-sidebar">
-    <div class="sidebar-search" onclick="showView('search')"><span style="font-size:14px">🔍</span><span>Search Songs</span></div>
+<!-- ══════════════════════════════════
+     HOME / LISTEN
+══════════════════════════════════ -->
+<div id="screen-home" class="screen tab-screen hidden">
+  <div class="home-hdr">
+    <div class="home-logo">
+      <div class="home-logo-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg></div>
+      <div class="home-logo-name">SongLingo</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="home-live-pill" class="live-pill hidden">Live</div>
+      <button class="home-prof-btn" onclick="goTab('profile')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="home-scroll">
+    <div class="home-greet-1" id="home-greet1">Good evening,</div>
+    <div class="home-greet-2">let's listen.</div>
+    <div class="home-stats" id="home-stats"><b>0 cards due</b> · <span id="home-streak-display">0-day streak</span></div>
 
     <!-- Now Playing -->
-    <div class="now-playing">
-      <div class="np-label">Now learning</div>
-      <div class="np-title" id="np-title">—</div>
-      <div class="np-artist" id="np-artist"></div>
-      <div id="status-pill" class="status-pill loading hidden"><span class="spinner"></span><span>Translating...</span></div>
-    </div>
+    <div id="home-np-section"></div>
 
-    <!-- Display Toggles -->
-    <div>
-      <div class="sidebar-section-label">Display</div>
-      <div class="toggle-section">
-        <div class="toggle-row"><span class="toggle-label" id="chars-toggle-label">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label></div>
-        <div class="toggle-row"><span class="toggle-label" id="pin-toggle-label">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label></div>
-        <div class="toggle-row"><span class="toggle-label" id="eng-toggle-label">English</span><label class="toggle"><input type="checkbox" id="tog-eng" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label></div>
+    <!-- Continue Learning -->
+    <div id="home-continue" class="home-sec hidden"></div>
+
+    <!-- Popular -->
+    <div class="home-sec">
+      <div class="sec-hdr">
+        <div class="sec-label" id="popular-heading">Popular right now</div>
+        <div class="sec-genre" id="popular-genre"></div>
       </div>
-    </div>
-
-    <!-- Spotify Section -->
-    <div>
-      <div class="sidebar-section-label">Spotify Sync</div>
-      <button class="spotify-btn" id="spotify-connect-btn" onclick="handleSpotifyConnect()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-        Connect Spotify
-      </button>
-      <!-- Connected state -->
-      <div id="spotify-connected-ui" style="display:none">
-        <div class="spotify-track-info">
-          <div id="spotify-track-name" style="font-size:11px;font-weight:700;color:var(--text)">—</div>
-          <div id="spotify-track-artist" style="font-size:10px;color:var(--muted);margin-top:2px"></div>
-        </div>
-        <button class="disconnect-btn" onclick="disconnectSpotify()">Disconnect Spotify</button>
+      <div id="popular-grid">
+        <div class="song-row" onclick="loadSong('告白气球','周杰伦')"><div class="sr-art"><div class="sr-art-fallback art-a"></div></div><div class="sr-info"><div class="sr-title">告白气球</div><div class="sr-meta">周杰伦 · Jay Chou</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
+        <div class="song-row" onclick="loadSong('待我如初','大头针')"><div class="sr-art"><div class="sr-art-fallback art-t"></div></div><div class="sr-info"><div class="sr-title">待我如初</div><div class="sr-meta">大头针</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
+        <div class="song-row" onclick="loadSong('晴天','周杰伦')"><div class="sr-art"><div class="sr-art-fallback art-r"></div></div><div class="sr-info"><div class="sr-title">晴天</div><div class="sr-meta">周杰伦 · Jay Chou</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
+        <div class="song-row" onclick="loadSong('喜欢你','邓紫棋')"><div class="sr-art"><div class="sr-art-fallback art-i"></div></div><div class="sr-info"><div class="sr-title">喜欢你</div><div class="sr-meta">邓紫棋</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
+        <div class="song-row" onclick="loadSong('稻香','周杰伦')"><div class="sr-art"><div class="sr-art-fallback art-s"></div></div><div class="sr-info"><div class="sr-title">稻香</div><div class="sr-meta">周杰伦 · Jay Chou</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
+        <div class="song-row" onclick="loadSong('突然好想你','五月天')"><div class="sr-art"><div class="sr-art-fallback art-a"></div></div><div class="sr-info"><div class="sr-title">突然好想你</div><div class="sr-meta">五月天</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
       </div>
-    </div>
-
-    <button class="back-btn" onclick="showView('search')" style="margin-top:auto">← Add Another Song</button>
-  </aside>
-
-  <!-- Karaoke Area -->
-  <main class="karaoke-main">
-    <div class="song-nav" id="song-nav">
-      <button class="song-nav-btn">‹</button>
-      <span class="song-nav-title" id="nav-song-title">—</span>
-      <button class="song-nav-btn">›</button>
-    </div>
-    <div id="translating-notice" class="translating-notice hidden"><span class="spinner"></span><span id="translate-progress">Translating...</span></div>
-    <div class="karaoke-lines">
-      <div class="k-line dim" id="k-prev"></div>
-      <div class="k-line active" id="k-curr"></div>
-      <div class="k-line dim" id="k-next"></div>
-    </div>
-    <div id="word-tooltip" onmouseenter="clearTimeout(tooltipHideTimer)" onmouseleave="hideTooltip()">
-      <div id="tt-char"></div><div id="tt-pin"></div><div id="tt-eng"></div>
-      <button id="tt-add" onclick="tooltipAddToDeck()">+ Add to Deck</button>
-    </div>
-  </main>
-
-  <!-- Bottom Player Bar -->
-  <div class="player-bar">
-    <div class="progress-bar-wrap">
-      <span class="ctrl-time"><span id="bar-min">0</span>:<span id="bar-sec">00</span></span>
-      <div class="progress-track-h" id="progress-track-h"><div class="progress-fill-h" id="progress-fill-h"></div></div>
-    </div>
-    <div class="player-controls">
-      <button class="ctrl-btn primary" id="play-btn" onclick="handlePlayPause()">▶</button>
     </div>
   </div>
 </div>
 
-<!-- ── DECK VIEW ── -->
-<div id="view-deck" class="flashcard-screen hidden">
-  <div class="fc-header">
-    <div class="fc-title">Your Deck</div>
-    <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
-  </div>
-  <div class="empty-deck" id="deck-empty">
-    <div class="empty-char">字</div>
-    <div style="font-size:18px;font-weight:700;color:#4a3870;font-style:italic">Your deck is empty</div>
-    <div style="font-size:11px;color:#3a2860;line-height:1.8">Hover any word in the player and tap Add to Deck.</div>
-  </div>
-  <div id="deck-cards" class="hidden">
-    <div class="card-stage" onclick="flipCard()">
-      <div class="card-inner" id="card-inner">
-        <div class="card-face">
-          <div class="card-big-char" id="card-front-char">字</div>
-          <div class="card-song" id="card-front-song"></div>
-          <div class="card-tap">tap to reveal</div>
-        </div>
-        <div class="card-face card-back">
-          <div class="card-pin" id="card-back-pin"></div>
-          <div class="card-eng" id="card-back-eng"></div>
-          <div class="card-big-char" id="card-back-char" style="font-size:38px;opacity:0.25;margin-top:6px"></div>
-        </div>
-      </div>
-    </div>
-    <div class="card-btns" id="card-btns" style="display:none">
-      <button class="card-btn again" onclick="cardAction('again')">Again</button>
-      <button class="card-btn got" onclick="cardAction('got')">Got It ✓</button>
-      <button class="card-btn del" onclick="cardAction('remove')">Remove</button>
-    </div>
-    <div class="grid-label" id="grid-label"></div>
-    <div class="word-grid" id="word-grid"></div>
-  </div>
-</div>
-
-<!-- ── MOBILE BARS ── -->
-<div class="mobile-bar" id="mobile-bar" style="display:none">
-  <div class="mobile-np">
-    <div class="mobile-np-title" id="mobile-np-title">—</div>
-    <div class="mobile-np-pill" id="mobile-np-pill">0:00 elapsed</div>
-  </div>
-  <div id="mobile-spotify-chip" style="display:none;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;border:1px solid rgba(30,215,96,0.35);background:rgba(30,215,96,0.08);cursor:pointer;flex-shrink:0" onclick="openSheet()">
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-    <span style="font-size:9px;font-weight:800;color:#1ed760" id="mobile-spotify-status">synced</span>
-  </div>
-  <button class="mobile-controls-btn" id="mobile-playpause-btn" onclick="handlePlayPause()" style="background:linear-gradient(135deg,var(--purple),var(--purple2));border-color:transparent;color:white;font-size:18px;width:36px;height:36px;">▶</button>
-  <button class="mobile-controls-btn" id="mobile-gear-btn" onclick="openSheet()" title="Settings">⚙</button>
-</div>
-
-<!-- ── BOTTOM SHEET (mobile settings) ── -->
-<div class="sheet-backdrop" id="sheet-backdrop" onclick="closeSheet()"></div>
-<div class="bottom-sheet" id="bottom-sheet">
-  <div class="sheet-handle" onclick="closeSheet()"></div>
-
-  <!-- Big play/pause button -->
-  <button id="sheet-playpause-btn" onclick="handlePlayPause()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:20px;letter-spacing:0.04em;">▶ Play</button>
-
-  <!-- Mobile Spotify section -->
-  <div class="sheet-section">
-    <div class="sheet-label">Spotify Auto-Sync</div>
-    <button class="sheet-spotify-btn" id="sheet-spotify-btn" onclick="handleSpotifyConnect()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-      Connect Spotify
+<!-- ══════════════════════════════════
+     PLAYER
+══════════════════════════════════ -->
+<div id="screen-player" class="screen hidden" style="z-index:20">
+  <div class="pl-hdr">
+    <button class="ic-btn" onclick="goBack()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
-    <div id="sheet-spotify-connected" style="display:none">
-      <div class="sheet-spotify-track" id="sheet-spotify-track">—</div>
-      <button class="disconnect-btn" onclick="disconnectSpotify();closeSheet()" style="margin-top:8px">Disconnect Spotify</button>
+    <div class="pl-hdr-center">
+      <div class="pl-title" id="np-title">—</div>
+      <div class="pl-artist" id="np-artist"></div>
+    </div>
+    <button class="ic-btn" onclick="openSongInfo()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+    </button>
+  </div>
+  <div class="pl-synced-wrap">
+    <div class="pl-synced" id="pl-synced-pill">
+      <span class="dot"></span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>
+      Synced with Spotify
+    </div>
+  </div>
+  <div id="pl-translating" class="pl-translating hidden">
+    <span class="spinner"></span>
+    <span id="pl-translate-progress">Translating…</span>
+  </div>
+  <div class="pl-lyrics">
+    <div id="k-prev" class="k-line"></div>
+    <div id="k-curr" class="k-line"></div>
+    <div id="k-next" class="k-line"></div>
+  </div>
+  <div class="pl-prog">
+    <div class="prog-track" id="progress-track-h"><div class="prog-fill" id="progress-fill-h"></div></div>
+    <div class="prog-times">
+      <span id="bar-min">0</span>:<span id="bar-sec">00</span>
+      <span id="pl-remaining"></span>
+    </div>
+  </div>
+  <div class="pl-transport">
+    <button class="tp-btn" onclick="openDisplaySheet()" title="Display">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg>
+    </button>
+    <button class="tp-btn" onclick="manualScroll(-1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg>
+    </button>
+    <button id="play-btn" onclick="handlePlayPause()">
+      <svg id="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
+    </button>
+    <button class="tp-btn" onclick="manualScroll(1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"/></svg>
+    </button>
+    <button class="tp-btn" onclick="openDisplaySheet()" title="Settings">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8L4.2 7a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3h0a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5h0a1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8v0a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     DECK
+══════════════════════════════════ -->
+<div id="screen-deck" class="screen tab-screen hidden">
+  <div class="dk-hdr">
+    <button class="dk-close" onclick="resetCard()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="dk-count" id="dk-count">0 / 0</div>
+    <div style="width:36px"></div>
+  </div>
+  <div class="dk-prog-wrap"><div class="dk-prog"><div class="dk-prog-fill" id="dk-prog-fill" style="width:0%"></div></div></div>
+  <div class="dk-hint">← AGAIN · ↓ HARD · TAP TO FLIP · GOT IT →</div>
+
+  <div class="dk-empty hidden" id="dk-empty">
+    <div class="dk-empty-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="6" width="14" height="14" rx="2"/><path d="M8 6V4a2 2 0 012-2h8a2 2 0 012 2v14"/></svg></div>
+    <h3>Your deck is empty.</h3>
+    <p>Tap any word in the Player to save it here.</p>
+    <button class="btn btn-a" onclick="goTab('home')" style="margin-top:6px">Start Listening</button>
+  </div>
+
+  <div class="dk-card-area" id="dk-card-area" onclick="flipCard()">
+    <div id="card-inner">
+      <div class="card-face front">
+        <div id="card-front-char" class="cjk">字</div>
+        <div id="card-front-song"></div>
+        <div class="card-tap">TAP TO REVEAL</div>
+      </div>
+      <div class="card-face back">
+        <div id="card-back-pin"></div>
+        <div id="card-back-eng"></div>
+        <div id="card-back-char" class="cjk"></div>
+        <div class="card-ctx" id="card-ctx" style="display:none">
+          <div class="card-ctx-label">FROM THIS LINE</div>
+          <div class="card-ctx-pin" id="card-ctx-pin"></div>
+          <div class="card-ctx-chars cjk" id="card-ctx-chars"></div>
+          <div class="card-ctx-eng" id="card-ctx-eng"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="sheet-section">
-    <div class="sheet-label">Display</div>
-    <div class="sheet-toggle-row"><span class="sheet-toggle-label" id="chars-toggle-label-m">Characters</span><label class="toggle"><input type="checkbox" id="tog-chars-m" checked onchange="syncToggles('chars')"><span class="toggle-slider"></span></label></div>
-    <div class="sheet-toggle-row"><span class="sheet-toggle-label" id="pin-toggle-label-m">Pinyin</span><label class="toggle"><input type="checkbox" id="tog-pin-m" checked onchange="syncToggles('pin')"><span class="toggle-slider"></span></label></div>
-    <div class="sheet-toggle-row"><span class="sheet-toggle-label" id="eng-toggle-label-m">English</span><label class="toggle"><input type="checkbox" id="tog-eng-m" checked onchange="syncToggles('eng')"><span class="toggle-slider"></span></label></div>
+  <div id="card-btns" class="dk-btns hidden">
+    <button class="dk-btn" onclick="cardAction('again')">Again</button>
+    <button class="dk-btn" onclick="cardAction('hard')">Hard</button>
+    <button class="dk-btn got" onclick="cardAction('got')">Got it</button>
   </div>
-  <button class="back-btn" onclick="showView('search');closeSheet()" style="width:100%;margin-top:8px">← Add Another Song</button>
 </div>
 
-</div><!-- .app -->
+<!-- ══════════════════════════════════
+     PROFILE
+══════════════════════════════════ -->
+<div id="screen-profile" class="screen tab-screen hidden">
+  <div class="prof-scroll">
+    <div class="prof-hdr">
+      <div class="prof-user">
+        <div class="prof-av" id="prof-av">SL</div>
+        <div>
+          <div class="prof-name" id="prof-name">Listener</div>
+          <div class="prof-sub" id="prof-sub">你好 · Learning Mandarin</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="streak-sec">
+      <div class="streak-flame">🔥</div>
+      <div class="streak-num" id="streak-num">0</div>
+      <div class="streak-lbl">Day Streak</div>
+    </div>
+
+    <div class="prof-section">
+      <div class="prof-section-label">Connections</div>
+      <div class="prof-card">
+        <div class="prof-row" id="prof-spotify-row" onclick="handleSpotifyConnect()">
+          <div class="prof-row-ic g">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>
+          </div>
+          <div class="prof-row-txt">
+            <div class="prof-row-label">Spotify</div>
+            <div class="prof-row-value" id="prof-sp-status">Not connected</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="prof-section">
+      <div class="prof-section-label">App Settings</div>
+      <div class="prof-card">
+        <div class="prof-row" onclick="openLangSheet()">
+          <div class="prof-row-ic p">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a13.5 13.5 0 010 18M12 3a13.5 13.5 0 000 18"/></svg>
+          </div>
+          <div class="prof-row-txt">
+            <div class="prof-row-label">Translate to</div>
+            <div class="prof-row-value" id="prof-lang-value">English</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="prof-row" onclick="openApiKeySheet()">
+          <div class="prof-row-ic a">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div class="prof-row-txt">
+            <div class="prof-row-label">Anthropic API Key</div>
+            <div class="prof-row-value" id="prof-key-status">Not set</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="prof-row" onclick="redoSetup()">
+          <div class="prof-row-ic p">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M20 10A8 8 0 0112 4a8 8 0 00-7.5 5.3M4 14A8 8 0 0012 20a8 8 0 007.5-5.3"/></svg>
+          </div>
+          <div class="prof-row-txt">
+            <div class="prof-row-label">Re-do setup</div>
+            <div class="prof-row-value">Level, vibe, language</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <button class="prof-disconnect hidden" id="prof-disconnect" onclick="disconnectSpotify()">Disconnect Spotify</button>
+    <div style="height:16px"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     TAB BAR
+══════════════════════════════════ -->
+<nav id="tab-bar" class="hidden">
+  <button class="tab-item active" id="tab-home" onclick="goTab('home')">
+    <div class="tab-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12L12 3l9 9"/><path d="M9 21V12h6v9"/></svg>
+    </div>
+    <span>Listen</span>
+  </button>
+  <button class="tab-item" id="tab-deck" onclick="goTab('deck')">
+    <div class="tab-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="6" width="14" height="14" rx="2"/><path d="M8 6V4a2 2 0 012-2h8a2 2 0 012 2v14"/></svg>
+      <span id="deck-badge" class="tab-badge">0</span>
+    </div>
+    <span>Deck</span>
+  </button>
+  <button class="tab-item" id="tab-profile" onclick="goTab('profile')">
+    <div class="tab-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>
+    </div>
+    <span>Profile</span>
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════
+     BOTTOM SHEETS
+══════════════════════════════════ -->
+<div id="sheet-backdrop" onclick="closeAllSheets()"></div>
+
+<!-- Word detail sheet -->
+<div id="sheet-word" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div class="w-header">
+    <div class="eyebrow" id="w-lang-label">MANDARIN → ENGLISH</div>
+    <button style="color:var(--muted);font-size:20px;line-height:1" onclick="closeAllSheets()">×</button>
+  </div>
+  <div class="w-big">
+    <div class="w-char cjk" id="tt-char">你</div>
+    <div class="w-right">
+      <div class="w-pin" id="tt-pin">nǐ</div>
+      <div class="w-eng" id="tt-eng">you</div>
+    </div>
+  </div>
+  <div class="w-ctx" id="w-ctx">
+    <div class="w-ctx-label">FROM THIS LINE</div>
+    <div class="w-ctx-pin cjk" id="w-ctx-pin"></div>
+    <div class="w-ctx-chars cjk" id="w-ctx-chars"></div>
+    <div class="w-ctx-eng" id="w-ctx-eng"></div>
+  </div>
+  <div class="w-actions">
+    <button class="btn btn-g" onclick="hearWord()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 010 7M19 5a9 9 0 010 14"/></svg>
+      Hear it
+    </button>
+    <button class="btn btn-a" id="tt-add" onclick="tooltipAddToDeck()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Save to deck
+    </button>
+  </div>
+</div>
+
+<!-- Display settings sheet -->
+<div id="sheet-display" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div class="sh-title">Display</div>
+  <div class="dt-row">
+    <span class="dt-label" id="chars-toggle-label">Characters</span>
+    <span class="dt-state" id="dt-chars-state">On</span>
+    <button class="tog on" id="tog-chars" onclick="toggleSwitch('chars')"></button>
+  </div>
+  <div class="dt-row">
+    <span class="dt-label" id="pin-toggle-label">Pinyin</span>
+    <span class="dt-state" id="dt-pin-state">On</span>
+    <button class="tog on" id="tog-pin" onclick="toggleSwitch('pin')"></button>
+  </div>
+  <div class="dt-row">
+    <span class="dt-label" id="eng-toggle-label">Translation</span>
+    <span class="dt-state" id="dt-eng-state">On</span>
+    <button class="tog on" id="tog-eng" onclick="toggleSwitch('eng')"></button>
+  </div>
+  <div class="dt-tip">Tip: tap any row to toggle. Change defaults in Profile → Display.</div>
+</div>
+
+<!-- Song info sheet -->
+<div id="sheet-info" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div class="si-hdr">
+    <div class="si-art" id="si-art"></div>
+    <div>
+      <div class="si-title cjk" id="si-title">—</div>
+      <div class="si-roman mono" id="si-roman"></div>
+      <div class="si-eng" id="si-eng"></div>
+    </div>
+  </div>
+  <div class="si-rows">
+    <div class="si-row"><span class="si-row-l">Artist</span><span class="si-row-r" id="si-artist">—</span></div>
+    <div class="si-row"><span class="si-row-l">Duration</span><span class="si-row-r" id="si-duration">—</span></div>
+    <div class="si-row" onclick="openLangSheet();closeAllSheets();"><span class="si-row-l">Translate to</span><span class="si-row-r" id="si-lang">English</span></div>
+  </div>
+  <div class="si-actions">
+    <div class="si-act" onclick="retranslateSong();closeAllSheets()">
+      <div class="si-act-ic a"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M20 10A8 8 0 0112 4a8 8 0 00-7.5 5.3M4 14A8 8 0 0012 20a8 8 0 007.5-5.3"/></svg></div>
+      <div><div class="si-act-title">Re-translate this song</div><div class="si-act-sub">Refresh AI translations for all lines</div></div>
+      <svg class="si-act-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="si-act" onclick="saveAllWords();closeAllSheets()">
+      <div class="si-act-ic g"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div><div class="si-act-title">Save all words from this song</div><div class="si-act-sub" id="si-word-count">— words</div></div>
+      <svg class="si-act-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- Language picker sheet -->
+<div id="sheet-lang" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div class="sh-title">Translate to</div>
+  <select class="select-field" onchange="setTargetLanguage(this.value);closeAllSheets()" id="lang-sheet-select">
+    <option value="English">🇬🇧 English</option>
+    <option value="Malay">🇲🇾 Malay</option>
+    <option value="Indonesian">🇮🇩 Indonesian</option>
+    <option value="Thai">🇹🇭 Thai</option>
+    <option value="Japanese">🇯🇵 Japanese</option>
+    <option value="Korean">🇰🇷 Korean</option>
+    <option value="Spanish">🇪🇸 Spanish</option>
+    <option value="French">🇫🇷 French</option>
+    <option value="German">🇩🇪 German</option>
+    <option value="Arabic">🇸🇦 Arabic</option>
+  </select>
+  <div style="height:8px"></div>
+</div>
+
+<!-- API key sheet -->
+<div id="sheet-apikey" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div class="sh-title">Anthropic API Key</div>
+  <div class="ob-field" style="margin-bottom:14px">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    <input id="profile-apikey" type="password" placeholder="sk-ant-…" oninput="saveApiKey(this.value)">
+  </div>
+  <div style="font-size:13px;color:var(--muted);line-height:1.6">Free at <span style="color:var(--a)">console.anthropic.com</span> · ~$0.02 per song · stored only in this browser.</div>
+  <button class="btn btn-a" style="width:100%;margin-top:16px;border-radius:14px" onclick="closeAllSheets()">Done</button>
+</div>
+
+</div><!-- #app -->
 
 <script>
 // ── STATE ──────────────────────────────────────────────────────────────────
 const S = {
-  // Core
   apiKey: localStorage.getItem('ht_key') || '',
-  title:'', artist:'', lyrics:[], saved:JSON.parse(localStorage.getItem('ht_deck')||'[]'),
-  // Manual sync
-  syncStart:null, offset:0, running:false, speed:1,
-  // Navigation
-  activeIdx:-1, cardIdx:0, cardFlipped:false,
-  // Spotify
+  title: '', artist: '', lyrics: [],
+  saved: JSON.parse(localStorage.getItem('ht_deck') || '[]'),
+  syncStart: null, offset: 0, running: false, speed: 1,
+  activeIdx: -1, cardIdx: 0, cardFlipped: false,
+  view: 'onboarding', prevView: 'home', tab: 'home',
   spotifyClientId: '',
   spotifyToken: localStorage.getItem('spotify_token') || null,
   spotifyRefreshToken: localStorage.getItem('spotify_refresh') || null,
   spotifyTokenExpiry: parseInt(localStorage.getItem('spotify_expiry') || '0'),
-  spotifyPollInterval: null,
-  spotifyIsPlaying: false,
-  spotifyOffsetAdjust: 0,
-  spotifyCurrentTrackId: null,
-  spotifyAutoLoading: false,
+  spotifyPollInterval: null, spotifyIsPlaying: false,
+  spotifyCurrentTrackId: null, spotifyAutoLoading: false,
+  spotifyCurrentAlbumArt: null, spotifyCurrentTrackUri: null,
   targetLanguage: localStorage.getItem('sl_lang') || 'English',
   sourceLang: localStorage.getItem('sl_source') || 'zh',
+  tooltipWord: null, tooltipLineIdx: -1,
+  streak: parseInt(localStorage.getItem('sl_streak') || '0'),
+  lastActive: localStorage.getItem('sl_last_active') || '',
+  setupDone: !!localStorage.getItem('sl_setup'),
+  obStep: 1, obLang: localStorage.getItem('sl_source') || 'zh',
+};
+const LANG_CONFIG = {
+  zh: { pinyin:'Pinyin', charLabel:'Characters', genre:'genre:mandopop', market:'TW', filter:/[\u4e00-\u9fff]/, placeholder:'Search any Mandarin song…' },
+  ko: { pinyin:'Romanization', charLabel:'Hangul', genre:'genre:k-pop', market:'KR', filter:/[\uAC00-\uD7AF]/, placeholder:'Search any Korean song…' },
+  ja: { pinyin:'Romaji', charLabel:'Characters', genre:'genre:j-pop', market:'JP', filter:/[\u3040-\u30FF]/, placeholder:'Search any Japanese song…' },
 };
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 window.onload = async () => {
-  if (S.apiKey) document.getElementById('inp-apikey').value = S.apiKey;
-  updateBadge();
-  setInterval(tick, 250);
-  // Restore target language and source language
+  updateStreak();
+  if (S.apiKey) {
+    const ki = document.getElementById('profile-apikey');
+    if (ki) ki.value = S.apiKey;
+    updateKeyStatus();
+  }
   setTargetLanguage(S.targetLanguage, true);
   setSourceLang(S.sourceLang, true);
-
-  // Progress bar click
+  setInterval(tick, 250);
   document.getElementById('progress-track-h')?.addEventListener('click', e => {
     if (!S.lyrics.length) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
     const last = S.lyrics[S.lyrics.length-1]?.time || 1;
     S.offset = pct * last; S.activeIdx = 0;
-    for (let i=0;i<S.lyrics.length;i++) { if(S.lyrics[i].time<=S.offset) S.activeIdx=i; else break; }
-    if (S.running) S.syncStart = Date.now();
+    for (let i=0;i<S.lyrics.length;i++){if(S.lyrics[i].time<=S.offset)S.activeIdx=i;else break;}
     rerender();
   });
-
-  // Check for Spotify OAuth callback
   const params = new URLSearchParams(window.location.search);
   if (params.get('code')) {
     await handleSpotifyCallback(params.get('code'));
-  } else if (S.spotifyToken) {
-    startSpotifyPolling();
-    updateSpotifyConnectedUI(true);
-    fetchPopularMandarin();
-  }
-
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  }
-};
-
-// ── VIEW MANAGEMENT ────────────────────────────────────────────────────────
-function showView(v) {
-  ['search','player','deck'].forEach(id => {
-    document.getElementById('view-'+id).classList.toggle('hidden', id!==v);
-    document.getElementById('nav-'+id).classList.toggle('active', id===v);
-  });
-  const inPlayer = v==='player';
-  const mb = document.getElementById('mobile-bar');
-  if (mb) mb.style.display = inPlayer ? 'flex' : 'none';
-  if (v==='deck') renderDeck();
-}
-
-function quickSearch(title, artist) {
-  document.getElementById('inp-title').value = title;
-  document.getElementById('inp-artist').value = artist;
-  document.getElementById('inp-title').scrollIntoView({behavior:'smooth',block:'center'});
-  document.getElementById('inp-title').focus();
-}
-
-// ── SEARCH & LOAD ──────────────────────────────────────────────────────────
-async function startSearch() {
-  const title = document.getElementById('inp-title').value.trim();
-  const artist = document.getElementById('inp-artist').value.trim();
-  const apiKey = document.getElementById('inp-apikey').value.trim();
-  if (!title) return alert('Please enter a song title.');
-  if (!apiKey) return alert('Please enter your Anthropic API key.\nGet one free at console.anthropic.com');
-  setSearchStatus('loading','Searching...');
-  document.getElementById('search-btn').disabled = true;
-  try {
-    const r = await fetch(`/api/lyrics?${new URLSearchParams({title,artist})}`);
-    const data = await r.json();
-    if (data.error||!data.lrc) { setSearchStatus('error',data.error||'Song not found.'); document.getElementById('search-btn').disabled=false; return; }
-    const LANG_FILTER = {
-      zh: l => /[\u4e00-\u9fff]/.test(l.text),
-      ko: l => /[\uAC00-\uD7AF]/.test(l.text),
-      ja: l => /[\u3040-\u30FF\u4e00-\u9fff]/.test(l.text),
-      es: l => l.text.trim().length > 2,
-      pt: l => l.text.trim().length > 2,
-    };
-    const filterFn = LANG_FILTER[S.sourceLang] || LANG_FILTER.zh;
-    const lrcLines = parseLrc(data.lrc).filter(filterFn);
-    if (!lrcLines.length) { setSearchStatus('error','No lyrics found for this song.'); document.getElementById('search-btn').disabled=false; return; }
-    setSearchStatus('ok',`Found! ${lrcLines.length} lines — translating now...`);
-    await loadAndTranslate(data.title||title, data.artist||artist, apiKey, lrcLines);
-  } catch(e) { setSearchStatus('error','Could not connect — please try again.'); document.getElementById('search-btn').disabled=false; }
-}
-
-async function loadAndTranslate(title, artist, apiKey, lrcLines) {
-  S.title=title; S.artist=artist; S.apiKey=apiKey;
-  localStorage.setItem('ht_key', apiKey);
-  S.lyrics = lrcLines.map(l=>({...l, characters:l.text, pinyin:null, english:null, words:null}));
-  S.activeIdx=0; S.syncStart=null; S.running=false; S.offset=0;
-  document.getElementById('np-title').textContent = title;
-  document.getElementById('np-artist').textContent = artist;
-  document.getElementById('nav-song-title').textContent = title;
-  const mnt = document.getElementById('mobile-np-title'); if(mnt) mnt.textContent=title;
-  updatePlayButtons();
-  const pill = document.getElementById('status-pill');
-  pill.className='status-pill loading'; pill.classList.remove('hidden');
-  pill.innerHTML='<span class="spinner"></span><span>Translating...</span>';
-  document.getElementById('translating-notice').classList.remove('hidden');
-  document.getElementById('translate-progress').textContent=`Translating ${lrcLines.length} lines...`;
-  showView('player'); rerender();
-  document.getElementById('search-btn').disabled=false;
-  await annotateInChunks(S.lyrics, apiKey);
-  document.getElementById('translating-notice').classList.add('hidden');
-  const ok = S.lyrics.filter(l=>l.words?.length||l.english).length;
-  pill.className='status-pill ready';
-  pill.innerHTML = ok===0 ? `<span style="color:#fca5a5">⚠ Translation failed — check API key</span>` : `<span>✓ ${lrcLines.length} lines ready</span>`;
-  rerender();
-}
-
-async function annotateInChunks(arr, apiKey) {
-  if (!apiKey||!apiKey.startsWith('sk-ant-')) {
-    const p=document.getElementById('status-pill');
-    if(p) p.innerHTML=`<span style="color:#fca5a5">⚠ Invalid API key</span>`;
+    if (S.setupDone) { showScreen('home'); }
+    else { showScreen('onboarding'); obGoto(4); }
     return;
   }
-  const SIZE=8;
-  for (let i=0;i<arr.length;i+=SIZE) {
-    const chunk=arr.slice(i,i+SIZE);
-    const el=document.getElementById('translate-progress');
-    if(el) el.textContent=`Translating ${Math.min(i+SIZE,arr.length)}/${arr.length}...`;
-    try {
-      const result=await annotateChunk(chunk.map(l=>l.text||l.characters), apiKey);
-      result.forEach((item,j)=>{
-        const idx=i+j;
-        if(arr[idx]){
-          arr[idx].characters=item.characters||arr[idx].characters;
-          arr[idx].pinyin=item.pinyin||arr[idx].pinyin;
-          arr[idx].english=item.english||arr[idx].english;
-          arr[idx].words=item.words?.length?item.words:arr[idx].words;
-        }
-      });
-      rerender();
-    } catch(e) {
-      const p=document.getElementById('status-pill');
-      if(p) p.innerHTML=`<span style="color:#fca5a5">⚠ ${e.message}</span>`;
-      return;
-    }
+  if (S.spotifyToken) {
+    startSpotifyPolling();
   }
+  if (S.setupDone) {
+    showScreen('home');
+    updateHomeNowPlaying();
+    updateBadge();
+    if (S.spotifyToken) fetchPopularSpotify();
+  } else {
+    showScreen('onboarding');
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+};
+
+// ── STREAK ─────────────────────────────────────────────────────────────────
+function updateStreak() {
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  if (S.lastActive === today) { /* same day, no change */ }
+  else if (S.lastActive === yesterday) { S.streak++; }
+  else if (S.lastActive !== '') { S.streak = 1; }
+  else { S.streak = 1; }
+  S.lastActive = today;
+  localStorage.setItem('sl_streak', S.streak);
+  localStorage.setItem('sl_last_active', today);
+  const h = new Date().getHours();
+  const g1 = h < 12 ? 'Good morning,' : h < 17 ? 'Good afternoon,' : 'Good evening,';
+  const el1 = document.getElementById('home-greet1'); if (el1) el1.textContent = g1;
+  const sn = document.getElementById('streak-num'); if (sn) sn.textContent = S.streak;
+  const sd = document.getElementById('home-streak-display'); if (sd) sd.textContent = `${S.streak}-day streak 🔥`;
 }
 
-async function annotateChunk(lines, apiKey) {
-  const targetLang = S.targetLanguage || 'English';
-  const src = S.sourceLang || 'zh';
-  const numbered = lines.map((l,i)=>`${i+1}. ${l}`).join('\n');
-
-  const PROMPTS = {
-    zh: `Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural ${targetLang} translation. Convert any traditional Chinese to simplified.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks required, simplified Chinese only, natural ${targetLang} in "english" field, group words naturally.`,
-    ko: `Annotate these Korean song lyric lines with Revised Romanization of Korean pronunciation and natural ${targetLang} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"안녕하세요","pinyin":"annyeonghaseyo","english":"hello","words":[{"char":"안녕","pinyin":"annyeong","english":"hello"},{"char":"하세요","pinyin":"haseyo","english":"(polite ending)"}]}]\n\nRules: accurate Revised Romanization in "pinyin" field, natural ${targetLang} in "english" field, group into meaningful word chunks.`,
-    ja: `Annotate these Japanese song lyric lines with Hepburn romaji pronunciation and natural ${targetLang} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"こんにちは","pinyin":"konnichiwa","english":"hello","words":[{"char":"こんにちは","pinyin":"konnichiwa","english":"hello"}]}]\n\nRules: accurate Hepburn romaji in "pinyin" field, natural ${targetLang} in "english" field, group words naturally.`,
-    es: `Annotate these Spanish song lyric lines with English phonetic pronunciation (written so an English speaker can sound it out) and natural ${targetLang} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"corazón","pinyin":"koh-rah-SON","english":"heart","words":[{"char":"corazón","pinyin":"koh-rah-SON","english":"heart"}]}]\n\nRules: English phonetics in "pinyin" field (e.g. "koh-rah-SON" not IPA), capitalise stressed syllable, natural ${targetLang} in "english" field, group words naturally.`,
-    pt: `Annotate these Portuguese song lyric lines with English phonetic pronunciation (written so an English speaker can sound it out) and natural ${targetLang} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"saudade","pinyin":"sow-DAH-ji","english":"longing","words":[{"char":"saudade","pinyin":"sow-DAH-ji","english":"longing/nostalgia"}]}]\n\nRules: English phonetics in "pinyin" field (e.g. "sow-DAH-ji" not IPA), capitalise stressed syllable, natural ${targetLang} in "english" field, group words naturally.`,
-  };
-  const SYSTEM = {
-    zh: 'You are a Mandarin annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
-    ko: 'You are a Korean language annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
-    ja: 'You are a Japanese language annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
-    es: 'You are a Spanish language annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
-    pt: 'You are a Portuguese language annotation tool. Output ONLY valid JSON — no markdown, no backticks.',
-  };
-  const prompt = PROMPTS[src] || PROMPTS.zh;
-  const systemMsg = SYSTEM[src] || SYSTEM.zh;
-  // Try backend proxy first
-  try {
-    const resp=await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey},body:JSON.stringify({lines})});
-    if(resp.ok){const data=await resp.json();if(data.result?.length)return data.result;}
-  } catch(e){}
-  // Direct API fallback
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})
+// ── NAVIGATION ─────────────────────────────────────────────────────────────
+function showScreen(name) {
+  ['onboarding','home','player','deck','profile'].forEach(id => {
+    const el = document.getElementById('screen-'+id);
+    if (el) el.classList.toggle('hidden', id !== name);
   });
-  const txt=await resp.text();
-  if(!resp.ok){let msg=`API error ${resp.status}`;try{msg=JSON.parse(txt).error?.message||msg;}catch{}throw new Error(msg);}
-  const data=JSON.parse(txt);
-  let raw=(data.content?.[0]?.text||'').replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
-  try{return JSON.parse(raw);}catch{try{return JSON.parse(raw+']');}catch{throw new Error('Parse error');}}
+  S.view = name;
+  const tabBar = document.getElementById('tab-bar');
+  const inTab = ['home','deck','profile'].includes(name);
+  tabBar.classList.toggle('hidden', !inTab);
+}
+function goTab(tab) {
+  S.tab = tab; S.prevView = tab;
+  showScreen(tab);
+  ['home','deck','profile'].forEach(t => {
+    document.getElementById('tab-'+t)?.classList.toggle('active', t===tab);
+  });
+  if (tab === 'deck') renderDeck();
+  if (tab === 'profile') renderProfile();
+  if (tab === 'home') { updateHomeNowPlaying(); updateContinueLearning(); }
+}
+function goBack() { showScreen(S.prevView || 'home'); document.getElementById('tab-bar').classList.remove('hidden'); }
+
+// ── ONBOARDING ─────────────────────────────────────────────────────────────
+function obGoto(step) {
+  for (let i=1;i<=5;i++) {
+    document.getElementById('ob-'+i)?.classList.toggle('hidden', i!==step);
+    document.getElementById('od-'+i)?.classList.toggle('active', i===step);
+  }
+  document.getElementById('ob-prog').style.width = (step/5*100)+'%';
+  document.getElementById('ob-count').textContent = step+'/5';
+  S.obStep = step;
+}
+function obNext() {
+  if (S.obStep < 5) { obGoto(S.obStep+1); }
+  else { finishOnboarding(); }
+}
+function obSelectLang(el) {
+  document.querySelectorAll('#ob-2 .ob-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+  S.obLang = el.dataset.lang;
+  setSourceLang(el.dataset.lang, false);
+}
+function skipOnboarding() { localStorage.setItem('sl_setup','1'); S.setupDone=true; showScreen('home'); updateBadge(); }
+function finishOnboarding() {
+  localStorage.setItem('sl_setup','1'); S.setupDone=true;
+  showScreen('home'); updateBadge(); updateHomeNowPlaying();
+  if (S.spotifyToken) fetchPopularSpotify();
+}
+function redoSetup() {
+  localStorage.removeItem('sl_setup'); S.setupDone=false;
+  showScreen('onboarding'); obGoto(1);
 }
 
-function parseLrc(lrc) {
-  const lines=[];
-  for(const line of lrc.split('\n')){
-    const m=line.match(/\[(\d+):(\d+(?:\.\d+)?)\](.*)/);
-    if(m){const time=parseInt(m[1])*60+parseFloat(m[2]);const text=m[3].trim();if(text)lines.push({time,text});}
+// ── HOME SCREEN RENDERING ──────────────────────────────────────────────────
+function updateHomeNowPlaying() {
+  const sec = document.getElementById('home-np-section');
+  const pill = document.getElementById('home-live-pill');
+  if (!sec) return;
+  if (S.spotifyToken && S.title) {
+    if (pill) pill.classList.remove('hidden');
+    const art = S.spotifyCurrentAlbumArt;
+    const artHtml = art ? `<img src="${art}" alt="">` : '';
+    sec.innerHTML = `
+      <div class="np-card" onclick="openPlayer()">
+        <div class="np-eyebrow">
+          <div class="eyebrow green">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;margin-right:5px"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>
+            NOW PLAYING ON SPOTIFY
+          </div>
+        </div>
+        <div class="np-main">
+          <div class="np-art">${artHtml}</div>
+          <div class="np-info">
+            <div class="np-song">${esc(S.title)}</div>
+            <div class="np-artist">${esc(S.artist)}</div>
+          </div>
+          <button class="np-open" onclick="event.stopPropagation();openPlayer()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
+            Open
+          </button>
+        </div>
+        <div class="np-footer-row">
+          <div class="np-bars"><div class="np-bar"></div><div class="np-bar"></div><div class="np-bar"></div></div>
+          <span id="np-time-footer">0:00 / — · synced</span>
+        </div>
+      </div>`;
+  } else if (S.spotifyToken) {
+    if (pill) pill.classList.remove('hidden');
+    sec.innerHTML = `
+      <div class="np-idle" onclick="openPlayer()">
+        <div class="np-idle-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg></div>
+        <div><div class="np-idle-title">Play a song on Spotify</div><div class="np-idle-sub">SongLingo will detect it automatically</div></div>
+      </div>`;
+  } else {
+    if (pill) pill.classList.add('hidden');
+    sec.innerHTML = `
+      <div class="np-idle" onclick="handleSpotifyConnect()">
+        <div class="np-idle-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg></div>
+        <div><div class="np-idle-title">Connect Spotify</div><div class="np-idle-sub">Auto-sync lyrics to whatever you're playing</div></div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--a)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>`;
   }
-  return lines;
+}
+
+function updateContinueLearning() {
+  const sec = document.getElementById('home-continue');
+  if (!sec) return;
+  const byS = {};
+  S.saved.forEach(w => { if (w.song) { byS[w.song]=(byS[w.song]||{count:0,artist:w.artist||''}); byS[w.song].count++; } });
+  const songs = Object.entries(byS).slice(0,4);
+  if (!songs.length) { sec.classList.add('hidden'); return; }
+  sec.classList.remove('hidden');
+  const tiles = ['art-a','art-t','art-r','art-i'];
+  sec.innerHTML = `
+    <div class="sec-hdr"><div class="sec-label">Continue Learning</div><div class="sec-genre" onclick="goTab('deck')">See all</div></div>
+    ${songs.map(([song,info],i) => `
+      <div class="song-row" onclick="loadSong(${JSON.stringify(song)},'')">
+        <div class="sr-art"><div class="sr-art-fallback ${tiles[i%4]}"></div></div>
+        <div class="sr-info"><div class="sr-title">${esc(song)}</div><div class="sr-meta">${info.count} word${info.count===1?'':'s'} saved</div></div>
+        <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
+      </div>`).join('')}`;
+}
+
+function openPlayer() { S.prevView = S.tab; showScreen('player'); }
+
+// ── LOAD SONG (from home/popular) ──────────────────────────────────────────
+async function loadSong(title, artist) {
+  if (!S.apiKey) {
+    openApiKeySheet(); return;
+  }
+  S.prevView = S.tab;
+  await autoLoadSpotifyTrack(title, artist || '');
 }
 
 // ── SPOTIFY: PKCE AUTH ─────────────────────────────────────────────────────
-function generateCodeVerifier(len=128) {
-  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-  const arr=new Uint8Array(len);
-  crypto.getRandomValues(arr);
-  return Array.from(arr).map(b=>chars[b%chars.length]).join('');
-}
-
-async function generateCodeChallenge(verifier) {
-  const data=new TextEncoder().encode(verifier);
-  const digest=await crypto.subtle.digest('SHA-256',data);
-  return btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
+function generateCodeVerifier(len=128){const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';const arr=new Uint8Array(len);crypto.getRandomValues(arr);return Array.from(arr).map(b=>chars[b%chars.length]).join('');}
+async function generateCodeChallenge(v){const d=new TextEncoder().encode(v);const dg=await crypto.subtle.digest('SHA-256',d);return btoa(String.fromCharCode(...new Uint8Array(dg))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
 
 async function handleSpotifyConnect() {
-  if (S.spotifyToken) { disconnectSpotify(); return; }
-  // Fetch client ID now if we don't have it yet
+  if (S.spotifyToken) { goTab('profile'); return; }
   if (!S.spotifyClientId) {
-    try {
-      const r = await fetch('/api/spotify-config');
-      const d = await r.json();
-      S.spotifyClientId = d.clientId || '';
-    } catch(e) {}
+    try{const r=await fetch('/api/spotify-config');const d=await r.json();S.spotifyClientId=d.clientId||'';}catch(e){}
   }
-  if (!S.spotifyClientId) {
-    alert('Spotify Client ID not configured.\n\nAdd SPOTIFY_CLIENT_ID to your Vercel Environment Variables, then redeploy.');
-    return;
-  }
-  initiateSpotifyAuth();
-}
-
-async function initiateSpotifyAuth() {
+  if (!S.spotifyClientId) { alert('Spotify Client ID not configured.\n\nAdd SPOTIFY_CLIENT_ID to Vercel Environment Variables.'); return; }
   const verifier=generateCodeVerifier();
   const challenge=await generateCodeChallenge(verifier);
   localStorage.setItem('spotify_verifier',verifier);
-  const params=new URLSearchParams({
-    client_id: S.spotifyClientId,
-    response_type: 'code',
-    redirect_uri: window.location.origin+'/',
-    scope: 'user-read-playback-state user-read-currently-playing user-modify-playback-state',
-    code_challenge_method: 'S256',
-    code_challenge: challenge,
-  });
+  const params=new URLSearchParams({client_id:S.spotifyClientId,response_type:'code',redirect_uri:window.location.origin+'/',scope:'user-read-playback-state user-read-currently-playing user-modify-playback-state',code_challenge_method:'S256',code_challenge:challenge});
   window.location='https://accounts.spotify.com/authorize?'+params;
 }
 
 async function handleSpotifyCallback(code) {
   window.history.replaceState({},document.title,window.location.pathname);
-  const verifier=localStorage.getItem('spotify_verifier');
-  if(!verifier) return;
-  // Fetch client ID if not loaded yet
-  if(!S.spotifyClientId){
-    try{const r=await fetch('/api/spotify-config');const d=await r.json();S.spotifyClientId=d.clientId||'';}catch(e){}
-  }
-  if(!S.spotifyClientId) return;
-  try {
-    const resp=await fetch('https://accounts.spotify.com/api/token',{
-      method:'POST',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:new URLSearchParams({
-        client_id: S.spotifyClientId,
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: window.location.origin+'/',
-        code_verifier: verifier,
-      })
-    });
+  const verifier=localStorage.getItem('spotify_verifier'); if(!verifier)return;
+  if(!S.spotifyClientId){try{const r=await fetch('/api/spotify-config');const d=await r.json();S.spotifyClientId=d.clientId||'';}catch(e){}}
+  if(!S.spotifyClientId)return;
+  try{
+    const resp=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:S.spotifyClientId,grant_type:'authorization_code',code,redirect_uri:window.location.origin+'/',code_verifier:verifier})});
     const d=await resp.json();
     if(d.access_token){
-      S.spotifyToken=d.access_token;
-      S.spotifyRefreshToken=d.refresh_token;
-      S.spotifyTokenExpiry=Date.now()+(d.expires_in*1000);
-      localStorage.setItem('spotify_token',S.spotifyToken);
-      localStorage.setItem('spotify_refresh',S.spotifyRefreshToken);
-      localStorage.setItem('spotify_expiry',String(S.spotifyTokenExpiry));
+      S.spotifyToken=d.access_token;S.spotifyRefreshToken=d.refresh_token;S.spotifyTokenExpiry=Date.now()+(d.expires_in*1000);
+      localStorage.setItem('spotify_token',S.spotifyToken);localStorage.setItem('spotify_refresh',S.spotifyRefreshToken);localStorage.setItem('spotify_expiry',String(S.spotifyTokenExpiry));
       localStorage.removeItem('spotify_verifier');
       startSpotifyPolling();
-      updateSpotifyConnectedUI(true);
-      fetchPopularMandarin();
+      updateObSpotifyCard(true);
+      renderProfileSpotify();
     }
-  } catch(e) { console.error('Spotify token exchange failed',e); }
+  }catch(e){}
 }
 
-async function refreshSpotifyToken() {
-  if(!S.spotifyRefreshToken||!S.spotifyClientId) return false;
-  try {
-    const resp=await fetch('https://accounts.spotify.com/api/token',{
-      method:'POST',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:new URLSearchParams({
-        client_id: S.spotifyClientId,
-        grant_type: 'refresh_token',
-        refresh_token: S.spotifyRefreshToken,
-      })
-    });
-    const d=await resp.json();
-    if(d.access_token){
-      S.spotifyToken=d.access_token;
-      S.spotifyTokenExpiry=Date.now()+(d.expires_in*1000);
-      if(d.refresh_token){S.spotifyRefreshToken=d.refresh_token;localStorage.setItem('spotify_refresh',S.spotifyRefreshToken);}
-      localStorage.setItem('spotify_token',S.spotifyToken);
-      localStorage.setItem('spotify_expiry',String(S.spotifyTokenExpiry));
-      return true;
-    }
-  } catch(e) {}
-  return false;
+async function refreshSpotifyToken(){
+  if(!S.spotifyRefreshToken||!S.spotifyClientId)return false;
+  try{const resp=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:S.spotifyClientId,grant_type:'refresh_token',refresh_token:S.spotifyRefreshToken})});const d=await resp.json();if(d.access_token){S.spotifyToken=d.access_token;S.spotifyTokenExpiry=Date.now()+(d.expires_in*1000);if(d.refresh_token){S.spotifyRefreshToken=d.refresh_token;localStorage.setItem('spotify_refresh',S.spotifyRefreshToken);}localStorage.setItem('spotify_token',S.spotifyToken);localStorage.setItem('spotify_expiry',String(S.spotifyTokenExpiry));return true;}}catch(e){}return false;
+}
+async function getValidToken(){if(!S.spotifyToken)return null;if(Date.now()>S.spotifyTokenExpiry-60000){const ok=await refreshSpotifyToken();if(!ok){disconnectSpotify();return null;}}return S.spotifyToken;}
+
+function updateObSpotifyCard(connected) {
+  const card=document.getElementById('ob-sp-card');const title=document.getElementById('ob-sp-title');const sub=document.getElementById('ob-sp-sub');
+  if(!card)return;
+  if(connected){card.classList.add('done');if(title)title.textContent='✓ Spotify Connected';if(sub)sub.textContent='Lyrics will sync automatically';}
 }
 
-async function getValidToken() {
-  if(!S.spotifyToken) return null;
-  if(Date.now()>S.spotifyTokenExpiry-60000){
-    const ok=await refreshSpotifyToken();
-    if(!ok){ disconnectSpotify(); return null; }
-  }
-  return S.spotifyToken;
-}
+// ── SPOTIFY POLLING ────────────────────────────────────────────────────────
+function startSpotifyPolling(){if(S.spotifyPollInterval)clearInterval(S.spotifyPollInterval);pollSpotify();S.spotifyPollInterval=setInterval(pollSpotify,2000);}
+function stopSpotifyPolling(){if(S.spotifyPollInterval){clearInterval(S.spotifyPollInterval);S.spotifyPollInterval=null;}}
 
-// ── SPOTIFY: POLLING ───────────────────────────────────────────────────────
-function startSpotifyPolling() {
-  if(S.spotifyPollInterval) clearInterval(S.spotifyPollInterval);
-  pollSpotify();
-  S.spotifyPollInterval=setInterval(pollSpotify,2000);
-}
-
-function stopSpotifyPolling() {
-  if(S.spotifyPollInterval){ clearInterval(S.spotifyPollInterval); S.spotifyPollInterval=null; }
-}
-
-async function pollSpotify() {
-  const token=await getValidToken();
-  if(!token) return;
-  try {
-    const resp=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{
-      headers:{'Authorization':'Bearer '+token}
-    });
-    if(resp.status===204){ updateSpotifyTrackUI(null,null,'Nothing playing on Spotify'); return; }
-    if(resp.status===401){ await refreshSpotifyToken(); return; }
-    if(!resp.ok) return;
+async function pollSpotify(){
+  const token=await getValidToken();if(!token)return;
+  try{
+    const resp=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{'Authorization':'Bearer '+token}});
+    if(resp.status===204){return;}
+    if(resp.status===401){await refreshSpotifyToken();return;}
+    if(!resp.ok)return;
     const data=await resp.json();
-
-    const posSeconds=(data.progress_ms||0)/1000;
-    const adjusted=posSeconds+S.spotifyOffsetAdjust;
-    S.offset=Math.max(0,adjusted);
-
-    const wasPlaying=S.running;
-    S.spotifyIsPlaying=data.is_playing;
-    S.running=data.is_playing;
-    if(S.running&&!wasPlaying) S.syncStart=Date.now();
+    const pos=(data.progress_ms||0)/1000;
+    S.offset=Math.max(0,pos);
+    S.spotifyIsPlaying=data.is_playing;S.running=data.is_playing;
+    if(S.running&&!S.syncStart)S.syncStart=Date.now();
     updatePlayButtons();
-
     const trackName=data.item?.name||'—';
     const artistName=data.item?.artists?.[0]?.name||'';
     const trackId=data.item?.id||null;
-    updateSpotifyTrackUI(trackName,artistName,null);
-
-    // Auto-load lyrics when track changes
-    if(trackId && trackId!==S.spotifyCurrentTrackId && !S.spotifyAutoLoading){
+    const albumArt=data.item?.album?.images?.[1]?.url||data.item?.album?.images?.[0]?.url||null;
+    const trackUri=data.item?.uri||null;
+    if(albumArt)S.spotifyCurrentAlbumArt=albumArt;
+    if(trackUri)S.spotifyCurrentTrackUri=trackUri;
+    // Update live home card
+    const tf=document.getElementById('np-time-footer');
+    if(tf){const mm=Math.floor(pos/60);const ss=String(Math.floor(pos%60)).padStart(2,'0');tf.textContent=`${mm}:${ss} · ${S.spotifyIsPlaying?'synced':'paused'}`;}
+    if(trackId&&trackId!==S.spotifyCurrentTrackId&&!S.spotifyAutoLoading){
       S.spotifyCurrentTrackId=trackId;
-      autoLoadSpotifyTrack(trackName, artistName);
+      // Update home card
+      if(S.title!==trackName){S.title=trackName;S.artist=artistName;}
+      autoLoadSpotifyTrack(trackName,artistName);
     }
-
-    // Advance lyrics
-    if(S.lyrics.length){
-      let idx=0;
-      for(let i=0;i<S.lyrics.length;i++){if(S.lyrics[i].time<=S.offset)idx=i;else break;}
-      if(idx!==S.activeIdx){S.activeIdx=idx;rerender();}
-    }
-  } catch(e) {}
+    if(S.lyrics.length){let idx=0;for(let i=0;i<S.lyrics.length;i++){if(S.lyrics[i].time<=S.offset)idx=i;else break;}if(idx!==S.activeIdx){S.activeIdx=idx;rerender();}}
+    // Update player UI
+    const pt=document.getElementById('np-title');if(pt)pt.textContent=trackName;
+    const pa=document.getElementById('np-artist');if(pa)pa.textContent=artistName;
+  }catch(e){}
 }
 
-// ── SPOTIFY: POPULAR TRACKS ────────────────────────────────────────────────
-async function fetchPopularMandarin() {
-  const token = await getValidToken();
-  if (!token) return;
-  const cfg = LANG_CONFIG[S.sourceLang] || LANG_CONFIG.zh;
-  try {
-    const r = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(cfg.genre)}&type=track&limit=12&market=${cfg.market}`,
-      { headers: { 'Authorization': 'Bearer ' + token } }
-    );
-    if (!r.ok) return;
-    const data = await r.json();
-    const tracks = (data.tracks?.items || []).filter(t => t.album?.images?.length > 0);
-    if (tracks.length < 3) return;
-    renderPopularCards(tracks.slice(0, 6));
-    const heading = document.getElementById('popular-heading');
-    if (heading) {
-      heading.innerHTML = `Popular on <svg style="vertical-align:-2px;margin-left:4px" width="12" height="12" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg> Spotify`;
-    }
-  } catch(e) {}
+// ── SPOTIFY: POPULAR ───────────────────────────────────────────────────────
+async function fetchPopularSpotify(){
+  const token=await getValidToken();if(!token)return;
+  const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
+  try{
+    const r=await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(cfg.genre)}&type=track&limit=12&market=${cfg.market}`,{headers:{'Authorization':'Bearer '+token}});
+    if(!r.ok)return;
+    const data=await r.json();
+    const tracks=(data.tracks?.items||[]).filter(t=>t.album?.images?.length>0).slice(0,6);
+    if(tracks.length<3)return;
+    const grid=document.getElementById('popular-grid');
+    if(!grid)return;
+    const tiles=['art-a','art-t','art-r','art-i','art-s','art-t'];
+    grid.innerHTML=tracks.map((t,i)=>{
+      const img=t.album.images[2]?.url||t.album.images[1]?.url||t.album.images[0]?.url;
+      const safeTitle=t.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const safeArtist=(t.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return `<div class="song-row" onclick="playSpotifyCard('${t.uri}','${safeTitle}','${safeArtist}')">
+        <div class="sr-art">${img?`<img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`:`<div class="sr-art-fallback ${tiles[i]}"></div>`}</div>
+        <div class="sr-info"><div class="sr-title cjk">${esc(t.name)}</div><div class="sr-meta">${esc(t.artists.map(a=>a.name).join(', '))}</div></div>
+        <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
+      </div>`;
+    }).join('');
+    const heading=document.getElementById('popular-heading');if(heading)heading.innerHTML='Popular on <svg style="vertical-align:-2px;margin-left:4px" width="11" height="11" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg> Spotify';
+  }catch(e){}
 }
 
-function renderPopularCards(tracks) {
-  const grid = document.getElementById('popular-grid');
-  if (!grid) return;
-  grid.innerHTML = tracks.map(t => {
-    const img = t.album.images[2]?.url || t.album.images[1]?.url || t.album.images[0]?.url;
-    const title = esc(t.name);
-    const artist = esc(t.artists.map(a => a.name).join(', '));
-    // Encode for safe inline onclick
-    const safeTitle = t.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    const safeArtist = (t.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    const safeUri = t.uri;
-    return `<div class="song-card" onclick="playSpotifyCard('${safeUri}','${safeTitle}','${safeArtist}')">
-      <div class="song-card-icon" style="padding:0;overflow:hidden;background:none">
-        <img src="${img}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:10px;display:block" onerror="this.parentNode.innerHTML='🎵';this.parentNode.style.background='linear-gradient(135deg,#2d1b69,#7c3aed)'">
-      </div>
-      <div class="song-card-info">
-        <div class="song-card-title">${title}</div>
-        <div class="song-card-artist">${artist}</div>
-      </div>
-      <button class="song-card-play">▶</button>
-    </div>`;
-  }).join('');
-}
-
-async function playSpotifyCard(uri, title, artist) {
-  const token = await getValidToken();
-  if (token) {
-    try {
-      await fetch('https://api.spotify.com/v1/me/player/play', {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uris: [uri] })
-      });
-    } catch(e) {}
-  }
-  // Reset track ID so auto-load triggers even if it's the same track
-  S.spotifyCurrentTrackId = null;
-  autoLoadSpotifyTrack(title, artist);
-}
-
-// ── SPOTIFY: AUTO-LOAD LYRICS ──────────────────────────────────────────────
-async function autoLoadSpotifyTrack(title, artist) {
-  const apiKey = S.apiKey;
-  if (!apiKey || !title || title === '—') return;
-  S.spotifyAutoLoading = true;
-
-  // Update now-playing display immediately
-  const mnt = document.getElementById('mobile-np-title');
-  if (mnt) mnt.textContent = title;
-  document.getElementById('np-title').textContent = title;
-  document.getElementById('np-artist').textContent = artist;
-  document.getElementById('nav-song-title').textContent = title;
-
-  // Show loading pill
-  const pill = document.getElementById('status-pill');
-  if (pill) { pill.className='status-pill loading'; pill.classList.remove('hidden'); pill.innerHTML='<span class="spinner"></span><span>Finding lyrics...</span>'; }
-
-  // Switch to player view so user sees it loading
-  showView('player');
-
-  try {
-    const r = await fetch(`/api/lyrics?${new URLSearchParams({title, artist})}`);
-    const data = await r.json();
-    if (data.error || !data.lrc) {
-      if (pill) { pill.className='status-pill loading'; pill.innerHTML=`<span style="color:#fca5a5">⚠ No lyrics found for this song</span>`; }
-      S.spotifyAutoLoading = false;
-      return;
-    }
-    const lrcLines = parseLrc(data.lrc).filter(l => /[\u4e00-\u9fff\uAC00-\uD7AF]/.test(l.text));
-    if (!lrcLines.length) {
-      if (pill) { pill.innerHTML=`<span style="color:#fca5a5">⚠ No Mandarin lyrics found</span>`; }
-      S.spotifyAutoLoading = false;
-      return;
-    }
-    await loadAndTranslate(data.title || title, data.artist || artist, apiKey, lrcLines);
-  } catch(e) {
-    if (pill) { pill.innerHTML=`<span style="color:#fca5a5">⚠ Could not fetch lyrics</span>`; }
-  }
-  S.spotifyAutoLoading = false;
-}
-
-// ── SPOTIFY: CONTROLS ──────────────────────────────────────────────────────
-async function handlePlayPause() {
-  if(S.spotifyToken){
-    await toggleSpotifyPlayback();
-  } else {
-    alert('Connect Spotify to control playback.');
-  }
-}
-
-async function toggleSpotifyPlayback() {
+async function playSpotifyCard(uri,title,artist){
   const token=await getValidToken();
-  if(!token) return;
-  try {
-    const endpoint=S.spotifyIsPlaying
-      ?'https://api.spotify.com/v1/me/player/pause'
-      :'https://api.spotify.com/v1/me/player/play';
+  if(token){try{await fetch('https://api.spotify.com/v1/me/player/play',{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({uris:[uri]})});}catch(e){}}
+  S.spotifyCurrentTrackId=null;
+  autoLoadSpotifyTrack(title,artist);
+}
+
+// ── AUTO-LOAD LYRICS ───────────────────────────────────────────────────────
+async function autoLoadSpotifyTrack(title,artist){
+  const apiKey=S.apiKey;
+  if(!apiKey||!title||title==='—')return;
+  S.spotifyAutoLoading=true;
+  try{
+    const r=await fetch(`/api/lyrics?${new URLSearchParams({title,artist})}`);
+    const data=await r.json();
+    if(data.error||!data.lrc){S.spotifyAutoLoading=false;return;}
+    const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
+    const filterFn=cfg.filter?(l=>cfg.filter.test(l.text)):(l=>l.text.trim().length>2);
+    const lrcLines=parseLrc(data.lrc).filter(filterFn);
+    if(!lrcLines.length){S.spotifyAutoLoading=false;return;}
+    await loadAndTranslate(data.title||title,data.artist||artist,apiKey,lrcLines);
+  }catch(e){}
+  S.spotifyAutoLoading=false;
+}
+
+async function loadAndTranslate(title,artist,apiKey,lrcLines){
+  S.title=title;S.artist=artist;S.apiKey=apiKey;
+  localStorage.setItem('ht_key',apiKey);
+  S.lyrics=lrcLines.map(l=>({...l,characters:l.text,pinyin:null,english:null,words:null}));
+  S.activeIdx=0;S.offset=0;
+  const pt=document.getElementById('np-title');if(pt)pt.textContent=title;
+  const pa=document.getElementById('np-artist');if(pa)pa.textContent=artist;
+  const spt=document.getElementById('pl-synced-pill');if(spt)spt.classList.toggle('hidden',!S.spotifyToken);
+  const tran=document.getElementById('pl-translating');if(tran)tran.classList.remove('hidden');
+  const prog=document.getElementById('pl-translate-progress');if(prog)prog.textContent=`Translating ${lrcLines.length} lines…`;
+  showScreen('player');
+  rerender();
+  updateHomeNowPlaying();
+  await annotateInChunks(S.lyrics,apiKey);
+  if(tran)tran.classList.add('hidden');
+  rerender();
+  updateHomeNowPlaying();
+  updateContinueLearning();
+  // Update song info sheet
+  const si=document.getElementById('si-title');if(si)si.textContent=title;
+  const sa=document.getElementById('si-artist');if(sa)sa.textContent=artist;
+  const sc=document.getElementById('si-word-count');if(sc){const wc=S.lyrics.filter(l=>l.words?.length).reduce((a,l)=>a+l.words.length,0);sc.textContent=wc+' words';}
+  const sdur=document.getElementById('si-duration');if(sdur&&lrcLines.length){const last=lrcLines[lrcLines.length-1].time;const m=Math.floor(last/60);const s=String(Math.floor(last%60)).padStart(2,'0');sdur.textContent=`${m}:${s}`;}
+}
+
+async function annotateInChunks(arr,apiKey){
+  if(!apiKey||!apiKey.startsWith('sk-ant-'))return;
+  const SIZE=8;
+  for(let i=0;i<arr.length;i+=SIZE){
+    const prog=document.getElementById('pl-translate-progress');
+    if(prog)prog.textContent=`Translating ${Math.min(i+SIZE,arr.length)}/${arr.length}…`;
+    try{
+      const result=await annotateChunk(arr.slice(i,i+SIZE).map(l=>l.text||l.characters),apiKey);
+      result.forEach((item,j)=>{const idx=i+j;if(arr[idx]){arr[idx].characters=item.characters||arr[idx].characters;arr[idx].pinyin=item.pinyin||arr[idx].pinyin;arr[idx].english=item.english||arr[idx].english;arr[idx].words=item.words?.length?item.words:arr[idx].words;}});
+      rerender();
+    }catch(e){return;}
+  }
+}
+
+async function annotateChunk(lines,apiKey){
+  const tl=S.targetLanguage||'English';const src=S.sourceLang||'zh';
+  const numbered=lines.map((l,i)=>`${i+1}. ${l}`).join('\n');
+  const PROMPTS={
+    zh:`Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural ${tl} translation. Convert any traditional Chinese to simplified.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks required, simplified Chinese only, natural ${tl} in "english" field, group words naturally.`,
+    ko:`Annotate these Korean song lyric lines with Revised Romanization and natural ${tl} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"안녕","pinyin":"annyeong","english":"hello","words":[{"char":"안녕","pinyin":"annyeong","english":"hello"}]}]\n\nRules: Revised Romanization in "pinyin", natural ${tl} in "english".`,
+    ja:`Annotate these Japanese song lyric lines with Hepburn romaji and natural ${tl} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"こんにちは","pinyin":"konnichiwa","english":"hello","words":[{"char":"こんにちは","pinyin":"konnichiwa","english":"hello"}]}]\n\nRules: Hepburn romaji in "pinyin", natural ${tl} in "english".`,
+  };
+  const SYSTEM={zh:'You are a Mandarin annotation tool. Output ONLY valid JSON.',ko:'You are a Korean annotation tool. Output ONLY valid JSON.',ja:'You are a Japanese annotation tool. Output ONLY valid JSON.'};
+  const prompt=PROMPTS[src]||PROMPTS.zh;const systemMsg=SYSTEM[src]||SYSTEM.zh;
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
+  const txt=await resp.text();if(!resp.ok){let m=`API error ${resp.status}`;try{m=JSON.parse(txt).error?.message||m;}catch{}throw new Error(m);}
+  const data=JSON.parse(txt);let raw=(data.content?.[0]?.text||'').replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
+  try{return JSON.parse(raw);}catch{try{return JSON.parse(raw+']');}catch{throw new Error('Parse error');}}
+}
+
+function parseLrc(lrc){const lines=[];for(const line of lrc.split('\n')){const m=line.match(/\[(\d+):(\d+(?:\.\d+)?)\](.*)/);if(m){const time=parseInt(m[1])*60+parseFloat(m[2]);const text=m[3].trim();if(text)lines.push({time,text});}}return lines;}
+
+// ── PLAYBACK ───────────────────────────────────────────────────────────────
+async function handlePlayPause(){
+  const token=await getValidToken();if(!token){alert('Connect Spotify to control playback.');return;}
+  try{
+    const endpoint=S.spotifyIsPlaying?'https://api.spotify.com/v1/me/player/pause':'https://api.spotify.com/v1/me/player/play';
     const resp=await fetch(endpoint,{method:'PUT',headers:{'Authorization':'Bearer '+token}});
-    if(resp.status===403){
-      alert('Playback control requires a Spotify Premium account.');
-      return;
-    }
-    S.spotifyIsPlaying=!S.spotifyIsPlaying;
-    S.running=S.spotifyIsPlaying;
-    if(S.running) S.syncStart=Date.now();
+    if(resp.status===403){alert('Playback control requires Spotify Premium.');return;}
+    S.spotifyIsPlaying=!S.spotifyIsPlaying;S.running=S.spotifyIsPlaying;
     updatePlayButtons();
-  } catch(e){}
+  }catch(e){}
 }
 
-function disconnectSpotify() {
-  stopSpotifyPolling();
-  S.spotifyToken=null; S.spotifyRefreshToken=null; S.spotifyOffsetAdjust=0;
-  localStorage.removeItem('spotify_token');
-  localStorage.removeItem('spotify_refresh');
-  localStorage.removeItem('spotify_expiry');
-  updateSpotifyConnectedUI(false);
-  // Stop running if it was Spotify-driven
-  S.running=false; S.syncStart=null;
-  updatePlayButtons();
+function updatePlayButtons(){
+  const isPlaying=S.spotifyIsPlaying;
+  const playIcon=document.getElementById('play-icon');
+  if(playIcon)playIcon.outerHTML=isPlaying
+    ?'<svg id="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+    :'<svg id="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>';
 }
 
-// ── SPOTIFY: UI ────────────────────────────────────────────────────────────
-function handleSpotifyHomeClick() {
-  if (S.spotifyToken) {
-    // Already connected — go to player to use it
-    showView('player');
-  } else {
-    handleSpotifyConnect();
-  }
+function disconnectSpotify(){
+  stopSpotifyPolling();S.spotifyToken=null;S.spotifyRefreshToken=null;
+  localStorage.removeItem('spotify_token');localStorage.removeItem('spotify_refresh');localStorage.removeItem('spotify_expiry');
+  S.running=false;S.spotifyIsPlaying=false;S.spotifyCurrentTrackId=null;
+  renderProfileSpotify();updateHomeNowPlaying();updatePlayButtons();
 }
 
-function updateSpotifyConnectedUI(connected) {
-  const connectBtn=document.getElementById('spotify-connect-btn');
-  const connectedUI=document.getElementById('spotify-connected-ui');
-  const noClient=document.getElementById('spotify-no-client');
-  const manualSync=document.getElementById('manual-sync-section');
-  const sheetBtn=document.getElementById('sheet-spotify-btn');
-  const sheetConnected=document.getElementById('sheet-spotify-connected');
-
-  // Sidebar
-  if(connectBtn){
-    connectBtn.textContent=connected?'✓ Spotify Connected':'⟨ Connect Spotify';
-    connectBtn.className=connected?'spotify-btn connected':'spotify-btn';
-    connectBtn.style.display=(noClient&&noClient.style.display==='block'&&!connected)?'none':'block';
-  }
-  if(connectedUI) connectedUI.style.display=connected?'block':'none';
-
-  // Sheet
-  if(sheetBtn){
-    sheetBtn.textContent=connected?'✓ Spotify Connected':'⟨ Connect Spotify';
-    sheetBtn.className=connected?'sheet-spotify-btn connected':'sheet-spotify-btn';
-  }
-  if(sheetConnected) sheetConnected.style.display=connected?'block':'none';
-
-  // Home screen banner
-  const banner=document.getElementById('spotify-home-banner');
-  const shbTitle=document.getElementById('shb-title');
-  const shbSub=document.getElementById('shb-sub');
-  const shbArrow=document.getElementById('shb-arrow');
-  if(banner){
-    banner.className=connected?'spotify-home-banner connected':'spotify-home-banner';
-    if(shbTitle) shbTitle.textContent=connected?'✓ Spotify Connected':'Connect Spotify for auto-sync';
-    if(shbSub){ shbSub.textContent=connected?'Lyrics will scroll automatically with your music':'Lyrics scroll automatically with your music'; shbSub.className=connected?'shb-sub connected':'shb-sub'; }
-    if(shbArrow) shbArrow.textContent=connected?'→ Open Player':'→';
-    if(!S.spotifyClientId) banner.style.display='none';
-  }
-
-  // Mobile chip
-  const chip=document.getElementById('mobile-spotify-chip');
-  if(chip) chip.style.display=connected?'flex':'none';
-}
-
-function updateSpotifyTrackUI(name, artist, fallback) {
-  const trackName=document.getElementById('spotify-track-name');
-  const trackArtist=document.getElementById('spotify-track-artist');
-  const sheetTrack=document.getElementById('sheet-spotify-track');
-  const mobileChipStatus=document.getElementById('mobile-spotify-status');
-  if(name){
-    if(trackName) trackName.textContent=name;
-    if(trackArtist) trackArtist.textContent=artist||'';
-    if(sheetTrack) sheetTrack.textContent=name+(artist?' · '+artist:'');
-    if(mobileChipStatus) mobileChipStatus.textContent=S.spotifyIsPlaying?'▶ synced':'⏸ paused';
-  } else if(fallback){
-    if(trackName) trackName.textContent=fallback;
-    if(trackArtist) trackArtist.textContent='';
-    if(sheetTrack) sheetTrack.textContent=fallback;
-    if(mobileChipStatus) mobileChipStatus.textContent='idle';
-  }
-}
-
-function updatePlayButtons() {
-  const isPlaying = S.spotifyIsPlaying;
-  const icon = isPlaying ? '⏸' : '▶';
-  const label = isPlaying ? '⏸ Pause' : '▶ Play';
-  const playBtn = document.getElementById('play-btn');
-  if (playBtn) playBtn.textContent = icon;
-  const mobileBtn = document.getElementById('mobile-playpause-btn');
-  if (mobileBtn) mobileBtn.textContent = icon;
-  const sheetBtn = document.getElementById('sheet-playpause-btn');
-  if (sheetBtn) sheetBtn.textContent = label;
-}
-
-// ── TICK (250ms) ───────────────────────────────────────────────────────────
-function tick() {
-  const pos = S.offset;
-  const mm=Math.floor(pos/60); const ss=String(Math.floor(pos%60)).padStart(2,'0');
-  const timeStr=`${mm}:${ss}`;
-  const bm=document.getElementById('bar-min'); const bs=document.getElementById('bar-sec');
-  if(bm) bm.textContent=mm; if(bs) bs.textContent=ss;
-  const pill=document.getElementById('mobile-np-pill');
-  if(pill) pill.textContent=S.spotifyToken?(S.spotifyIsPlaying?'▶ '+timeStr:'⏸ '+timeStr):timeStr;
-  if(!S.lyrics.length) return;
-  const last=S.lyrics[S.lyrics.length-1]?.time||1;
-  const pf=document.getElementById('progress-fill-h'); if(pf) pf.style.width=Math.min(100,(pos/last)*100)+'%';
+// ── TICK ───────────────────────────────────────────────────────────────────
+function tick(){
+  const pos=S.offset;
+  const mm=Math.floor(pos/60);const ss=String(Math.floor(pos%60)).padStart(2,'0');
+  const bm=document.getElementById('bar-min');const bs=document.getElementById('bar-sec');
+  if(bm)bm.textContent=mm;if(bs)bs.textContent=ss;
+  if(S.lyrics.length){const last=S.lyrics[S.lyrics.length-1]?.time||1;const pf=document.getElementById('progress-fill-h');if(pf)pf.style.width=Math.min(100,(pos/last)*100)+'%';const rem=document.getElementById('pl-remaining');if(rem){const r=last-pos;const rm=Math.floor(r/60);const rs=String(Math.floor(r%60)).padStart(2,'0');rem.textContent=`-${rm}:${rs}`;}}
+  const cstats=document.getElementById('home-stats');if(cstats){const due=S.saved.length;cstats.innerHTML=`<b>${due} card${due===1?'':'s'} due</b> · <span id="home-streak-display">${S.streak}-day streak 🔥</span>`;}
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
-function rerender() {
-  renderLine('k-prev',S.lyrics[S.activeIdx-1],false);
-  renderLine('k-curr',S.lyrics[S.activeIdx],true);
-  renderLine('k-next',S.lyrics[S.activeIdx+1],false);
-}
+function rerender(){renderLine('k-prev',S.lyrics[S.activeIdx-1],false);renderLine('k-curr',S.lyrics[S.activeIdx],true);renderLine('k-next',S.lyrics[S.activeIdx+1],false);}
 
-function renderLine(id,line,isActive) {
-  const el=document.getElementById(id); if(!el) return;
+function renderLine(id,line,isActive){
+  const el=document.getElementById(id);if(!el)return;
   if(!line){el.innerHTML='';return;}
-  const isMobile=window.innerWidth<=700;
-  const showC=isMobile?(document.getElementById('tog-chars-m')?.checked??true):(document.getElementById('tog-chars')?.checked??true);
-  const showP=isMobile?(document.getElementById('tog-pin-m')?.checked??true):(document.getElementById('tog-pin')?.checked??true);
-  const showE=isMobile?(document.getElementById('tog-eng-m')?.checked??true):(document.getElementById('tog-eng')?.checked??true);
-  const sz=isActive?'28px':'20px';
+  const showC=document.getElementById('tog-chars')?.classList.contains('on')??true;
+  const showP=document.getElementById('tog-pin')?.classList.contains('on')??true;
+  const showE=document.getElementById('tog-eng')?.classList.contains('on')??true;
   const text=line.characters||line.text||'';
   let html='';
   if(line.words?.length){
-    html+='<div class="k-word-row">';
-    line.words.forEach((w,wi)=>{
-      const sv=S.saved.some(s=>s.char===w.char);
-      html+=`<span class="k-word ${sv?'saved':''}" onmouseenter="showTooltip(event,${S.activeIdx},${wi})" onmouseleave="hideTooltip()" onclick="showTooltip(event,${S.activeIdx},${wi})">`;
-      if(showP&&w.pinyin) html+=`<span class="k-pin">${esc(w.pinyin)}</span>`;
-      else if(w.pinyin)   html+=`<span class="k-pin k-pin-hover">${esc(w.pinyin)}</span>`;
-      html+=`<span class="k-char" style="font-size:${sz};${showC?'':'opacity:0.12'}">${esc(w.char)}</span>`;
-      html+='</span>';
-    });
-    html+='</div>';
-    if(showE&&line.english)   html+=`<div class="k-eng-on">${esc(line.english)}</div>`;
-    else if(line.english)     html+=`<div class="k-eng-hover">${esc(line.english)}</div>`;
-  } else if(line.pinyin||line.english){
-    if(showP&&line.pinyin) html+=`<div style="font-size:10px;color:var(--purple2);margin-bottom:4px;font-family:'JetBrains Mono',monospace">${esc(line.pinyin)}</div>`;
-    if(showC) html+=`<div style="font-family:'Noto Serif SC',serif;font-size:${sz};line-height:1.3">${esc(text)}</div>`;
-    if(showE&&line.english) html+=`<div class="k-eng-on" style="margin-top:4px">${esc(line.english)}</div>`;
-  } else {
-    html=`<span style="font-family:'Noto Serif SC',serif;font-size:${sz};opacity:0.5">${esc(text)}</span>`;
-  }
+    if(showP){html+=`<div class="pin">${esc(line.words.map(w=>w.pinyin).join(' '))}</div>`;}
+    if(showC){html+='<div class="chars">';line.words.forEach((w,wi)=>{const sv=S.saved.some(s=>s.char===w.char);html+=`<span class="k-word${sv?' is-saved':''}" onclick="openWordSheet(event,${S.activeIdx},${wi})">${esc(w.char)}</span>`;});html+='</div>';}
+    if(showE&&line.english)html+=`<div class="eng">${esc(line.english)}</div>`;
+  }else if(line.pinyin||line.english){
+    if(showP&&line.pinyin)html+=`<div class="pin">${esc(line.pinyin)}</div>`;
+    if(showC)html+=`<div class="chars">${esc(text)}</div>`;
+    if(showE&&line.english)html+=`<div class="eng">${esc(line.english)}</div>`;
+  }else{html=`<div class="chars" style="opacity:.4">${esc(text)}</div>`;}
   el.innerHTML=html;
 }
 
-// ── MANUAL SCROLL & KEYBOARD ───────────────────────────────────────────────
-function manualScroll(dir){
-  S.activeIdx=Math.max(0,Math.min(S.lyrics.length-1,S.activeIdx+dir));
-  rerender();
-}
+function manualScroll(dir){S.activeIdx=Math.max(0,Math.min(S.lyrics.length-1,S.activeIdx+dir));rerender();}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();manualScroll(-1);}if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();manualScroll(1);}});
+let wt=null;document.addEventListener('wheel',e=>{const pl=document.getElementById('screen-player');if(!pl||pl.classList.contains('hidden'))return;if(wt)return;if(e.deltaY>0){manualScroll(1);wt=setTimeout(()=>{wt=null;},350);}else if(e.deltaY<0){manualScroll(-1);wt=setTimeout(()=>{wt=null;},350);}},{passive:true});
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();manualScroll(-1);}
-  if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();manualScroll(1);}
-});
-
-let wheelTimer=null;
-document.addEventListener('wheel',e=>{
-  const player=document.getElementById('view-player');
-  if(!player||player.classList.contains('hidden')) return;
-  if(wheelTimer) return;
-  if(e.deltaY>0){manualScroll(1);wheelTimer=setTimeout(()=>{wheelTimer=null;},350);}
-  else if(e.deltaY<0){manualScroll(-1);wheelTimer=setTimeout(()=>{wheelTimer=null;},350);}
-},{passive:true});
-
-// ── TOGGLES ────────────────────────────────────────────────────────────────
-function syncToggles(which){
-  const desktop=document.getElementById('tog-'+which);
-  const mobile=document.getElementById('tog-'+which+'-m');
-  if(window.innerWidth<=700){if(desktop&&mobile)desktop.checked=mobile.checked;}
-  else{if(desktop&&mobile)mobile.checked=desktop.checked;}
-  rerender();
-}
-
-// ── WORD TOOLTIP ────────────────────────────────────────────────────────────
-let tooltipWord=null, tooltipHideTimer=null;
-function showTooltip(e,lineIdx,wordIdx){
-  clearTimeout(tooltipHideTimer);
-  const line=S.lyrics[lineIdx]; const w=line?.words?.[wordIdx]; if(!w) return;
-  tooltipWord={char:w.char,pinyin:w.pinyin,english:w.english};
-  const saved=S.saved.some(s=>s.char===w.char);
+// ── WORD SHEET ─────────────────────────────────────────────────────────────
+function openWordSheet(e,lineIdx,wordIdx){
+  e.stopPropagation();
+  const line=S.lyrics[lineIdx];const w=line?.words?.[wordIdx];if(!w)return;
+  S.tooltipWord={char:w.char,pinyin:w.pinyin,english:w.english};S.tooltipLineIdx=lineIdx;
   document.getElementById('tt-char').textContent=w.char;
   document.getElementById('tt-pin').textContent=w.pinyin||'';
   document.getElementById('tt-eng').textContent=w.english||'';
-  document.getElementById('tt-add').textContent=saved?'✓ In Deck':'+ Add to Deck';
-  document.getElementById('tt-add').style.background=saved?'rgba(52,211,153,0.3)':'';
-  const tt=document.getElementById('word-tooltip'); tt.style.display='block';
-  const x=Math.min(e.clientX+12,window.innerWidth-230);
-  const y=Math.min(e.clientY-10,window.innerHeight-180);
-  tt.style.left=x+'px'; tt.style.top=y+'px';
+  const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
+  const labelMap={zh:'MANDARIN',ko:'KOREAN',ja:'JAPANESE'};
+  document.getElementById('w-lang-label').textContent=`${labelMap[S.sourceLang]||'MANDARIN'} → ${(S.targetLanguage||'ENGLISH').toUpperCase()}`;
+  // Context
+  document.getElementById('w-ctx-pin').textContent=line.pinyin||(line.words?.map(x=>x.pinyin).join(' '))||'';
+  const charHtml=line.words?line.words.map(x=>`<span${x.char===w.char?' style="color:var(--a);font-weight:700"':''}>${esc(x.char)}</span>`).join(''): esc(line.characters||'');
+  document.getElementById('w-ctx-chars').innerHTML=charHtml;
+  document.getElementById('w-ctx-eng').textContent=line.english||'';
+  const saved=S.saved.some(s=>s.char===w.char);
+  const addBtn=document.getElementById('tt-add');
+  if(addBtn){addBtn.textContent=saved?'✓ In Deck':'+ Save to deck';addBtn.style.background=saved?'rgba(30,215,96,0.3)':'';}
+  openSheet('word');
 }
-function hideTooltip(){tooltipHideTimer=setTimeout(()=>{document.getElementById('word-tooltip').style.display='none';},300);}
+
+function hearWord(){
+  if(!S.tooltipWord)return;
+  const langMap={zh:'zh-CN',ko:'ko-KR',ja:'ja-JP'};
+  const u=new SpeechSynthesisUtterance(S.tooltipWord.char);
+  u.lang=langMap[S.sourceLang]||'zh-CN';u.rate=0.8;
+  speechSynthesis.speak(u);
+}
+
 function tooltipAddToDeck(){
-  if(!tooltipWord) return;
-  const {char,pinyin,english}=tooltipWord;
+  if(!S.tooltipWord)return;
+  const{char,pinyin,english}=S.tooltipWord;
   const idx=S.saved.findIndex(s=>s.char===char);
-  if(idx>=0) S.saved.splice(idx,1); else S.saved.push({char,pinyin,english,song:S.title});
-  localStorage.setItem('ht_deck',JSON.stringify(S.saved)); updateBadge(); rerender();
+  if(idx>=0)S.saved.splice(idx,1);else S.saved.push({char,pinyin,english,song:S.title,artist:S.artist});
+  localStorage.setItem('ht_deck',JSON.stringify(S.saved));
+  updateBadge();rerender();
   const saved=S.saved.some(s=>s.char===char);
-  document.getElementById('tt-add').textContent=saved?'✓ In Deck':'+ Add to Deck';
-  document.getElementById('tt-add').style.background=saved?'rgba(52,211,153,0.3)':'';
+  const addBtn=document.getElementById('tt-add');
+  if(addBtn){addBtn.textContent=saved?'✓ In Deck':'+ Save to deck';addBtn.style.background=saved?'rgba(30,215,96,0.3)':'';}
 }
-document.addEventListener('click',e=>{
-  if(!e.target.closest('#word-tooltip')&&!e.target.closest('.k-word'))
-    document.getElementById('word-tooltip').style.display='none';
-});
+
+// ── SONG INFO ──────────────────────────────────────────────────────────────
+function openSongInfo(){
+  document.getElementById('si-title').textContent=S.title||'—';
+  document.getElementById('si-artist').textContent=S.artist||'—';
+  document.getElementById('si-lang').textContent=S.targetLanguage||'English';
+  const siArt=document.getElementById('si-art');
+  if(S.spotifyCurrentAlbumArt)siArt.innerHTML=`<img src="${S.spotifyCurrentAlbumArt}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px;position:relative;z-index:1">`;
+  if(S.lyrics.length){const last=S.lyrics[S.lyrics.length-1].time;const m=Math.floor(last/60);const s=String(Math.floor(last%60)).padStart(2,'0');document.getElementById('si-duration').textContent=`${m}:${s}`;}
+  const wc=S.lyrics.filter(l=>l.words?.length).reduce((a,l)=>a+l.words.length,0);
+  document.getElementById('si-word-count').textContent=wc+' words';
+  openSheet('info');
+}
+
+function retranslateSong(){
+  if(!S.lyrics.length)return;
+  S.lyrics.forEach(l=>{l.pinyin=null;l.english=null;l.words=null;});
+  const tran=document.getElementById('pl-translating');if(tran)tran.classList.remove('hidden');
+  annotateInChunks(S.lyrics,S.apiKey).then(()=>{if(tran)tran.classList.add('hidden');rerender();});
+}
+
+function saveAllWords(){
+  S.lyrics.forEach(l=>{if(!l.words)return;l.words.forEach(w=>{if(!S.saved.some(s=>s.char===w.char))S.saved.push({char:w.char,pinyin:w.pinyin,english:w.english,song:S.title,artist:S.artist});});});
+  localStorage.setItem('ht_deck',JSON.stringify(S.saved));
+  updateBadge();rerender();
+}
 
 // ── DECK ───────────────────────────────────────────────────────────────────
 function updateBadge(){
-  const n=S.saved.length;
-  const el=document.getElementById('deck-badge');
-  el.textContent=n; el.classList.toggle('hidden',n===0);
+  const n=S.saved.length;const el=document.getElementById('deck-badge');
+  if(el){el.textContent=n;el.classList.toggle('show',n>0);}
 }
 
 function renderDeck(){
   const words=S.saved;
-  document.getElementById('deck-empty').classList.toggle('hidden',words.length>0);
-  document.getElementById('deck-cards').classList.toggle('hidden',words.length===0);
-  if(!words.length) return;
-  if(S.cardIdx>=words.length) S.cardIdx=0;
-  const w=words[S.cardIdx]; S.cardFlipped=false;
-  document.getElementById('card-inner').classList.remove('flipped');
-  document.getElementById('card-btns').style.display='none';
+  const empty=document.getElementById('dk-empty');const area=document.getElementById('dk-card-area');const btns=document.getElementById('card-btns');
+  if(!words.length){if(empty)empty.classList.remove('hidden');if(area)area.classList.add('hidden');if(btns)btns.classList.add('hidden');return;}
+  if(empty)empty.classList.add('hidden');if(area)area.classList.remove('hidden');
+  if(S.cardIdx>=words.length)S.cardIdx=0;
+  const w=words[S.cardIdx];S.cardFlipped=false;
+  document.getElementById('card-inner').classList.remove('is-flipped');
+  if(btns)btns.classList.add('hidden');
   document.getElementById('card-front-char').textContent=w.char;
-  document.getElementById('card-front-song').textContent=w.song?'from: '+w.song:'';
-  document.getElementById('card-back-pin').textContent=w.pinyin;
-  document.getElementById('card-back-eng').textContent=w.english;
+  document.getElementById('card-front-song').textContent=w.song?'FROM: '+w.song:'';
+  document.getElementById('card-back-pin').textContent=w.pinyin||'';
+  document.getElementById('card-back-eng').textContent=w.english||'';
   document.getElementById('card-back-char').textContent=w.char;
-  document.getElementById('grid-label').textContent=`All saved words (${words.length})`;
-  document.getElementById('word-grid').innerHTML=words.map((w,i)=>
-    `<div class="word-card ${i===S.cardIdx?'wc-active':''}" onclick="jumpToCard(${i})" style="cursor:pointer">
-      <div><div class="wc-char">${esc(w.char)}</div><div class="wc-pin">${esc(w.pinyin)}</div><div class="wc-eng">${esc(w.english)}</div></div>
-      <button class="wc-del" onclick="event.stopPropagation();removeWord(${i})">×</button>
-    </div>`
-  ).join('');
+  // Lyric context
+  const ctx=document.getElementById('card-ctx');
+  if(ctx){
+    const line=S.lyrics.find(l=>l.words?.some(x=>x.char===w.char));
+    if(line){
+      ctx.style.display='block';
+      document.getElementById('card-ctx-pin').textContent=line.words?.map(x=>x.pinyin).join(' ')||line.pinyin||'';
+      const charsEl=document.getElementById('card-ctx-chars');if(charsEl){charsEl.innerHTML=line.words?line.words.map(x=>`<span${x.char===w.char?' style="color:var(--a)"':''}>${esc(x.char)}</span>`).join(''): esc(line.characters||'');}
+      document.getElementById('card-ctx-eng').textContent=line.english||'';
+    }else ctx.style.display='none';
+  }
+  const total=words.length;const done=S.cardIdx;
+  document.getElementById('dk-count').textContent=`${done+1} / ${total}`;
+  document.getElementById('dk-prog-fill').style.width=((done)/total*100)+'%';
 }
-function jumpToCard(i){S.cardIdx=i;renderDeck();}
+
+function resetCard(){goTab('deck');}
+
 function flipCard(){
   S.cardFlipped=!S.cardFlipped;
-  document.getElementById('card-inner').classList.toggle('flipped',S.cardFlipped);
-  document.getElementById('card-btns').style.display=S.cardFlipped?'flex':'none';
+  document.getElementById('card-inner').classList.toggle('is-flipped',S.cardFlipped);
+  document.getElementById('card-btns').classList.toggle('hidden',!S.cardFlipped);
 }
+
 function cardAction(a){
-  if(a==='remove'){removeWord(S.cardIdx);return;}
-  S.cardIdx=(S.cardIdx+1)%Math.max(1,S.saved.length);
-  renderDeck();
-}
-function removeWord(i){
-  S.saved.splice(i,1);
-  localStorage.setItem('ht_deck',JSON.stringify(S.saved));
-  updateBadge();
-  if(S.cardIdx>=S.saved.length) S.cardIdx=Math.max(0,S.saved.length-1);
-  renderDeck();
-}
-function exportCSV(){
-  const rows=['Character,Pinyin,English,Song',...S.saved.map(w=>`"${w.char}","${w.pinyin}","${w.english}","${w.song||''}"`)];
-  const a=Object.assign(document.createElement('a'),{
-    href:URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'})),
-    download:'songlingo-deck.csv'
-  });
-  a.click();
+  if(a==='again'){S.cardIdx=S.cardIdx;renderDeck();return;}
+  if(a==='hard'){S.cardIdx=(S.cardIdx+1)%Math.max(1,S.saved.length);renderDeck();return;}
+  S.cardIdx=(S.cardIdx+1)%Math.max(1,S.saved.length);renderDeck();
 }
 
-// ── SEARCH STATUS ──────────────────────────────────────────────────────────
-function setSearchStatus(type,msg){
-  const el=document.getElementById('search-status');
-  el.className='search-status '+type;
-  el.innerHTML=(type==='loading'?'<span class="spinner"></span> ':'')+msg;
+function removeWord(i){S.saved.splice(i,1);localStorage.setItem('ht_deck',JSON.stringify(S.saved));updateBadge();if(S.cardIdx>=S.saved.length)S.cardIdx=Math.max(0,S.saved.length-1);renderDeck();}
+
+// ── PROFILE ────────────────────────────────────────────────────────────────
+function renderProfile(){
+  renderProfileSpotify();
+  const kv=document.getElementById('prof-key-status');if(kv)kv.textContent=S.apiKey?'sk-ant-••••••••':'Not set';
+  const lv=document.getElementById('prof-lang-value');if(lv)lv.textContent=S.targetLanguage||'English';
+  const ps=document.getElementById('prof-sub');if(ps){const langNames={zh:'Mandarin',ko:'Korean',ja:'Japanese'};ps.textContent=`你好 · Learning ${langNames[S.sourceLang]||'Mandarin'}`;}
+  const sn=document.getElementById('streak-num');if(sn)sn.textContent=S.streak;
 }
 
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function renderProfileSpotify(){
+  const status=document.getElementById('prof-sp-status');
+  const disc=document.getElementById('prof-disconnect');
+  if(S.spotifyToken){if(status)status.textContent='Connected · auto-syncs lyrics';if(disc)disc.classList.remove('hidden');}
+  else{if(status)status.textContent='Not connected';if(disc)disc.classList.add('hidden');}
+}
 
-// ── BOTTOM SHEET ───────────────────────────────────────────────────────────
-function openSheet(){
-  document.getElementById('bottom-sheet').classList.add('open');
+function saveApiKey(val){
+  S.apiKey=val;localStorage.setItem('ht_key',val);updateKeyStatus();
+}
+function updateKeyStatus(){
+  const kv=document.getElementById('prof-key-status');if(kv)kv.textContent=S.apiKey?'sk-ant-••••••••':'Not set';
+}
+
+// ── SHEETS ─────────────────────────────────────────────────────────────────
+function openSheet(name){
+  closeAllSheets();
   document.getElementById('sheet-backdrop').classList.add('open');
+  document.getElementById('sheet-'+name).classList.add('open');
   document.body.style.overflow='hidden';
 }
-function closeSheet(){
-  document.getElementById('bottom-sheet').classList.remove('open');
+function closeAllSheets(){
   document.getElementById('sheet-backdrop').classList.remove('open');
+  ['word','display','info','lang','apikey'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
   document.body.style.overflow='';
 }
-
-// ── SOURCE LANGUAGE ────────────────────────────────────────────────────────
-const LANG_CONFIG = {
-  zh: { pinyin: 'Pinyin',       charLabel: 'Characters', genre: 'genre:mandopop',    market: 'TW', charFilter: /[\u4e00-\u9fff]/, placeholder: 'Search any Mandarin song or artist...' },
-  ko: { pinyin: 'Romanization', charLabel: 'Hangul',     genre: 'genre:k-pop',       market: 'KR', charFilter: /[\uAC00-\uD7AF]/, placeholder: 'Search any Korean song or artist...' },
-  ja: { pinyin: 'Romaji',       charLabel: 'Characters', genre: 'genre:j-pop',       market: 'JP', charFilter: /[\u3040-\u30FF]/, placeholder: 'Search any Japanese song or artist...' },
-  es: { pinyin: 'Phonetics',    charLabel: 'Lyrics',     genre: 'genre:latin',       market: 'ES', charFilter: null,              placeholder: 'Search any Spanish song or artist...' },
-  pt: { pinyin: 'Phonetics',    charLabel: 'Lyrics',     genre: 'genre:mpb OR bossa nova sertanejo', market: 'BR', charFilter: null, placeholder: 'Search any Portuguese song or artist...' },
-};
-
-function setSourceLang(lang, silent=false) {
-  S.sourceLang = lang;
-  if (!silent) localStorage.setItem('sl_source', lang);
-  // Update active tab
-  ['zh','ko','ja','es','pt'].forEach(l => {
-    const el = document.getElementById('tab-'+l);
-    if (el) el.classList.toggle('active', l===lang);
-  });
-  // Update Pinyin toggle label
-  const cfg = LANG_CONFIG[lang] || LANG_CONFIG.zh;
-  ['pin-toggle-label','pin-toggle-label-m'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = cfg.pinyin;
-  });
-  // Update Characters toggle label
-  ['chars-toggle-label','chars-toggle-label-m'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = cfg.charLabel;
-  });
-  // Update search placeholder
-  const inp = document.getElementById('inp-title');
-  if (inp) inp.placeholder = cfg.placeholder;
-  // Refresh popular tracks if Spotify connected
-  if (!silent && S.spotifyToken) fetchPopularMandarin();
+function openDisplaySheet(){openSheet('display');}
+function openLangSheet(){
+  document.getElementById('lang-sheet-select').value=S.targetLanguage;
+  openSheet('lang');
+}
+function openApiKeySheet(){
+  const ki=document.getElementById('profile-apikey');if(ki)ki.value=S.apiKey;
+  openSheet('apikey');
 }
 
-// ── TARGET LANGUAGE ────────────────────────────────────────────────────────
-function setTargetLanguage(lang, silent=false) {
-  S.targetLanguage = lang;
-  if (!silent) localStorage.setItem('sl_lang', lang);
-  // Update select
-  const sel = document.getElementById('target-lang-select');
-  if (sel) sel.value = lang;
-  // Update toggle labels
-  const label = lang === 'English' ? 'English' : lang;
-  const el1 = document.getElementById('eng-toggle-label');
-  const el2 = document.getElementById('eng-toggle-label-m');
-  if (el1) el1.textContent = label;
-  if (el2) el2.textContent = label;
+// ── TOGGLES ────────────────────────────────────────────────────────────────
+function toggleSwitch(which){
+  const btn=document.getElementById('tog-'+which);if(!btn)return;
+  const isOn=btn.classList.contains('on');
+  btn.classList.toggle('on',!isOn);
+  btn.setAttribute('aria-checked',String(!isOn));
+  const stateEl=document.getElementById('dt-'+which+'-state');if(stateEl)stateEl.textContent=isOn?'Off':'On';
+  rerender();
 }
 
-// ── SEARCH AUTOCOMPLETE ────────────────────────────────────────────────────
-let searchDebounceTimer = null;
-let dropdownHighlight = -1;
-
-function handleSearchInput(e) {
-  const q = e.target.value.trim();
-  clearTimeout(searchDebounceTimer);
-  if (q.length < 1) { closeDropdown(); return; }
-  searchDebounceTimer = setTimeout(() => fetchSuggestions(q), 320);
+// ── LANGUAGE ───────────────────────────────────────────────────────────────
+function setSourceLang(lang,silent=false){
+  S.sourceLang=lang;if(!silent)localStorage.setItem('sl_source',lang);
+  const cfg=LANG_CONFIG[lang]||LANG_CONFIG.zh;
+  const pl=document.getElementById('pin-toggle-label');if(pl)pl.textContent=cfg.pinyin;
+  const cl=document.getElementById('chars-toggle-label');if(cl)cl.textContent=cfg.charLabel;
+  if(!silent&&S.spotifyToken)fetchPopularSpotify();
+}
+function setTargetLanguage(lang,silent=false){
+  S.targetLanguage=lang;if(!silent)localStorage.setItem('sl_lang',lang);
+  const langSheetSel=document.getElementById('lang-sheet-select');if(langSheetSel)langSheetSel.value=lang;
+  const el=document.getElementById('eng-toggle-label');if(el)el.textContent=lang==='English'?'Translation':lang;
+  const lv=document.getElementById('prof-lang-value');if(lv)lv.textContent=lang;
+  const sl=document.getElementById('si-lang');if(sl)sl.textContent=lang;
+  const ot=document.getElementById('ob-target-lang');if(ot)ot.value=lang;
 }
 
-function handleSearchKeydown(e) {
-  const dd = document.getElementById('search-dropdown');
-  const items = dd.querySelectorAll('.sd-item');
-  if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    dropdownHighlight = Math.min(dropdownHighlight + 1, items.length - 1);
-    highlightItem(items);
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    dropdownHighlight = Math.max(dropdownHighlight - 1, -1);
-    highlightItem(items);
-  } else if (e.key === 'Enter') {
-    if (dropdownHighlight >= 0 && items[dropdownHighlight]) {
-      items[dropdownHighlight].click();
-    } else {
-      startSearch();
-    }
-  } else if (e.key === 'Escape') {
-    closeDropdown();
-  }
-}
-
-function highlightItem(items) {
-  items.forEach((el, i) => el.classList.toggle('highlighted', i === dropdownHighlight));
-  if (items[dropdownHighlight]) items[dropdownHighlight].scrollIntoView({block:'nearest'});
-}
-
-async function fetchSuggestions(q) {
-  const dd = document.getElementById('search-dropdown');
-  dd.innerHTML = `<div class="sd-loading"><span class="spinner"></span> Searching...</div>`;
-  dd.classList.add('open');
-  dropdownHighlight = -1;
-  try {
-    const r = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(q)}`);
-    const results = await r.json();
-    const cfg = LANG_CONFIG[S.sourceLang] || LANG_CONFIG.zh;
-    // Filter to tracks matching source language characters (if applicable)
-    const filtered = cfg.charFilter
-      ? results.filter(t => t.syncedLyrics && cfg.charFilter.test(t.trackName + (t.artistName||'')))
-      : results.filter(t => t.syncedLyrics);
-    renderDropdown(filtered.length ? filtered.slice(0, 7) : results.filter(t => t.syncedLyrics).slice(0, 7));
-  } catch(e) {
-    dd.innerHTML = `<div class="sd-loading" style="color:var(--muted)">Could not reach search — type to search manually</div>`;
-    setTimeout(closeDropdown, 2000);
-  }
-}
-
-function renderDropdown(results) {
-  const dd = document.getElementById('search-dropdown');
-  if (!results.length) {
-    dd.innerHTML = `<div class="sd-loading" style="color:var(--muted)">No results found</div>`;
-    return;
-  }
-  dd.innerHTML = results.map((t, i) => {
-    const title = esc(t.trackName || '');
-    const artist = esc(t.artistName || '');
-    return `<div class="sd-item" onclick="selectSuggestion(${JSON.stringify(t.trackName)},${JSON.stringify(t.artistName||'')})">
-      <div class="sd-icon">🎵</div>
-      <div class="sd-info">
-        <div class="sd-title">${title}</div>
-        <div class="sd-artist">${artist}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function selectSuggestion(title, artist) {
-  document.getElementById('inp-title').value = title;
-  document.getElementById('inp-artist').value = artist;
-  closeDropdown();
-  startSearch();
-}
-
-function closeDropdown() {
-  const dd = document.getElementById('search-dropdown');
-  dd.classList.remove('open');
-  dd.innerHTML = '';
-  dropdownHighlight = -1;
-}
-
-// Close dropdown when clicking outside
-document.addEventListener('click', e => {
-  if (!e.target.closest('.search-wrap')) closeDropdown();
-});
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function exportCSV(){const rows=['Character,Pinyin,English,Song',...S.saved.map(w=>`"${w.char}","${w.pinyin}","${w.english}","${w.song||''}"`)];const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'})),download:'songlingo-deck.csv'});a.click();}
 </script>
 </body>
 </html>
