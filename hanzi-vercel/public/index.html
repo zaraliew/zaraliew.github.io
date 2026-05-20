@@ -202,13 +202,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
 /* === DECK SCREEN === */
 #screen-deck{top:0;left:0;right:0;bottom:var(--tab-h);display:flex;flex-direction:column;padding:54px 22px 0}
-.dk-hdr{display:flex;align-items:center;padding:0 0 16px;flex-shrink:0}
-.dk-close{width:36px;height:36px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--soft);border:none}
-.dk-count{flex:1;text-align:center;font:600 14px/1 'JetBrains Mono';color:var(--muted)}
-.dk-prog-wrap{flex-shrink:0;margin-bottom:12px}
+.dk-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 0 14px;flex-shrink:0}
+.dk-count{font:600 13px/1 'JetBrains Mono';color:var(--muted)}
+.dk-prog-wrap{flex-shrink:0;margin-bottom:10px}
 .dk-prog{height:3px;background:rgba(255,255,255,.08);border-radius:2px}
 .dk-prog-fill{height:100%;background:var(--a);border-radius:2px;transition:width .4s}
-.dk-hint{text-align:center;font:500 10px/1 'JetBrains Mono';letter-spacing:.12em;color:var(--dim);margin-bottom:16px;flex-shrink:0}
+.dk-hint{text-align:center;font:500 10px/1 'JetBrains Mono';letter-spacing:.12em;color:var(--dim);margin-bottom:14px;flex-shrink:0}
 .dk-card-area{flex:1;display:flex;flex-direction:column;justify-content:center;perspective:1100px;min-height:0;cursor:pointer}
 #card-inner{width:100%;height:100%;max-height:400px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
 #card-inner.is-flipped{transform:rotateY(180deg)}
@@ -328,6 +327,23 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .art-i{background:linear-gradient(135deg,#7a6bd8 0%,#1a1530 100%)}
 .art-s{background:linear-gradient(135deg,#7a9362 0%,#171f10 100%)}
 
+/* Deck mode toggle */
+.dk-mode-toggle{display:flex;gap:4px;background:var(--s1);border:0.5px solid var(--b2);border-radius:12px;padding:3px}
+.dk-mode-btn{display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:9px;font:600 12px/1 'Plus Jakarta Sans';color:var(--muted);background:none;border:none;cursor:pointer;transition:all .15s}
+.dk-mode-btn.active{background:var(--bg3);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+/* Deck list view */
+.dk-list-search{display:flex;align-items:center;gap:10px;background:var(--s1);border:0.5px solid var(--b2);border-radius:14px;padding:12px 14px;margin-bottom:14px}
+.dk-list-item{display:flex;align-items:center;gap:14px;padding:14px 12px;border-radius:14px;background:var(--s1);border:0.5px solid var(--b1);margin-bottom:8px;transition:background .15s}
+.dk-list-char{font:400 28px/1 'Noto Serif SC';min-width:48px;text-align:center;flex-shrink:0}
+.dk-list-info{flex:1;min-width:0}
+.dk-list-pin{font:400 12px/1 'JetBrains Mono';color:var(--a);margin-bottom:4px;letter-spacing:.03em}
+.dk-list-eng{font:600 14px/1 'Plus Jakarta Sans';color:var(--text);margin-bottom:3px}
+.dk-list-song{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dk-list-del{width:32px;height:32px;border-radius:10px;background:rgba(255,100,100,.12);color:#ff8080;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:background .15s}
+.dk-list-del:active{background:rgba(255,100,100,.25)}
+#dk-list-mode{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+#dk-cards-mode{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 /* utils */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -539,16 +555,22 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
      DECK
 ══════════════════════════════════ -->
 <div id="screen-deck" class="screen tab-screen hidden">
+  <!-- Header: mode toggle + counter -->
   <div class="dk-hdr">
-    <button class="dk-close" onclick="resetCard()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
+    <div class="dk-mode-toggle">
+      <button id="dk-mode-cards" class="dk-mode-btn active" onclick="setDeckMode('cards')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="3"/></svg>
+        Cards
+      </button>
+      <button id="dk-mode-list" class="dk-mode-btn" onclick="setDeckMode('list')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        List
+      </button>
+    </div>
     <div class="dk-count" id="dk-count">0 / 0</div>
-    <div style="width:36px"></div>
   </div>
-  <div class="dk-prog-wrap"><div class="dk-prog"><div class="dk-prog-fill" id="dk-prog-fill" style="width:0%"></div></div></div>
-  <div class="dk-hint">← AGAIN · ↓ HARD · TAP TO FLIP · GOT IT →</div>
 
+  <!-- Empty state -->
   <div class="dk-empty hidden" id="dk-empty">
     <div class="dk-empty-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="6" width="14" height="14" rx="2"/><path d="M8 6V4a2 2 0 012-2h8a2 2 0 012 2v14"/></svg></div>
     <h3>Your deck is empty.</h3>
@@ -556,31 +578,48 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <button class="btn btn-a" onclick="goTab('home')" style="margin-top:6px">Start Listening</button>
   </div>
 
-  <div class="dk-card-area" id="dk-card-area" onclick="flipCard()">
-    <div id="card-inner">
-      <div class="card-face front">
-        <div id="card-front-char" class="cjk">字</div>
-        <div id="card-front-song"></div>
-        <div class="card-tap">TAP TO REVEAL</div>
-      </div>
-      <div class="card-face back">
-        <div id="card-back-pin"></div>
-        <div id="card-back-eng"></div>
-        <div id="card-back-char" class="cjk"></div>
-        <div class="card-ctx" id="card-ctx" style="display:none">
-          <div class="card-ctx-label">FROM THIS LINE</div>
-          <div class="card-ctx-pin" id="card-ctx-pin"></div>
-          <div class="card-ctx-chars cjk" id="card-ctx-chars"></div>
-          <div class="card-ctx-eng" id="card-ctx-eng"></div>
+  <!-- CARD MODE -->
+  <div id="dk-cards-mode">
+    <div class="dk-prog-wrap"><div class="dk-prog"><div class="dk-prog-fill" id="dk-prog-fill" style="width:0%"></div></div></div>
+    <div class="dk-hint">← AGAIN  ·  ↓ HARD  ·  TAP TO FLIP  ·  GOT IT →</div>
+
+    <div class="dk-card-area" id="dk-card-area">
+      <div id="card-inner">
+        <div class="card-face front">
+          <div id="card-front-char" class="cjk">字</div>
+          <div id="card-front-song"></div>
+          <div class="card-tap" id="card-tap-hint">TAP TO REVEAL</div>
+        </div>
+        <div class="card-face back">
+          <div id="card-back-pin"></div>
+          <div id="card-back-eng"></div>
+          <div id="card-back-char" class="cjk"></div>
+          <div class="card-ctx" id="card-ctx" style="display:none">
+            <div class="card-ctx-label">FROM THIS LINE</div>
+            <div class="card-ctx-pin" id="card-ctx-pin"></div>
+            <div class="card-ctx-chars cjk" id="card-ctx-chars"></div>
+            <div class="card-ctx-eng" id="card-ctx-eng"></div>
+          </div>
         </div>
       </div>
     </div>
+
+    <div id="card-btns" class="dk-btns">
+      <button class="dk-btn" onclick="cardAction('again')">Again</button>
+      <button class="dk-btn" onclick="cardAction('hard')">Hard</button>
+      <button class="dk-btn got" onclick="cardAction('got')">Got it ✓</button>
+    </div>
   </div>
 
-  <div id="card-btns" class="dk-btns hidden">
-    <button class="dk-btn" onclick="cardAction('again')">Again</button>
-    <button class="dk-btn" onclick="cardAction('hard')">Hard</button>
-    <button class="dk-btn got" onclick="cardAction('got')">Got it</button>
+  <!-- LIST MODE -->
+  <div id="dk-list-mode" class="hidden">
+    <div class="dk-list-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="text" placeholder="Search saved words…" oninput="filterDeckList(this.value)" style="flex:1;font-size:14px;color:var(--text)">
+    </div>
+    <div class="scr" style="flex:1;padding:0 0 12px">
+      <div id="dk-word-list"></div>
+    </div>
   </div>
 </div>
 
@@ -873,7 +912,8 @@ window.onload = async () => {
     showScreen('home');
     updateHomeNowPlaying();
     updateBadge();
-    if (S.spotifyToken) fetchPopularSpotify();
+    fetchPopularSpotify(); // always try; falls back to iTunes if no Spotify
+    updateContinueLearning();
   } else {
     showScreen('onboarding');
   }
@@ -917,7 +957,7 @@ function goTab(tab) {
   });
   if (tab === 'deck') renderDeck();
   if (tab === 'profile') renderProfile();
-  if (tab === 'home') { updateHomeNowPlaying(); updateContinueLearning(); }
+  if (tab === 'home') { updateHomeNowPlaying(); updateContinueLearning(); fetchPopularSpotify(); }
 }
 function goBack() { showScreen(S.prevView || 'home'); document.getElementById('tab-bar').classList.remove('hidden'); }
 
@@ -944,8 +984,8 @@ function obSelectLang(el) {
 function skipOnboarding() { localStorage.setItem('sl_setup','1'); S.setupDone=true; showScreen('home'); updateBadge(); }
 function finishOnboarding() {
   localStorage.setItem('sl_setup','1'); S.setupDone=true;
-  showScreen('home'); updateBadge(); updateHomeNowPlaying();
-  if (S.spotifyToken) fetchPopularSpotify();
+  showScreen('home'); updateBadge(); updateHomeNowPlaying(); updateContinueLearning();
+  fetchPopularSpotify();
 }
 function redoSetup() {
   localStorage.removeItem('sl_setup'); S.setupDone=false;
@@ -1006,20 +1046,30 @@ function updateHomeNowPlaying() {
 function updateContinueLearning() {
   const sec = document.getElementById('home-continue');
   if (!sec) return;
-  const byS = {};
-  S.saved.forEach(w => { if (w.song) { byS[w.song]=(byS[w.song]||{count:0,artist:w.artist||''}); byS[w.song].count++; } });
-  const songs = Object.entries(byS).slice(0,4);
-  if (!songs.length) { sec.classList.add('hidden'); return; }
+  const history = getHistory();
+  if (!history.length) { sec.classList.add('hidden'); return; }
   sec.classList.remove('hidden');
-  const tiles = ['art-a','art-t','art-r','art-i'];
+  // Count saved words per song
+  const wordCounts = {};
+  S.saved.forEach(w => { if(w.song) wordCounts[w.song] = (wordCounts[w.song]||0)+1; });
+  const tiles = ['art-a','art-t','art-r','art-i','art-s'];
+  const rows = history.slice(0, 5).map((h, i) => {
+    const count = wordCounts[h.title] || 0;
+    const artHtml = h.albumArt
+      ? `<img src="${h.albumArt}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentNode.innerHTML='<div class=sr-art-fallback ${tiles[i%5]}></div>'">`
+      : `<div class="sr-art-fallback ${tiles[i%5]}"></div>`;
+    return `<div class="song-row" onclick="loadSong(${JSON.stringify(h.title)},${JSON.stringify(h.artist||'')})">
+      <div class="sr-art">${artHtml}</div>
+      <div class="sr-info">
+        <div class="sr-title cjk">${esc(h.title)}</div>
+        <div class="sr-meta">${h.artist?esc(h.artist)+' · ':''}${count} word${count===1?'':'s'} saved</div>
+      </div>
+      <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
+    </div>`;
+  }).join('');
   sec.innerHTML = `
-    <div class="sec-hdr"><div class="sec-label">Continue Learning</div><div class="sec-genre" onclick="goTab('deck')">See all</div></div>
-    ${songs.map(([song,info],i) => `
-      <div class="song-row" onclick="loadSong(${JSON.stringify(song)},'')">
-        <div class="sr-art"><div class="sr-art-fallback ${tiles[i%4]}"></div></div>
-        <div class="sr-info"><div class="sr-title">${esc(song)}</div><div class="sr-meta">${info.count} word${info.count===1?'':'s'} saved</div></div>
-        <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
-      </div>`).join('')}`;
+    <div class="sec-hdr"><div class="sec-label">Previously Listened</div></div>
+    ${rows}`;
 }
 
 function openPlayer() { S.prevView = S.tab; showScreen('player'); }
@@ -1121,18 +1171,27 @@ async function pollSpotify(){
   }catch(e){}
 }
 
+// ── HISTORY TRACKING ──────────────────────────────────────────────────────
+function addToHistory(title, artist, albumArt) {
+  let history = JSON.parse(localStorage.getItem('sl_history') || '[]');
+  history = history.filter(h => h.title !== title); // remove duplicate
+  history.unshift({ title, artist, albumArt: albumArt || null, ts: Date.now() });
+  history = history.slice(0, 20); // keep last 20
+  localStorage.setItem('sl_history', JSON.stringify(history));
+}
+function getHistory() { return JSON.parse(localStorage.getItem('sl_history') || '[]'); }
+
 // ── SPOTIFY: POPULAR ───────────────────────────────────────────────────────
 async function fetchPopularSpotify(){
-  const token=await getValidToken();if(!token)return;
+  const token=await getValidToken();if(!token){fetchPopularITunes();return;}
   const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
   try{
     const r=await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(cfg.genre)}&type=track&limit=12&market=${cfg.market}`,{headers:{'Authorization':'Bearer '+token}});
-    if(!r.ok)return;
+    if(!r.ok){fetchPopularITunes();return;}
     const data=await r.json();
     const tracks=(data.tracks?.items||[]).filter(t=>t.album?.images?.length>0).slice(0,6);
-    if(tracks.length<3)return;
-    const grid=document.getElementById('popular-grid');
-    if(!grid)return;
+    if(tracks.length<3){fetchPopularITunes();return;}
+    const grid=document.getElementById('popular-grid');if(!grid)return;
     const tiles=['art-a','art-t','art-r','art-i','art-s','art-t'];
     grid.innerHTML=tracks.map((t,i)=>{
       const img=t.album.images[2]?.url||t.album.images[1]?.url||t.album.images[0]?.url;
@@ -1144,8 +1203,40 @@ async function fetchPopularSpotify(){
         <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
       </div>`;
     }).join('');
-    const heading=document.getElementById('popular-heading');if(heading)heading.innerHTML='Popular on <svg style="vertical-align:-2px;margin-left:4px" width="11" height="11" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg> Spotify';
-  }catch(e){}
+    const heading=document.getElementById('popular-heading');
+    if(heading)heading.innerHTML='Popular on <svg style="vertical-align:-2px;margin-left:4px" width="11" height="11" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg> Spotify';
+  }catch(e){fetchPopularITunes();}
+}
+
+// iTunes Search API - free, no auth, returns artwork
+async function fetchPopularITunes(){
+  const songsByLang = {
+    zh: [{t:'告白气球',a:'周杰伦'},{t:'晴天',a:'周杰伦'},{t:'稻香',a:'周杰伦'},{t:'待我如初',a:'大头针'},{t:'喜欢你',a:'邓紫棋'},{t:'突然好想你',a:'五月天'}],
+    ko: [{t:'봄날',a:'BTS'},{t:'LOVE SCENARIO',a:'iKON'},{t:'Eight',a:'IU'},{t:'Celebrity',a:'IU'},{t:'Dynamite',a:'BTS'},{t:'Lilac',a:'IU'}],
+    ja: [{t:'うっせぇわ',a:'Ado'},{t:'炎',a:'LiSA'},{t:'紅蓮華',a:'LiSA'},{t:'廻廻奇譚',a:'Eve'},{t:'夜に駆ける',a:'YOASOBI'},{t:'ドライフラワー',a:'優里'}],
+  };
+  const songs = songsByLang[S.sourceLang] || songsByLang.zh;
+  const tiles = ['art-a','art-t','art-r','art-i','art-s','art-t'];
+  const grid = document.getElementById('popular-grid'); if(!grid)return;
+  // Show immediately with fallback tiles
+  grid.innerHTML = songs.map((s,i) => `
+    <div class="song-row" id="pop-row-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
+      <div class="sr-art" id="pop-art-${i}"><div class="sr-art-fallback ${tiles[i]}"></div></div>
+      <div class="sr-info"><div class="sr-title cjk">${esc(s.t)}</div><div class="sr-meta">${esc(s.a)}</div></div>
+      <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
+    </div>`).join('');
+  // Fetch artwork in background from iTunes
+  songs.forEach(async (s, i) => {
+    try {
+      const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(s.t+' '+s.a)}&entity=song&limit=1&country=tw&media=music`);
+      const data = await r.json();
+      const art = data.results?.[0]?.artworkUrl100?.replace('100x100bb','300x300bb');
+      if (art) {
+        const artEl = document.getElementById('pop-art-'+i);
+        if (artEl) artEl.innerHTML = `<img src="${art}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentNode.innerHTML='<div class=sr-art-fallback ${tiles[i]}></div>'">`;
+      }
+    } catch(e) {}
+  });
 }
 
 async function playSpotifyCard(uri,title,artist){
@@ -1176,6 +1267,7 @@ async function autoLoadSpotifyTrack(title,artist){
 async function loadAndTranslate(title,artist,apiKey,lrcLines){
   S.title=title;S.artist=artist;S.apiKey=apiKey;
   localStorage.setItem('ht_key',apiKey);
+  addToHistory(title, artist, S.spotifyCurrentAlbumArt); // track history
   S.lyrics=lrcLines.map(l=>({...l,characters:l.text,pinyin:null,english:null,words:null}));
   S.activeIdx=0;S.offset=0;
   const pt=document.getElementById('np-title');if(pt)pt.textContent=title;
@@ -1362,6 +1454,19 @@ function saveAllWords(){
   updateBadge();rerender();
 }
 
+// ── DECK MODE ──────────────────────────────────────────────────────────────
+let deckMode = 'cards'; // 'cards' | 'list'
+let deckFilter = '';
+function setDeckMode(mode) {
+  deckMode = mode;
+  document.getElementById('dk-mode-cards').classList.toggle('active', mode==='cards');
+  document.getElementById('dk-mode-list').classList.toggle('active', mode==='list');
+  document.getElementById('dk-cards-mode').classList.toggle('hidden', mode!=='cards');
+  document.getElementById('dk-list-mode').classList.toggle('hidden', mode!=='list');
+  if (mode==='cards') renderDeck(); else renderDeckList();
+}
+function filterDeckList(q) { deckFilter=q.toLowerCase(); renderDeckList(); }
+
 // ── DECK ───────────────────────────────────────────────────────────────────
 function updateBadge(){
   const n=S.saved.length;const el=document.getElementById('deck-badge');
@@ -1370,49 +1475,96 @@ function updateBadge(){
 
 function renderDeck(){
   const words=S.saved;
-  const empty=document.getElementById('dk-empty');const area=document.getElementById('dk-card-area');const btns=document.getElementById('card-btns');
-  if(!words.length){if(empty)empty.classList.remove('hidden');if(area)area.classList.add('hidden');if(btns)btns.classList.add('hidden');return;}
-  if(empty)empty.classList.add('hidden');if(area)area.classList.remove('hidden');
+  const empty=document.getElementById('dk-empty');
+  const cardsMode=document.getElementById('dk-cards-mode');
+  const listMode=document.getElementById('dk-list-mode');
+  if(!words.length){
+    if(empty)empty.classList.remove('hidden');
+    if(cardsMode)cardsMode.classList.add('hidden');
+    if(listMode)listMode.classList.add('hidden');
+    return;
+  }
+  if(empty)empty.classList.add('hidden');
+  if(deckMode==='list'){if(cardsMode)cardsMode.classList.add('hidden');if(listMode)listMode.classList.remove('hidden');renderDeckList();return;}
+  if(cardsMode)cardsMode.classList.remove('hidden');if(listMode)listMode.classList.add('hidden');
   if(S.cardIdx>=words.length)S.cardIdx=0;
   const w=words[S.cardIdx];S.cardFlipped=false;
   document.getElementById('card-inner').classList.remove('is-flipped');
-  if(btns)btns.classList.add('hidden');
+  const tapHint=document.getElementById('card-tap-hint');if(tapHint)tapHint.style.display='block';
   document.getElementById('card-front-char').textContent=w.char;
   document.getElementById('card-front-song').textContent=w.song?'FROM: '+w.song:'';
   document.getElementById('card-back-pin').textContent=w.pinyin||'';
   document.getElementById('card-back-eng').textContent=w.english||'';
   document.getElementById('card-back-char').textContent=w.char;
-  // Lyric context
   const ctx=document.getElementById('card-ctx');
-  if(ctx){
-    const line=S.lyrics.find(l=>l.words?.some(x=>x.char===w.char));
-    if(line){
-      ctx.style.display='block';
-      document.getElementById('card-ctx-pin').textContent=line.words?.map(x=>x.pinyin).join(' ')||line.pinyin||'';
-      const charsEl=document.getElementById('card-ctx-chars');if(charsEl){charsEl.innerHTML=line.words?line.words.map(x=>`<span${x.char===w.char?' style="color:var(--a)"':''}>${esc(x.char)}</span>`).join(''): esc(line.characters||'');}
-      document.getElementById('card-ctx-eng').textContent=line.english||'';
-    }else ctx.style.display='none';
-  }
-  const total=words.length;const done=S.cardIdx;
-  document.getElementById('dk-count').textContent=`${done+1} / ${total}`;
-  document.getElementById('dk-prog-fill').style.width=((done)/total*100)+'%';
+  if(ctx){const line=S.lyrics.find(l=>l.words?.some(x=>x.char===w.char));if(line){ctx.style.display='block';document.getElementById('card-ctx-pin').textContent=line.words?.map(x=>x.pinyin).join(' ')||line.pinyin||'';const ce=document.getElementById('card-ctx-chars');if(ce){ce.innerHTML=line.words?line.words.map(x=>`<span${x.char===w.char?' style="color:var(--a)"':''}>${esc(x.char)}</span>`).join(''):esc(line.characters||'');}document.getElementById('card-ctx-eng').textContent=line.english||'';}else ctx.style.display='none';}
+  const total=words.length;
+  document.getElementById('dk-count').textContent=`${S.cardIdx+1} / ${total}`;
+  document.getElementById('dk-prog-fill').style.width=((S.cardIdx)/total*100)+'%';
 }
 
-function resetCard(){goTab('deck');}
+function renderDeckList() {
+  const container = document.getElementById('dk-word-list');
+  if (!container) return;
+  const filtered = deckFilter
+    ? S.saved.filter(w => w.char.includes(deckFilter) || w.pinyin?.toLowerCase().includes(deckFilter) || w.english?.toLowerCase().includes(deckFilter))
+    : S.saved;
+  document.getElementById('dk-count').textContent = `${filtered.length} word${filtered.length===1?'':'s'}`;
+  if (!filtered.length) {
+    container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:14px">${deckFilter?'No words match that search.':'No words saved yet.'}</div>`;
+    return;
+  }
+  container.innerHTML = filtered.map((w, i) => {
+    const realIdx = S.saved.indexOf(w);
+    return `<div class="dk-list-item">
+      <div class="dk-list-char cjk">${esc(w.char)}</div>
+      <div class="dk-list-info">
+        <div class="dk-list-pin">${esc(w.pinyin||'')}</div>
+        <div class="dk-list-eng">${esc(w.english||'')}</div>
+        ${w.song?`<div class="dk-list-song">from: ${esc(w.song)}</div>`:''}
+      </div>
+      <button class="dk-list-del" onclick="removeWord(${realIdx})" title="Remove">×</button>
+    </div>`;
+  }).join('');
+}
+
+// ── SWIPE + FLIP ───────────────────────────────────────────────────────────
+(function initSwipe(){
+  let tx=0,ty=0,moved=false;
+  document.addEventListener('DOMContentLoaded',()=>{});
+  window.addEventListener('load',()=>{
+    const area=document.getElementById('dk-card-area');
+    if(!area)return;
+    area.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;moved=false;},{passive:true});
+    area.addEventListener('touchmove',e=>{const dx=Math.abs(e.touches[0].clientX-tx);const dy=Math.abs(e.touches[0].clientY-ty);if(dx>8||dy>8)moved=true;},{passive:true});
+    area.addEventListener('touchend',e=>{
+      const dx=e.changedTouches[0].clientX-tx;
+      const dy=e.changedTouches[0].clientY-ty;
+      const adx=Math.abs(dx),ady=Math.abs(dy);
+      if(adx>50&&adx>ady){dx<0?cardAction('again'):cardAction('got');return;}
+      if(ady>50&&ady>adx&&dy>0){cardAction('hard');return;}
+      if(!moved)flipCard();
+    });
+    area.addEventListener('click',()=>{if(!('ontouchstart' in window))flipCard();});
+  });
+})();
 
 function flipCard(){
+  if(!S.saved.length)return;
   S.cardFlipped=!S.cardFlipped;
   document.getElementById('card-inner').classList.toggle('is-flipped',S.cardFlipped);
-  document.getElementById('card-btns').classList.toggle('hidden',!S.cardFlipped);
+  const tapHint=document.getElementById('card-tap-hint');if(tapHint)tapHint.style.display=S.cardFlipped?'none':'block';
 }
 
 function cardAction(a){
-  if(a==='again'){S.cardIdx=S.cardIdx;renderDeck();return;}
+  if(a==='again'){renderDeck();return;}
   if(a==='hard'){S.cardIdx=(S.cardIdx+1)%Math.max(1,S.saved.length);renderDeck();return;}
   S.cardIdx=(S.cardIdx+1)%Math.max(1,S.saved.length);renderDeck();
 }
 
-function removeWord(i){S.saved.splice(i,1);localStorage.setItem('ht_deck',JSON.stringify(S.saved));updateBadge();if(S.cardIdx>=S.saved.length)S.cardIdx=Math.max(0,S.saved.length-1);renderDeck();}
+function removeWord(i){S.saved.splice(i,1);localStorage.setItem('ht_deck',JSON.stringify(S.saved));updateBadge();if(S.cardIdx>=S.saved.length)S.cardIdx=Math.max(0,S.saved.length-1);if(deckMode==='list')renderDeckList();else renderDeck();}
+
+function resetCard(){if(deckMode==='list')setDeckMode('cards');else{S.cardIdx=0;renderDeck();}}
 
 // ── PROFILE ────────────────────────────────────────────────────────────────
 function renderProfile(){
@@ -1475,7 +1627,7 @@ function setSourceLang(lang,silent=false){
   const cfg=LANG_CONFIG[lang]||LANG_CONFIG.zh;
   const pl=document.getElementById('pin-toggle-label');if(pl)pl.textContent=cfg.pinyin;
   const cl=document.getElementById('chars-toggle-label');if(cl)cl.textContent=cfg.charLabel;
-  if(!silent&&S.spotifyToken)fetchPopularSpotify();
+  if(!silent)fetchPopularSpotify();
 }
 function setTargetLanguage(lang,silent=false){
   S.targetLanguage=lang;if(!silent)localStorage.setItem('sl_lang',lang);
