@@ -208,7 +208,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .dk-prog{height:3px;background:rgba(255,255,255,.08);border-radius:2px}
 .dk-prog-fill{height:100%;background:var(--a);border-radius:2px;transition:width .4s}
 .dk-hint{text-align:center;font:500 10px/1 'JetBrains Mono';letter-spacing:.12em;color:var(--dim);margin-bottom:14px;flex-shrink:0}
-.dk-card-area{flex:1;display:flex;flex-direction:column;justify-content:center;perspective:1100px;min-height:0;cursor:pointer}
+.dk-card-area{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;position:relative;overflow:visible;user-select:none;-webkit-user-select:none}
 #card-inner{width:100%;height:100%;max-height:400px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
 #card-inner.is-flipped{transform:rotateY(180deg)}
 .card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:24px;padding:32px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse 70% 50% at 50% 30%,var(--pbg) 0%,transparent 65%),var(--bg3);border:0.5px solid var(--b2);text-align:center}
@@ -344,6 +344,18 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .dk-list-del:active{background:rgba(255,100,100,.25)}
 #dk-list-mode{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 #dk-cards-mode{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+/* Background "next card" peek */
+#card-bg-next{position:absolute;inset:0;max-height:400px;margin:auto;border-radius:24px;background:radial-gradient(ellipse 70% 50% at 50% 30%,var(--pbg) 0%,transparent 65%),var(--bg3);border:0.5px solid var(--b1);transform:scale(0.94) translateY(10px);z-index:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+#card-bg-char{font:400 72px/1 'Noto Serif SC';opacity:.18}
+/* Card drag wrapper — sits on top of bg */
+#card-drag-wrap{position:relative;z-index:1;width:100%;height:100%;max-height:400px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;-webkit-user-select:none}
+#card-drag-wrap:active{cursor:grabbing}
+#card-drag-wrap #card-inner{width:100%;height:100%}
+/* Swipe stamps */
+.swipe-stamp{position:absolute;z-index:20;padding:8px 18px;border-radius:10px;border:3.5px solid;font:800 28px/1 'Sora';letter-spacing:.08em;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .06s}
+#stamp-got{top:28px;right:24px;color:#1ed760;border-color:#1ed760;transform:rotate(12deg)}
+#stamp-again{top:28px;left:24px;color:#ff4444;border-color:#ff4444;transform:rotate(-12deg)}
+#stamp-hard{bottom:28px;left:50%;color:var(--a);border-color:var(--a);transform:translateX(-50%) rotate(-4deg)}
 /* utils */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -584,21 +596,32 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="dk-hint">← AGAIN  ·  ↓ HARD  ·  TAP TO FLIP  ·  GOT IT →</div>
 
     <div class="dk-card-area" id="dk-card-area">
-      <div id="card-inner">
-        <div class="card-face front">
-          <div id="card-front-char" class="cjk">字</div>
-          <div id="card-front-song"></div>
-          <div class="card-tap" id="card-tap-hint">TAP TO REVEAL</div>
-        </div>
-        <div class="card-face back">
-          <div id="card-back-pin"></div>
-          <div id="card-back-eng"></div>
-          <div id="card-back-char" class="cjk"></div>
-          <div class="card-ctx" id="card-ctx" style="display:none">
-            <div class="card-ctx-label">FROM THIS LINE</div>
-            <div class="card-ctx-pin" id="card-ctx-pin"></div>
-            <div class="card-ctx-chars cjk" id="card-ctx-chars"></div>
-            <div class="card-ctx-eng" id="card-ctx-eng"></div>
+      <!-- Next card peek -->
+      <div id="card-bg-next">
+        <div id="card-bg-char" class="cjk"></div>
+      </div>
+      <!-- Swipe direction stamps (shown during drag) -->
+      <div id="stamp-got" class="swipe-stamp">GOT IT</div>
+      <div id="stamp-again" class="swipe-stamp">AGAIN</div>
+      <div id="stamp-hard" class="swipe-stamp">HARD</div>
+      <!-- Draggable card -->
+      <div id="card-drag-wrap">
+        <div id="card-inner">
+          <div class="card-face front">
+            <div id="card-front-char" class="cjk">字</div>
+            <div id="card-front-song"></div>
+            <div class="card-tap" id="card-tap-hint">TAP TO REVEAL</div>
+          </div>
+          <div class="card-face back">
+            <div id="card-back-pin"></div>
+            <div id="card-back-eng"></div>
+            <div id="card-back-char" class="cjk"></div>
+            <div class="card-ctx" id="card-ctx" style="display:none">
+              <div class="card-ctx-label">FROM THIS LINE</div>
+              <div class="card-ctx-pin" id="card-ctx-pin"></div>
+              <div class="card-ctx-chars cjk" id="card-ctx-chars"></div>
+              <div class="card-ctx-eng" id="card-ctx-eng"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -918,6 +941,7 @@ window.onload = async () => {
     showScreen('onboarding');
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  initCardSwipe(); // wire up drag/swipe on the deck card
 };
 
 // ── STREAK ─────────────────────────────────────────────────────────────────
@@ -1489,8 +1513,12 @@ function renderDeck(){
   if(cardsMode)cardsMode.classList.remove('hidden');if(listMode)listMode.classList.add('hidden');
   if(S.cardIdx>=words.length)S.cardIdx=0;
   const w=words[S.cardIdx];S.cardFlipped=false;
+  // Update background next-card peek
+  const nextW = words[(S.cardIdx+1) % words.length];
+  const bgChar = document.getElementById('card-bg-char');
+  if (bgChar) bgChar.textContent = S.cardIdx+1 < words.length ? nextW.char : '';
   document.getElementById('card-inner').classList.remove('is-flipped');
-  const tapHint=document.getElementById('card-tap-hint');if(tapHint)tapHint.style.display='block';
+  snapBack(true);
   document.getElementById('card-front-char').textContent=w.char;
   document.getElementById('card-front-song').textContent=w.song?'FROM: '+w.song:'';
   document.getElementById('card-back-pin').textContent=w.pinyin||'';
@@ -1529,42 +1557,154 @@ function renderDeckList() {
 }
 
 // ── SWIPE + FLIP ───────────────────────────────────────────────────────────
-(function initSwipe(){
-  let tx=0,ty=0,moved=false;
-  document.addEventListener('DOMContentLoaded',()=>{});
-  window.addEventListener('load',()=>{
-    const area=document.getElementById('dk-card-area');
-    if(!area)return;
-    area.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;moved=false;},{passive:true});
-    area.addEventListener('touchmove',e=>{const dx=Math.abs(e.touches[0].clientX-tx);const dy=Math.abs(e.touches[0].clientY-ty);if(dx>8||dy>8)moved=true;},{passive:true});
-    area.addEventListener('touchend',e=>{
-      const dx=e.changedTouches[0].clientX-tx;
-      const dy=e.changedTouches[0].clientY-ty;
-      const adx=Math.abs(dx),ady=Math.abs(dy);
-      if(adx>50&&adx>ady){dx<0?cardAction('again'):cardAction('got');return;}
-      if(ady>50&&ady>adx&&dy>0){cardAction('hard');return;}
-      if(!moved)flipCard();
-    });
-    area.addEventListener('click',()=>{if(!('ontouchstart' in window))flipCard();});
+const drag = { on:false, sx:0, sy:0, cx:0, cy:0 };
+const SWIPE_THRESH = 80;
+
+function initCardSwipe() {
+  const wrap = document.getElementById('card-drag-wrap');
+  if (!wrap) return;
+
+  // ── TOUCH ──
+  wrap.addEventListener('touchstart', e => {
+    if (!S.saved.length) return;
+    const t = e.touches[0];
+    drag.on = true; drag.sx = t.clientX; drag.sy = t.clientY;
+    drag.cx = t.clientX; drag.cy = t.clientY;
+    document.getElementById('card-inner').style.transition = 'none';
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', e => {
+    if (!drag.on) return;
+    e.preventDefault(); // prevent page scroll
+    drag.cx = e.touches[0].clientX;
+    drag.cy = e.touches[0].clientY;
+    applyDrag();
+  }, { passive: false });
+
+  wrap.addEventListener('touchend', e => {
+    if (!drag.on) return;
+    drag.on = false;
+    const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
+    releaseDrag(dx, dy);
   });
-})();
 
-function flipCard(){
-  if(!S.saved.length)return;
-  S.cardFlipped=!S.cardFlipped;
-  document.getElementById('card-inner').classList.toggle('is-flipped',S.cardFlipped);
-  const tapHint=document.getElementById('card-tap-hint');if(tapHint)tapHint.style.display=S.cardFlipped?'none':'block';
+  wrap.addEventListener('touchcancel', () => { drag.on = false; snapBack(); });
+
+  // ── MOUSE (desktop) ──
+  wrap.addEventListener('mousedown', e => {
+    if (!S.saved.length) return;
+    drag.on = true; drag.sx = e.clientX; drag.sy = e.clientY;
+    drag.cx = e.clientX; drag.cy = e.clientY;
+    document.getElementById('card-inner').style.transition = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!drag.on) return;
+    drag.cx = e.clientX; drag.cy = e.clientY;
+    applyDrag();
+  });
+  document.addEventListener('mouseup', e => {
+    if (!drag.on) return;
+    drag.on = false;
+    const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
+    releaseDrag(dx, dy);
+  });
 }
 
-function cardAction(a){
-  if(a==='again'){renderDeck();return;}
-  if(a==='hard'){S.cardIdx=(S.cardIdx+1)%Math.max(1,S.saved.length);renderDeck();return;}
-  S.cardIdx=(S.cardIdx+1)%Math.max(1,S.saved.length);renderDeck();
+function applyDrag() {
+  const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
+  const rot = dx * 0.08; // max ~8deg per 100px
+  const inner = document.getElementById('card-inner');
+  inner.style.transform = `translate(${dx}px, ${dy * 0.25}px) rotate(${rot}deg)`;
+
+  // Stamp visibility — fade in past 50px, full opacity at 120px
+  const adx = Math.abs(dx), ady = Math.abs(dy);
+  const gotOp  = dx > 50 && adx > ady  ? Math.min(1, (dx - 50) / 80)  : 0;
+  const agOp   = dx < -50 && adx > ady ? Math.min(1, (-dx - 50) / 80) : 0;
+  const hardOp = dy > 50 && ady > adx  ? Math.min(1, (dy - 50) / 80)  : 0;
+  document.getElementById('stamp-got').style.opacity   = gotOp;
+  document.getElementById('stamp-again').style.opacity = agOp;
+  document.getElementById('stamp-hard').style.opacity  = hardOp;
+
+  // Next card scales up as current card moves away
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  const bgScale = 0.94 + Math.min(0.06, dist / 1200);
+  document.getElementById('card-bg-next').style.transform = `scale(${bgScale}) translateY(${10 - dist * 0.05}px)`;
 }
 
-function removeWord(i){S.saved.splice(i,1);localStorage.setItem('ht_deck',JSON.stringify(S.saved));updateBadge();if(S.cardIdx>=S.saved.length)S.cardIdx=Math.max(0,S.saved.length-1);if(deckMode==='list')renderDeckList();else renderDeck();}
+function releaseDrag(dx, dy) {
+  const adx = Math.abs(dx), ady = Math.abs(dy);
+  hideStamps();
+  if (adx > SWIPE_THRESH && adx > ady) {
+    // Horizontal swipe
+    flyOff(dx > 0 ? 'right' : 'left', dx > 0 ? 'got' : 'again');
+  } else if (dy > SWIPE_THRESH && ady > adx) {
+    flyOff('down', 'hard');
+  } else if (adx < 8 && ady < 8) {
+    // Pure tap → flip
+    snapBack();
+    flipCard();
+  } else {
+    snapBack();
+  }
+}
 
-function resetCard(){if(deckMode==='list')setDeckMode('cards');else{S.cardIdx=0;renderDeck();}}
+function flyOff(dir, action) {
+  const inner = document.getElementById('card-inner');
+  const W = window.innerWidth * 1.4;
+  let tx = 0, ty = 0, rot = 0;
+  if (dir === 'right') { tx =  W; rot =  28; }
+  if (dir === 'left')  { tx = -W; rot = -28; }
+  if (dir === 'down')  { ty =  600; rot =  6; }
+  inner.style.transition = 'transform 0.38s ease-in, opacity 0.38s ease-in';
+  inner.style.transform  = `translate(${tx}px, ${ty}px) rotate(${rot}deg)`;
+  inner.style.opacity    = '0';
+  setTimeout(() => { cardAction(action); snapBack(true); }, 400);
+}
+
+function snapBack(instant = false) {
+  const inner = document.getElementById('card-inner');
+  const bg    = document.getElementById('card-bg-next');
+  inner.style.transition = instant ? 'none' : 'transform 0.32s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.22s';
+  inner.style.transform  = '';
+  inner.style.opacity    = '1';
+  bg.style.transition    = instant ? 'none' : 'transform 0.32s';
+  bg.style.transform     = 'scale(0.94) translateY(10px)';
+  hideStamps();
+}
+
+function hideStamps() {
+  ['stamp-got','stamp-again','stamp-hard'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = '0';
+  });
+}
+
+function flipCard() {
+  if (!S.saved.length) return;
+  S.cardFlipped = !S.cardFlipped;
+  document.getElementById('card-inner').classList.toggle('is-flipped', S.cardFlipped);
+  const th = document.getElementById('card-tap-hint');
+  if (th) th.style.display = S.cardFlipped ? 'none' : 'block';
+}
+
+function cardAction(a) {
+  if (a === 'again') { renderDeck(); return; }
+  S.cardIdx = (S.cardIdx + 1) % Math.max(1, S.saved.length);
+  renderDeck();
+}
+
+function removeWord(i) {
+  S.saved.splice(i, 1);
+  localStorage.setItem('ht_deck', JSON.stringify(S.saved));
+  updateBadge();
+  if (S.cardIdx >= S.saved.length) S.cardIdx = Math.max(0, S.saved.length - 1);
+  if (deckMode === 'list') renderDeckList(); else renderDeck();
+}
+
+function resetCard() {
+  if (deckMode === 'list') setDeckMode('cards'); else { S.cardIdx = 0; renderDeck(); }
+}
 
 // ── PROFILE ────────────────────────────────────────────────────────────────
 function renderProfile(){
