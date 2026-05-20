@@ -628,7 +628,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div id="stamp-hard" class="swipe-stamp">HARD</div>
       <!-- Draggable card -->
       <div id="card-drag-wrap">
-        <div id="card-inner">
+        <div id="card-inner" onclick="flipCard()">
           <div class="card-face front">
             <div id="card-front-char" class="cjk">字</div>
             <div id="card-front-song"></div>
@@ -1755,12 +1755,8 @@ function initCardSwipe() {
   wrap.addEventListener('touchend', () => {
     if (!drag.on) return;
     drag.on = false;
-    if (!dragging) {
-      // Pure tap → flip
-      flipCard();
-    } else {
-      commitSwipe();
-    }
+    if (dragging) commitSwipe();
+    // tap: let the natural click event on card-inner handle flipCard()
     dragging = false;
   });
 
@@ -1786,7 +1782,8 @@ function initCardSwipe() {
   document.addEventListener('mouseup', () => {
     if (!drag.on) return;
     drag.on = false;
-    if (!dragging) flipCard(); else commitSwipe();
+    if (dragging) commitSwipe();
+    // tap: onclick on card-inner fires naturally
     dragging = false;
   });
 }
