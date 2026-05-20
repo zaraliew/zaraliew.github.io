@@ -369,7 +369,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 #card-bg-next{position:absolute;inset:0;max-height:400px;margin:auto;border-radius:24px;background:radial-gradient(ellipse 70% 50% at 50% 30%,var(--pbg) 0%,transparent 65%),var(--bg3);border:0.5px solid var(--b1);transform:scale(0.94) translateY(10px);z-index:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
 #card-bg-char{font:400 72px/1 'Noto Serif SC';opacity:.18}
 /* Card drag wrapper — sits on top of bg */
-#card-drag-wrap{position:relative;z-index:1;width:100%;height:100%;max-height:400px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;-webkit-user-select:none}
+#card-drag-wrap{position:relative;z-index:1;width:100%;height:100%;max-height:400px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;-webkit-user-select:none;perspective:1100px}
 #card-drag-wrap:active{cursor:grabbing}
 #card-drag-wrap #card-inner{width:100%;height:100%}
 /* Swipe stamps */
@@ -876,6 +876,32 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <option value="Arabic">🇸🇦 Arabic</option>
   </select>
   <div style="height:8px"></div>
+</div>
+
+<!-- Deck word detail sheet -->
+<div id="sheet-deck-word" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div style="text-align:center;padding:4px 0 22px">
+    <div id="dw-char" style="font:400 84px/1 'Noto Serif SC',serif;color:var(--text);margin-bottom:12px">字</div>
+    <div id="dw-pin" style="font:400 20px/1 'JetBrains Mono',monospace;color:var(--a);letter-spacing:.04em;margin-bottom:8px"></div>
+    <div id="dw-eng" style="font:700 22px/1.2 'Sora',sans-serif;letter-spacing:-.02em;color:var(--text)"></div>
+  </div>
+  <div id="dw-song" style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:20px;font-style:italic"></div>
+  <div id="dw-ctx" class="hidden" style="background:var(--s1);border:0.5px solid var(--b1);border-radius:14px;padding:14px;margin-bottom:20px">
+    <div style="font:700 9px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">FROM THIS LINE</div>
+    <div id="dw-ctx-pin" style="font:400 11px/1.6 'JetBrains Mono';color:var(--a);margin-bottom:3px"></div>
+    <div id="dw-ctx-chars" style="font:400 17px/1.4 'Noto Serif SC';color:var(--text);margin-bottom:3px"></div>
+    <div id="dw-ctx-eng" style="font:400 13px/1.5 'Plus Jakarta Sans';color:var(--soft);font-style:italic"></div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-g" style="flex:1" onclick="hearDeckWord()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 010 7M19 5a9 9 0 010 14"/></svg>
+      Hear it
+    </button>
+    <button class="btn" style="flex:1;background:rgba(255,100,100,.12);color:#ff8080;border:0.5px solid rgba(255,100,100,.25)" onclick="removeDeckWordSheet()">
+      × Remove
+    </button>
+  </div>
 </div>
 
 <!-- API key sheet -->
@@ -1499,7 +1525,45 @@ function saveAllWords(){
   updateBadge();rerender();
 }
 
-// ── DECK MODE ──────────────────────────────────────────────────────────────
+// ── DECK WORD DETAIL SHEET ─────────────────────────────────────────────────
+let currentDeckWordIdx = -1;
+function openDeckWordSheet(idx) {
+  currentDeckWordIdx = idx;
+  const w = S.saved[idx];
+  if (!w) return;
+  document.getElementById('dw-char').textContent = w.char;
+  document.getElementById('dw-pin').textContent  = w.pinyin || '';
+  document.getElementById('dw-eng').textContent  = w.english || '';
+  document.getElementById('dw-song').textContent = w.song ? 'from: ' + w.song : '';
+  // Show lyric context if available
+  const line = S.lyrics.find(l => l.words?.some(x => x.char === w.char));
+  const ctx = document.getElementById('dw-ctx');
+  if (line && ctx) {
+    ctx.classList.remove('hidden');
+    document.getElementById('dw-ctx-pin').textContent = line.words?.map(x=>x.pinyin).join(' ') || line.pinyin || '';
+    const charsEl = document.getElementById('dw-ctx-chars');
+    charsEl.innerHTML = line.words
+      ? line.words.map(x=>`<span${x.char===w.char?' style="color:var(--a)"':''}>${esc(x.char)}</span>`).join('')
+      : esc(line.characters||'');
+    document.getElementById('dw-ctx-eng').textContent = line.english || '';
+  } else if (ctx) {
+    ctx.classList.add('hidden');
+  }
+  openSheet('deck-word');
+}
+function hearDeckWord() {
+  const w = S.saved[currentDeckWordIdx]; if (!w) return;
+  const langMap = { zh:'zh-CN', ko:'ko-KR', ja:'ja-JP' };
+  const u = new SpeechSynthesisUtterance(w.char);
+  u.lang = langMap[S.sourceLang] || 'zh-CN'; u.rate = 0.8;
+  speechSynthesis.speak(u);
+}
+function removeDeckWordSheet() {
+  if (currentDeckWordIdx < 0) return;
+  removeWord(currentDeckWordIdx);
+  currentDeckWordIdx = -1;
+  closeAllSheets();
+}
 let deckMode = 'cards'; // 'cards' | 'list'
 let deckFilter = '';
 function setDeckMode(mode) {
@@ -1591,7 +1655,7 @@ function renderDeckList() {
   const rows = filtered.length ? filtered.map(w => {
     const realIdx = S.saved.indexOf(w);
     const st = w.status || 'new';
-    return `<div class="dk-list-item">
+    return `<div class="dk-list-item" onclick="openDeckWordSheet(${realIdx})" style="cursor:pointer">
       <div class="dk-list-char cjk">${esc(w.char)}</div>
       <div class="dk-list-info">
         <div class="dk-list-pin">${esc(w.pinyin||'')}</div>
@@ -1599,7 +1663,7 @@ function renderDeckList() {
         ${w.song?`<div class="dk-list-song">from: ${esc(w.song)}</div>`:''}
       </div>
       <div class="dk-status-dot ${st}" title="${st}"></div>
-      <button class="dk-list-del" onclick="removeWord(${realIdx})" title="Remove">×</button>
+      <button class="dk-list-del" onclick="event.stopPropagation();removeWord(${realIdx})" title="Remove">×</button>
     </div>`;
   }).join('') : `<div style="text-align:center;padding:24px 20px;color:var(--muted);font-size:14px">No words match that search.</div>`;
 
@@ -1620,7 +1684,7 @@ function initCardSwipe() {
     const t = e.touches[0];
     drag.on = true; drag.sx = t.clientX; drag.sy = t.clientY;
     drag.cx = t.clientX; drag.cy = t.clientY;
-    document.getElementById('card-inner').style.transition = 'none';
+    wrap.style.transition = 'none';
   }, { passive: true });
 
   wrap.addEventListener('touchmove', e => {
@@ -1645,7 +1709,7 @@ function initCardSwipe() {
     if (!S.saved.length) return;
     drag.on = true; drag.sx = e.clientX; drag.sy = e.clientY;
     drag.cx = e.clientX; drag.cy = e.clientY;
-    document.getElementById('card-inner').style.transition = 'none';
+    wrap.style.transition = 'none';
     e.preventDefault();
   });
   document.addEventListener('mousemove', e => {
@@ -1663,11 +1727,10 @@ function initCardSwipe() {
 
 function applyDrag() {
   const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
-  const rot = dx * 0.08; // max ~8deg per 100px
-  const inner = document.getElementById('card-inner');
-  inner.style.transform = `translate(${dx}px, ${dy * 0.25}px) rotate(${rot}deg)`;
+  const rot = dx * 0.08;
+  const wrap = document.getElementById('card-drag-wrap');
+  wrap.style.transform = `translate(${dx}px, ${dy * 0.25}px) rotate(${rot}deg)`;
 
-  // Stamp visibility — fade in past 50px, full opacity at 120px
   const adx = Math.abs(dx), ady = Math.abs(dy);
   const gotOp  = dx > 50 && adx > ady  ? Math.min(1, (dx - 50) / 80)  : 0;
   const agOp   = dx < -50 && adx > ady ? Math.min(1, (-dx - 50) / 80) : 0;
@@ -1676,7 +1739,6 @@ function applyDrag() {
   document.getElementById('stamp-again').style.opacity = agOp;
   document.getElementById('stamp-hard').style.opacity  = hardOp;
 
-  // Next card scales up as current card moves away
   const dist = Math.sqrt(dx*dx + dy*dy);
   const bgScale = 0.94 + Math.min(0.06, dist / 1200);
   document.getElementById('card-bg-next').style.transform = `scale(${bgScale}) translateY(${10 - dist * 0.05}px)`;
@@ -1686,12 +1748,10 @@ function releaseDrag(dx, dy) {
   const adx = Math.abs(dx), ady = Math.abs(dy);
   hideStamps();
   if (adx > SWIPE_THRESH && adx > ady) {
-    // Horizontal swipe
     flyOff(dx > 0 ? 'right' : 'left', dx > 0 ? 'got' : 'again');
   } else if (dy > SWIPE_THRESH && ady > adx) {
     flyOff('down', 'hard');
-  } else if (adx < 8 && ady < 8) {
-    // Pure tap → flip
+  } else if (adx < 10 && ady < 10) {
     snapBack();
     flipCard();
   } else {
@@ -1700,24 +1760,28 @@ function releaseDrag(dx, dy) {
 }
 
 function flyOff(dir, action) {
-  const inner = document.getElementById('card-inner');
+  const wrap = document.getElementById('card-drag-wrap');
   const W = window.innerWidth * 1.4;
   let tx = 0, ty = 0, rot = 0;
   if (dir === 'right') { tx =  W; rot =  28; }
   if (dir === 'left')  { tx = -W; rot = -28; }
   if (dir === 'down')  { ty =  600; rot =  6; }
-  inner.style.transition = 'transform 0.38s ease-in, opacity 0.38s ease-in';
-  inner.style.transform  = `translate(${tx}px, ${ty}px) rotate(${rot}deg)`;
-  inner.style.opacity    = '0';
+  wrap.style.transition = 'transform 0.38s ease-in, opacity 0.38s ease-in';
+  wrap.style.transform  = `translate(${tx}px, ${ty}px) rotate(${rot}deg)`;
+  wrap.style.opacity    = '0';
   setTimeout(() => { cardAction(action); snapBack(true); }, 400);
 }
 
 function snapBack(instant = false) {
-  const inner = document.getElementById('card-inner');
-  const bg    = document.getElementById('card-bg-next');
-  inner.style.transition = instant ? 'none' : 'transform 0.32s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.22s';
-  inner.style.transform  = '';
-  inner.style.opacity    = '1';
+  const wrap = document.getElementById('card-drag-wrap');
+  const bg   = document.getElementById('card-bg-next');
+  wrap.style.transition = instant ? 'none' : 'transform 0.32s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.22s';
+  wrap.style.transform  = '';
+  wrap.style.opacity    = '1';
+  bg.style.transition   = instant ? 'none' : 'transform 0.32s';
+  bg.style.transform    = 'scale(0.94) translateY(10px)';
+  hideStamps();
+}
   bg.style.transition    = instant ? 'none' : 'transform 0.32s';
   bg.style.transform     = 'scale(0.94) translateY(10px)';
   hideStamps();
@@ -1792,7 +1856,7 @@ function openSheet(name){
 }
 function closeAllSheets(){
   document.getElementById('sheet-backdrop').classList.remove('open');
-  ['word','display','info','lang','apikey'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
+  ['word','display','info','lang','apikey','deck-word'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
   document.body.style.overflow='';
 }
 function openDisplaySheet(){openSheet('display');}
