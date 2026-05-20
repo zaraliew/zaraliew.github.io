@@ -220,6 +220,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 #card-back-eng{font:700 32px/1.1 'Sora';letter-spacing:-.02em}
 #card-back-char{font:400 36px/1 'Noto Serif SC';opacity:.28;margin-top:14px}
 .card-ctx{margin-top:18px;padding-top:18px;border-top:0.5px solid var(--b1);width:100%}
+.card-sound-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;background:var(--abg);color:var(--a);border:0.5px solid rgba(245,164,76,.3);font:600 12px/1 'Plus Jakarta Sans';cursor:pointer;margin-top:12px;margin-bottom:2px}
 .card-ctx-label{font:700 9px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
 .card-ctx-pin{font:400 11px/1.6 'JetBrains Mono';color:var(--a);margin-bottom:3px}
 .card-ctx-chars{font:400 16px/1.4 'Noto Serif SC';color:var(--text);margin-bottom:3px}
@@ -626,7 +627,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div id="stamp-again" class="swipe-stamp">AGAIN</div>
       <div id="stamp-hard" class="swipe-stamp">HARD</div>
       <!-- Draggable card -->
-      <div id="card-drag-wrap" onclick="handleCardClick()">
+      <div id="card-drag-wrap">
         <div id="card-inner">
           <div class="card-face front">
             <div id="card-front-char" class="cjk">字</div>
@@ -637,6 +638,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
             <div id="card-back-pin"></div>
             <div id="card-back-eng"></div>
             <div id="card-back-char" class="cjk"></div>
+            <button class="card-sound-btn" onclick="event.stopPropagation();hearCurrentCard()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>
+              Hear it
+            </button>
             <div class="card-ctx" id="card-ctx" style="display:none">
               <div class="card-ctx-label">FROM THIS LINE</div>
               <div class="card-ctx-pin" id="card-ctx-pin"></div>
@@ -1496,11 +1501,28 @@ function hearWord(){
   speechSynthesis.speak(u);
 }
 
+function hearCurrentCard(){
+  const w=S.saved[S.cardIdx];if(!w)return;
+  const langMap={zh:'zh-CN',ko:'ko-KR',ja:'ja-JP'};
+  const u=new SpeechSynthesisUtterance(w.char);
+  u.lang=langMap[S.sourceLang]||'zh-CN';u.rate=0.8;
+  speechSynthesis.speak(u);
+}
+
 function tooltipAddToDeck(){
   if(!S.tooltipWord)return;
   const{char,pinyin,english}=S.tooltipWord;
   const idx=S.saved.findIndex(s=>s.char===char);
-  if(idx>=0)S.saved.splice(idx,1);else S.saved.push({char,pinyin,english,song:S.title,artist:S.artist});
+  if(idx>=0)S.saved.splice(idx,1);
+  else {
+    const line=S.lyrics[S.tooltipLineIdx];
+    S.saved.push({
+      char,pinyin,english,song:S.title,artist:S.artist,
+      lyricPin: line?.words?.map(w=>w.pinyin).join(' ')||line?.pinyin||'',
+      lyricChars: line?.words?.map(w=>w.char).join('')||line?.characters||'',
+      lyricEng: line?.english||''
+    });
+  }
   localStorage.setItem('ht_deck',JSON.stringify(S.saved));
   updateBadge();rerender();
   const saved=S.saved.some(s=>s.char===char);
@@ -1529,7 +1551,16 @@ function retranslateSong(){
 }
 
 function saveAllWords(){
-  S.lyrics.forEach(l=>{if(!l.words)return;l.words.forEach(w=>{if(!S.saved.some(s=>s.char===w.char))S.saved.push({char:w.char,pinyin:w.pinyin,english:w.english,song:S.title,artist:S.artist});});});
+  S.lyrics.forEach(l=>{
+    if(!l.words)return;
+    const lyricPin=l.words.map(w=>w.pinyin).join(' ');
+    const lyricChars=l.words.map(w=>w.char).join('');
+    const lyricEng=l.english||'';
+    l.words.forEach(w=>{
+      if(!S.saved.some(s=>s.char===w.char))
+        S.saved.push({char:w.char,pinyin:w.pinyin,english:w.english,song:S.title,artist:S.artist,lyricPin,lyricChars,lyricEng});
+    });
+  });
   localStorage.setItem('ht_deck',JSON.stringify(S.saved));
   updateBadge();rerender();
 }
@@ -1619,7 +1650,19 @@ function renderDeck(){
   document.getElementById('card-back-eng').textContent=w.english||'';
   document.getElementById('card-back-char').textContent=w.char;
   const ctx=document.getElementById('card-ctx');
-  if(ctx){const line=S.lyrics.find(l=>l.words?.some(x=>x.char===w.char));if(line){ctx.style.display='block';document.getElementById('card-ctx-pin').textContent=line.words?.map(x=>x.pinyin).join(' ')||line.pinyin||'';const ce=document.getElementById('card-ctx-chars');if(ce){ce.innerHTML=line.words?line.words.map(x=>`<span${x.char===w.char?' style="color:var(--a)"':''}>${esc(x.char)}</span>`).join(''):esc(line.characters||'');}document.getElementById('card-ctx-eng').textContent=line.english||'';}else ctx.style.display='none';}
+  if(ctx){
+    // Use stored context first, fall back to currently loaded lyrics
+    const lyricPin = w.lyricPin || S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.pinyin).join(' ') || '';
+    const lyricChars = w.lyricChars || S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.char).join('') || '';
+    const lyricEng = w.lyricEng || S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.english || '';
+    if(lyricChars||lyricPin){
+      ctx.style.display='block';
+      document.getElementById('card-ctx-pin').textContent=lyricPin;
+      const ce=document.getElementById('card-ctx-chars');
+      if(ce){const hi=esc(lyricChars).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a)">${esc(w.char)}</span>`);ce.innerHTML=hi;}
+      document.getElementById('card-ctx-eng').textContent=lyricEng;
+    }else{ctx.style.display='none';}
+  }
   const total=words.length;
   document.getElementById('dk-count').textContent=`${S.cardIdx+1} / ${total}`;
   document.getElementById('dk-prog-fill').style.width=((S.cardIdx)/total*100)+'%';
@@ -1686,52 +1729,79 @@ const SWIPE_THRESH = 80;
 function initCardSwipe() {
   const wrap = document.getElementById('card-drag-wrap');
   if (!wrap) return;
+  let dragging = false; // only true after real movement threshold
 
   // ── TOUCH ──
   wrap.addEventListener('touchstart', e => {
     if (!S.saved.length) return;
     const t = e.touches[0];
-    drag.on = true; drag.sx = t.clientX; drag.sy = t.clientY;
+    drag.on = true; dragging = false;
+    drag.sx = t.clientX; drag.sy = t.clientY;
     drag.cx = t.clientX; drag.cy = t.clientY;
-    wrap.style.transition = 'none';
   }, { passive: true });
 
   wrap.addEventListener('touchmove', e => {
     if (!drag.on) return;
-    e.preventDefault(); // prevent page scroll
     drag.cx = e.touches[0].clientX;
     drag.cy = e.touches[0].clientY;
-    applyDrag();
+    // Only start drag visuals after 12px movement
+    if (!dragging && (Math.abs(drag.cx - drag.sx) > 12 || Math.abs(drag.cy - drag.sy) > 12)) {
+      dragging = true;
+      wrap.style.transition = 'none';
+    }
+    if (dragging) { e.preventDefault(); applyDrag(); }
   }, { passive: false });
 
-  wrap.addEventListener('touchend', e => {
+  wrap.addEventListener('touchend', () => {
     if (!drag.on) return;
     drag.on = false;
-    const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
-    releaseDrag(dx, dy);
+    if (!dragging) {
+      // Pure tap → flip
+      flipCard();
+    } else {
+      commitSwipe();
+    }
+    dragging = false;
   });
 
-  wrap.addEventListener('touchcancel', () => { drag.on = false; snapBack(); });
+  wrap.addEventListener('touchcancel', () => { drag.on = false; dragging = false; snapBack(); });
 
   // ── MOUSE (desktop) ──
   wrap.addEventListener('mousedown', e => {
     if (!S.saved.length) return;
-    drag.on = true; drag.sx = e.clientX; drag.sy = e.clientY;
+    drag.on = true; dragging = false;
+    drag.sx = e.clientX; drag.sy = e.clientY;
     drag.cx = e.clientX; drag.cy = e.clientY;
-    wrap.style.transition = 'none';
     e.preventDefault();
   });
   document.addEventListener('mousemove', e => {
     if (!drag.on) return;
     drag.cx = e.clientX; drag.cy = e.clientY;
-    applyDrag();
+    if (!dragging && (Math.abs(drag.cx - drag.sx) > 12 || Math.abs(drag.cy - drag.sy) > 12)) {
+      dragging = true;
+      wrap.style.transition = 'none';
+    }
+    if (dragging) applyDrag();
   });
-  document.addEventListener('mouseup', e => {
+  document.addEventListener('mouseup', () => {
     if (!drag.on) return;
     drag.on = false;
-    const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
-    releaseDrag(dx, dy);
+    if (!dragging) flipCard(); else commitSwipe();
+    dragging = false;
   });
+}
+
+function commitSwipe() {
+  const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
+  const adx = Math.abs(dx), ady = Math.abs(dy);
+  hideStamps();
+  if (adx > SWIPE_THRESH && adx > ady) {
+    flyOff(dx > 0 ? 'right' : 'left', dx > 0 ? 'got' : 'again');
+  } else if (dy > SWIPE_THRESH && ady > adx) {
+    flyOff('down', 'hard');
+  } else {
+    snapBack();
+  }
 }
 
 function applyDrag() {
@@ -1751,22 +1821,6 @@ function applyDrag() {
   const dist = Math.sqrt(dx*dx + dy*dy);
   const bgScale = 0.94 + Math.min(0.06, dist / 1200);
   document.getElementById('card-bg-next').style.transform = `scale(${bgScale}) translateY(${10 - dist * 0.05}px)`;
-}
-
-function releaseDrag(dx, dy) {
-  const adx = Math.abs(dx), ady = Math.abs(dy);
-  hideStamps();
-  if (adx > SWIPE_THRESH && adx > ady) {
-    flyOff(dx > 0 ? 'right' : 'left', dx > 0 ? 'got' : 'again');
-  } else if (dy > SWIPE_THRESH && ady > adx) {
-    flyOff('down', 'hard');
-  } else if (adx < 30 && ady < 30) {
-    // Tap — flip the card directly, no snapBack needed
-    drag.wasTouchFlip = true;
-    flipCard();
-  } else {
-    snapBack();
-  }
 }
 
 function flyOff(dir, action) {
@@ -1798,12 +1852,6 @@ function hideStamps() {
     const el = document.getElementById(id);
     if (el) el.style.opacity = '0';
   });
-}
-
-// Separate click handler — only fires on desktop (touch suppresses click after touchend)
-function handleCardClick() {
-  if (drag.wasTouchFlip) { drag.wasTouchFlip = false; return; }
-  flipCard();
 }
 
 function flipCard() {
