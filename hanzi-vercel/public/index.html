@@ -342,6 +342,27 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .dk-list-song{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dk-list-del{width:32px;height:32px;border-radius:10px;background:rgba(255,100,100,.12);color:#ff8080;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:background .15s}
 .dk-list-del:active{background:rgba(255,100,100,.25)}
+/* Status progress bar */
+.dk-status-bar{margin-bottom:16px;flex-shrink:0}
+.dk-status-segments{display:flex;height:8px;border-radius:6px;overflow:hidden;gap:2px;margin-bottom:8px;background:rgba(255,255,255,.06)}
+.dk-seg{height:100%;border-radius:6px;transition:width .4s cubic-bezier(.4,0,.2,1);min-width:0}
+.dk-seg.got{background:#1ed760}
+.dk-seg.hard{background:var(--a)}
+.dk-seg.again{background:#ff4444}
+.dk-seg.new{background:rgba(255,255,255,.14)}
+.dk-status-legend{display:flex;gap:14px;font:500 11px/1 'Plus Jakarta Sans'}
+.dk-legend-item{display:flex;align-items:center;gap:5px;color:var(--muted)}
+.dk-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dk-legend-dot.got{background:#1ed760}
+.dk-legend-dot.hard{background:var(--a)}
+.dk-legend-dot.again{background:#ff4444}
+.dk-legend-dot.new{background:rgba(255,255,255,.22)}
+/* Status dot on list items */
+.dk-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-left:auto;margin-right:4px}
+.dk-status-dot.got{background:#1ed760}
+.dk-status-dot.hard{background:var(--a)}
+.dk-status-dot.again{background:#ff4444}
+.dk-status-dot.new{background:rgba(255,255,255,.2)}
 #dk-list-mode{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 #dk-cards-mode{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 /* Background "next card" peek */
@@ -630,7 +651,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div id="card-btns" class="dk-btns">
       <button class="dk-btn" onclick="cardAction('again')">Again</button>
       <button class="dk-btn" onclick="cardAction('hard')">Hard</button>
-      <button class="dk-btn got" onclick="cardAction('got')">Got it ✓</button>
+      <button class="dk-btn got" onclick="cardAction('got')">Got it</button>
     </div>
   </div>
 
@@ -1534,16 +1555,42 @@ function renderDeck(){
 function renderDeckList() {
   const container = document.getElementById('dk-word-list');
   if (!container) return;
+
+  const total = S.saved.length;
+  const counts = { got: 0, hard: 0, again: 0, new: 0 };
+  S.saved.forEach(w => counts[w.status || 'new']++);
+
+  // Build segmented progress bar
+  const pct = s => total ? (counts[s] / total * 100).toFixed(1) : 0;
+  const statusBar = total ? `
+    <div class="dk-status-bar">
+      <div class="dk-status-segments">
+        <div class="dk-seg got"  style="width:${pct('got')}%"></div>
+        <div class="dk-seg hard" style="width:${pct('hard')}%"></div>
+        <div class="dk-seg again"style="width:${pct('again')}%"></div>
+        <div class="dk-seg new"  style="width:${pct('new')}%"></div>
+      </div>
+      <div class="dk-status-legend">
+        <div class="dk-legend-item"><div class="dk-legend-dot got"></div>Got it ${counts.got}</div>
+        <div class="dk-legend-item"><div class="dk-legend-dot hard"></div>Hard ${counts.hard}</div>
+        <div class="dk-legend-item"><div class="dk-legend-dot again"></div>Again ${counts.again}</div>
+        <div class="dk-legend-item"><div class="dk-legend-dot new"></div>New ${counts.new}</div>
+      </div>
+    </div>` : '';
+
   const filtered = deckFilter
     ? S.saved.filter(w => w.char.includes(deckFilter) || w.pinyin?.toLowerCase().includes(deckFilter) || w.english?.toLowerCase().includes(deckFilter))
     : S.saved;
-  document.getElementById('dk-count').textContent = `${filtered.length} word${filtered.length===1?'':'s'}`;
-  if (!filtered.length) {
-    container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:14px">${deckFilter?'No words match that search.':'No words saved yet.'}</div>`;
+  document.getElementById('dk-count').textContent = `${total} word${total===1?'':'s'}`;
+
+  if (!total) {
+    container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted);font-size:14px">No words saved yet.</div>`;
     return;
   }
-  container.innerHTML = filtered.map((w, i) => {
+
+  const rows = filtered.length ? filtered.map(w => {
     const realIdx = S.saved.indexOf(w);
+    const st = w.status || 'new';
     return `<div class="dk-list-item">
       <div class="dk-list-char cjk">${esc(w.char)}</div>
       <div class="dk-list-info">
@@ -1551,9 +1598,12 @@ function renderDeckList() {
         <div class="dk-list-eng">${esc(w.english||'')}</div>
         ${w.song?`<div class="dk-list-song">from: ${esc(w.song)}</div>`:''}
       </div>
+      <div class="dk-status-dot ${st}" title="${st}"></div>
       <button class="dk-list-del" onclick="removeWord(${realIdx})" title="Remove">×</button>
     </div>`;
-  }).join('');
+  }).join('') : `<div style="text-align:center;padding:24px 20px;color:var(--muted);font-size:14px">No words match that search.</div>`;
+
+  container.innerHTML = statusBar + rows;
 }
 
 // ── SWIPE + FLIP ───────────────────────────────────────────────────────────
@@ -1689,6 +1739,10 @@ function flipCard() {
 }
 
 function cardAction(a) {
+  if (S.saved[S.cardIdx]) {
+    S.saved[S.cardIdx].status = a; // track: 'again' | 'hard' | 'got'
+    localStorage.setItem('ht_deck', JSON.stringify(S.saved));
+  }
   if (a === 'again') { renderDeck(); return; }
   S.cardIdx = (S.cardIdx + 1) % Math.max(1, S.saved.length);
   renderDeck();
