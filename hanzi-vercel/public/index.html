@@ -215,6 +215,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .card-face.back{transform:rotateY(180deg);background:radial-gradient(ellipse 70% 50% at 50% 30%,var(--abg) 0%,transparent 65%),var(--bg3)}
 #card-front-char{font:400 96px/1 'Noto Serif SC';color:var(--text)}
 .card-tap{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:20px}
+.card-front-lyric{font-size:16px;color:var(--soft);margin-top:14px;line-height:1.6;letter-spacing:.04em;max-width:100%}
 #card-front-song{font:600 10px/1 'JetBrains Mono';letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-top:14px}
 #card-back-pin{font:400 22px/1 'JetBrains Mono';color:var(--a);letter-spacing:.04em;margin-bottom:8px}
 #card-back-eng{font:700 32px/1.1 'Sora';letter-spacing:-.02em}
@@ -631,6 +632,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
         <div id="card-inner" onclick="flipCard()">
           <div class="card-face front">
             <div id="card-front-char" class="cjk">字</div>
+            <div id="card-front-lyric" class="card-front-lyric cjk"></div>
             <div id="card-front-song"></div>
             <div class="card-tap" id="card-tap-hint">TAP TO REVEAL</div>
           </div>
@@ -1645,7 +1647,14 @@ function renderDeck(){
   document.getElementById('card-inner').classList.remove('is-flipped');
   snapBack(true);
   document.getElementById('card-front-char').textContent=w.char;
-  document.getElementById('card-front-song').textContent=w.song?'FROM: '+w.song:'';
+  document.getElementById('card-front-song').textContent=w.song?'— '+w.song:'';
+  // Source sentence on front with word highlighted
+  const frontLyric=document.getElementById('card-front-lyric');
+  if(frontLyric){
+    const lc=w.lyricChars||S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.char).join('')||'';
+    if(lc){frontLyric.innerHTML=esc(lc).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a);font-weight:700">${esc(w.char)}</span>`);}
+    else{frontLyric.innerHTML='';}
+  }
   document.getElementById('card-back-pin').textContent=w.pinyin||'';
   document.getElementById('card-back-eng').textContent=w.english||'';
   document.getElementById('card-back-char').textContent=w.char;
