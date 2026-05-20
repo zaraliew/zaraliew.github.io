@@ -366,7 +366,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 #dk-list-mode{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 #dk-cards-mode{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 /* Background "next card" peek */
-#card-bg-next{position:absolute;inset:0;max-height:400px;margin:auto;border-radius:24px;background:radial-gradient(ellipse 70% 50% at 50% 30%,var(--pbg) 0%,transparent 65%),var(--bg3);border:0.5px solid var(--b1);transform:scale(0.94) translateY(10px);z-index:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+#card-bg-next{position:absolute;inset:0;max-height:400px;margin:auto;border-radius:24px;background:radial-gradient(ellipse 70% 50% at 50% 30%,var(--pbg) 0%,transparent 65%),var(--bg3);border:0.5px solid var(--b1);transform:scale(0.94) translateY(10px);z-index:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;pointer-events:none}
 #card-bg-char{font:400 72px/1 'Noto Serif SC';opacity:.18}
 /* Card drag wrapper — sits on top of bg */
 #card-drag-wrap{position:relative;z-index:1;width:100%;height:100%;max-height:400px;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:grab;-webkit-user-select:none;perspective:1100px}
@@ -476,7 +476,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="ob-dot" id="od-5"></div>
   </div>
   <div class="ob-footer">
-    <span class="ob-skip" onclick="skipOnboarding()">Skip setup</span>
+    <span class="ob-skip" id="ob-left-btn" onclick="obBack()">Skip setup</span>
     <button class="btn btn-a btn-lg" onclick="obNext()">Continue →</button>
   </div>
 </div>
@@ -626,7 +626,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div id="stamp-again" class="swipe-stamp">AGAIN</div>
       <div id="stamp-hard" class="swipe-stamp">HARD</div>
       <!-- Draggable card -->
-      <div id="card-drag-wrap">
+      <div id="card-drag-wrap" onclick="handleCardClick()">
         <div id="card-inner">
           <div class="card-face front">
             <div id="card-front-char" class="cjk">字</div>
@@ -1040,6 +1040,15 @@ function obGoto(step) {
   document.getElementById('ob-prog').style.width = (step/5*100)+'%';
   document.getElementById('ob-count').textContent = step+'/5';
   S.obStep = step;
+  // Left button: Back on steps 2-5, Skip on step 1
+  const leftBtn = document.getElementById('ob-left-btn');
+  if (leftBtn) {
+    if (step === 1) { leftBtn.textContent = 'Skip setup'; leftBtn.onclick = skipOnboarding; }
+    else { leftBtn.textContent = '← Back'; leftBtn.onclick = obBack; }
+  }
+}
+function obBack() {
+  if (S.obStep > 1) obGoto(S.obStep - 1);
 }
 function obNext() {
   const step = S.obStep || 1;
@@ -1751,8 +1760,9 @@ function releaseDrag(dx, dy) {
     flyOff(dx > 0 ? 'right' : 'left', dx > 0 ? 'got' : 'again');
   } else if (dy > SWIPE_THRESH && ady > adx) {
     flyOff('down', 'hard');
-  } else if (adx < 10 && ady < 10) {
-    snapBack();
+  } else if (adx < 30 && ady < 30) {
+    // Tap — flip the card directly, no snapBack needed
+    drag.wasTouchFlip = true;
     flipCard();
   } else {
     snapBack();
@@ -1788,6 +1798,12 @@ function hideStamps() {
     const el = document.getElementById(id);
     if (el) el.style.opacity = '0';
   });
+}
+
+// Separate click handler — only fires on desktop (touch suppresses click after touchend)
+function handleCardClick() {
+  if (drag.wasTouchFlip) { drag.wasTouchFlip = false; return; }
+  flipCard();
 }
 
 function flipCard() {
