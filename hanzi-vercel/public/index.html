@@ -65,12 +65,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .eyebrow{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
 
 /* === ONBOARDING === */
-#screen-onboarding{bottom:0;display:flex;flex-direction:column;padding:60px 28px calc(28px + var(--sb))}
+#screen-onboarding{bottom:0;display:flex;flex-direction:column;padding:56px 28px calc(24px + var(--sb));overflow-y:auto;-webkit-overflow-scrolling:touch}
 .ob-top{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
 .ob-progress{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;flex:1;margin-right:16px}
 .ob-progress-fill{height:100%;background:var(--a);border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
 .ob-count{font:600 12px/1 'JetBrains Mono';color:var(--muted)}
-.ob-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 0 20px;gap:18px}
+.ob-body{flex:1;min-height:180px;display:flex;flex-direction:column;justify-content:center;padding:24px 0 16px;gap:16px}
 .ob-icon{width:72px;height:72px;border-radius:22px;background:linear-gradient(150deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px -8px rgba(245,164,76,.4);margin-bottom:6px}
 .ob-title{font:800 38px/1.05 'Sora';letter-spacing:-.03em}
 .ob-title em{font-style:normal;color:var(--a)}
@@ -96,9 +96,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .ob-lvl-emoji{font-size:24px;margin-bottom:8px}
 .ob-lvl-name{font:700 13px/1 'Plus Jakarta Sans'}
 .ob-lvl-sub{font-size:11px;color:var(--muted);margin-top:3px}
-.ob-footer{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:16px}
+.ob-footer{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:12px;padding-bottom:4px}
 .ob-skip{font:600 15px/1 'Plus Jakarta Sans';color:var(--muted);cursor:pointer;padding:8px}
-.ob-dots{display:flex;gap:6px;justify-content:center;margin:14px 0}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-shrink:0}
 .ob-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:all .2s}
 .ob-dot.active{background:var(--a);width:20px;border-radius:3px}
 .select-field{width:100%;padding:14px 36px 14px 16px;background:var(--s1);border:1.5px solid var(--b2);border-radius:14px;font:600 15px/1 'Plus Jakarta Sans';color:var(--text);appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23f5a44c' stroke-width='2' stroke-linecap='round'><path d='M3 5l3 3 3-3'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:12px;cursor:pointer}
@@ -980,12 +980,11 @@ window.onload = async () => {
   }
   if (S.setupDone) {
     showScreen('home');
-    updateHomeNowPlaying();
-    updateBadge();
-    fetchPopularSpotify(); // always try; falls back to iTunes if no Spotify
-    updateContinueLearning();
+    updateBadge(); updateHomeNowPlaying(); updateContinueLearning();
+    fetchPopularSpotify();
   } else {
     showScreen('onboarding');
+    obGoto(1); // always start at step 1
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
   initCardSwipe(); // wire up drag/swipe on the deck card
@@ -1043,8 +1042,9 @@ function obGoto(step) {
   S.obStep = step;
 }
 function obNext() {
-  if (S.obStep < 5) { obGoto(S.obStep+1); }
-  else { finishOnboarding(); }
+  const step = S.obStep || 1;
+  if (step < 5) obGoto(step + 1);
+  else finishOnboarding();
 }
 function obSelectLang(el) {
   document.querySelectorAll('#ob-2 .ob-opt').forEach(o => o.classList.remove('sel'));
@@ -1059,7 +1059,7 @@ function finishOnboarding() {
   fetchPopularSpotify();
 }
 function redoSetup() {
-  localStorage.removeItem('sl_setup'); S.setupDone=false;
+  localStorage.removeItem('sl_setup'); S.setupDone = false;
   showScreen('onboarding'); obGoto(1);
 }
 
