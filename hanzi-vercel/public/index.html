@@ -65,7 +65,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .eyebrow{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
 
 /* === ONBOARDING === */
-#screen-onboarding{bottom:0;display:flex;flex-direction:column;padding:56px 28px calc(24px + var(--sb));overflow-y:auto;-webkit-overflow-scrolling:touch}
+#screen-onboarding{bottom:0;display:flex;flex-direction:column;padding:56px 28px calc(100px + var(--sb));overflow-y:auto;-webkit-overflow-scrolling:touch}
 .ob-top{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
 .ob-progress{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;flex:1;margin-right:16px}
 .ob-progress-fill{height:100%;background:var(--a);border-radius:2px;transition:width .4s cubic-bezier(.4,0,.2,1)}
@@ -1780,10 +1780,6 @@ function snapBack(instant = false) {
   wrap.style.opacity    = '1';
   bg.style.transition   = instant ? 'none' : 'transform 0.32s';
   bg.style.transform    = 'scale(0.94) translateY(10px)';
-  hideStamps();
-}
-  bg.style.transition    = instant ? 'none' : 'transform 0.32s';
-  bg.style.transform     = 'scale(0.94) translateY(10px)';
   hideStamps();
 }
 
