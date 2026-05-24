@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SongLingo</title>
+<title>Melozi</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0a0612">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SongLingo">
+<meta name="apple-mobile-web-app-title" content="Melozi">
 <link rel="apple-touch-icon" href="/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0612;--bg2:#150e22;--bg3:#1e1535;
@@ -34,7 +34,7 @@ input,select{font:inherit;color:inherit;background:none;border:none;outline:none
 .hidden{display:none!important}
 .cjk{font-family:'Noto Serif SC',Georgia,serif}
 .mono{font-family:'JetBrains Mono',monospace}
-.sora{font-family:'Sora',system-ui,sans-serif}
+.sora{font-family:'Space Grotesk',system-ui,sans-serif}
 
 /* stardust */
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 60% 45% at 75% 12%,rgba(120,85,200,.32) 0%,transparent 55%),radial-gradient(ellipse 50% 40% at 15% 88%,rgba(245,164,76,.10) 0%,transparent 60%)}
@@ -72,7 +72,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .ob-count{font:600 12px/1 'JetBrains Mono';color:var(--muted)}
 .ob-body{flex:1;min-height:180px;display:flex;flex-direction:column;justify-content:center;padding:24px 0 16px;gap:16px}
 .ob-icon{width:72px;height:72px;border-radius:22px;background:linear-gradient(150deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px -8px rgba(245,164,76,.4);margin-bottom:6px}
-.ob-title{font:800 38px/1.05 'Sora';letter-spacing:-.03em}
+.ob-title{font:800 38px/1.05 'Space Grotesk';letter-spacing:-.03em}
 .ob-title em{font-style:normal;color:var(--a)}
 .ob-sub{font-size:16px;color:var(--soft);line-height:1.65}
 .ob-options{display:flex;flex-direction:column;gap:10px}
@@ -118,14 +118,14 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .home-hdr{padding:56px 22px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .home-logo{display:flex;align-items:center;gap:10px}
 .home-logo-ic{width:36px;height:36px;border-radius:10px;background:linear-gradient(150deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center}
-.home-logo-name{font:800 20px/1 'Sora';background:linear-gradient(90deg,var(--a),var(--p));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.home-logo-name{font:800 20px/1 'Space Grotesk';background:linear-gradient(90deg,var(--a),var(--p));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .live-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--abg);border:0.5px solid rgba(245,164,76,.3);font:700 11px/1 'Plus Jakarta Sans';color:var(--a)}
 .live-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--a);animation:pulse 1.6s ease-in-out infinite}
 .home-prof-btn{width:36px;height:36px;border-radius:50%;background:var(--s2);border:0.5px solid var(--b2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--soft)}
 .home-scroll{flex:1;overflow-y:auto;padding:0 22px calc(20px);-webkit-overflow-scrolling:touch}
 .home-scroll::-webkit-scrollbar{display:none}
-.home-greet-1{font:700 36px/1.1 'Sora';letter-spacing:-.025em}
-.home-greet-2{font:800 36px/1.1 'Sora';letter-spacing:-.025em;color:var(--a)}
+.home-greet-1{font:700 36px/1.1 'Space Grotesk';letter-spacing:-.025em}
+.home-greet-2{font:800 36px/1.1 'Space Grotesk';letter-spacing:-.025em;color:var(--a)}
 .home-stats{font-size:13px;color:var(--muted);margin:8px 0 24px}
 .home-stats b{color:var(--soft);font-weight:600}
 /* Now playing card */
@@ -218,7 +218,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .card-front-lyric{font-size:16px;color:var(--soft);margin-top:14px;line-height:1.6;letter-spacing:.04em;max-width:100%}
 #card-front-song{font:600 10px/1 'JetBrains Mono';letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-top:14px}
 #card-back-pin{font:400 22px/1 'JetBrains Mono';color:var(--a);letter-spacing:.04em;margin-bottom:8px}
-#card-back-eng{font:700 32px/1.1 'Sora';letter-spacing:-.02em}
+#card-back-eng{font:700 32px/1.1 'Space Grotesk';letter-spacing:-.02em}
 #card-back-char{font:400 36px/1 'Noto Serif SC';opacity:.28;margin-top:14px}
 .card-ctx{margin-top:18px;padding-top:18px;border-top:0.5px solid var(--b1);width:100%}
 .card-sound-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;background:var(--abg);color:var(--a);border:0.5px solid rgba(245,164,76,.3);font:600 12px/1 'Plus Jakarta Sans';cursor:pointer;margin-top:12px;margin-bottom:2px}
@@ -232,7 +232,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .dk-btn.got{background:var(--a);color:var(--ink);border-color:var(--a);box-shadow:0 6px 20px -4px rgba(245,164,76,.4)}
 .dk-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px}
 .dk-empty-ic{width:72px;height:72px;border-radius:22px;background:var(--abg);display:flex;align-items:center;justify-content:center;color:var(--a);margin-bottom:6px}
-.dk-empty h3{font:700 22px/1.2 'Sora';letter-spacing:-.02em}
+.dk-empty h3{font:700 22px/1.2 'Space Grotesk';letter-spacing:-.02em}
 .dk-empty p{font-size:14px;color:var(--soft);line-height:1.6;max-width:260px}
 
 /* === PROFILE SCREEN === */
@@ -241,12 +241,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .prof-scroll::-webkit-scrollbar{display:none}
 .prof-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
 .prof-user{display:flex;align-items:center;gap:14px}
-.prof-av{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;font:800 20px/1 'Sora';color:var(--ink)}
-.prof-name{font:700 20px/1.2 'Sora';letter-spacing:-.02em}
+.prof-av{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;font:800 20px/1 'Space Grotesk';color:var(--ink)}
+.prof-name{font:700 20px/1.2 'Space Grotesk';letter-spacing:-.02em}
 .prof-sub{font-size:12px;color:var(--muted);margin-top:3px}
 .streak-sec{text-align:center;padding:28px 0 24px}
 .streak-flame{font-size:68px;line-height:1;filter:drop-shadow(0 0 20px rgba(245,164,76,.5))}
-.streak-num{font:800 52px/1 'Sora';letter-spacing:-.03em;margin:6px 0 0}
+.streak-num{font:800 52px/1 'Space Grotesk';letter-spacing:-.03em;margin:6px 0 0}
 .streak-lbl{font:700 14px/1 'Plus Jakarta Sans';color:var(--soft);margin-top:4px}
 .prof-section{margin-bottom:24px}
 .prof-section-label{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
@@ -270,7 +270,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .bsheet::-webkit-scrollbar{display:none}
 .bsheet.open{transform:translateY(0)}
 .sh-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);margin:12px auto 20px}
-.sh-title{font:700 18px/1.2 'Sora';letter-spacing:-.02em;margin-bottom:20px}
+.sh-title{font:700 18px/1.2 'Space Grotesk';letter-spacing:-.02em;margin-bottom:20px}
 
 /* Word sheet */
 #sheet-word .w-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
@@ -278,7 +278,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 #sheet-word .w-char{font:400 72px/1 'Noto Serif SC'}
 #sheet-word .w-right{display:flex;flex-direction:column;gap:6px}
 #sheet-word .w-pin{font:400 22px/1 'JetBrains Mono';color:var(--a);letter-spacing:.04em}
-#sheet-word .w-eng{font:700 24px/1 'Sora';letter-spacing:-.02em}
+#sheet-word .w-eng{font:700 24px/1 'Space Grotesk';letter-spacing:-.02em}
 #sheet-word .w-ctx{background:var(--s1);border:0.5px solid var(--b1);border-radius:14px;padding:14px;margin-bottom:20px}
 #sheet-word .w-ctx-label{font:700 9px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
 #sheet-word .w-ctx-pin{font:400 12px/1.6 'JetBrains Mono';color:var(--a);margin-bottom:4px}
@@ -375,11 +375,54 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 #card-drag-wrap:active{cursor:grabbing}
 #card-drag-wrap #card-inner{width:100%;height:100%}
 /* Swipe stamps */
-.swipe-stamp{position:absolute;z-index:20;padding:8px 18px;border-radius:10px;border:3.5px solid;font:800 28px/1 'Sora';letter-spacing:.08em;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .06s}
+.swipe-stamp{position:absolute;z-index:20;padding:8px 18px;border-radius:10px;border:3.5px solid;font:800 28px/1 'Space Grotesk';letter-spacing:.08em;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .06s}
 #stamp-got{top:28px;right:24px;color:#1ed760;border-color:#1ed760;transform:rotate(12deg)}
 #stamp-again{top:28px;left:24px;color:#ff4444;border-color:#ff4444;transform:rotate(-12deg)}
 #stamp-hard{bottom:28px;left:50%;color:var(--a);border-color:var(--a);transform:translateX(-50%) rotate(-4deg)}
 /* utils */
+/* === API KEY BANNER === */
+.api-banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:linear-gradient(135deg,rgba(184,153,255,.12) 0%,rgba(245,164,76,.08) 100%);border:0.5px solid rgba(184,153,255,.25);margin-bottom:20px;cursor:pointer;transition:background .15s}
+.api-banner:active{background:rgba(184,153,255,.16)}
+.api-banner-ic{width:36px;height:36px;border-radius:10px;background:var(--pbg);display:flex;align-items:center;justify-content:center;color:var(--p);flex-shrink:0}
+.api-banner-text{flex:1}
+.api-banner-title{font:700 13px/1 'Plus Jakarta Sans';color:var(--text);margin-bottom:3px}
+.api-banner-sub{font-size:11px;color:var(--muted)}
+/* === SKELETON LOADER === */
+.skeleton{background:linear-gradient(90deg,var(--s1) 25%,var(--s2) 50%,var(--s1) 75%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:10px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-row{display:flex;align-items:center;gap:14px;padding:12px;border-radius:14px;border:0.5px solid var(--b1);margin-bottom:8px}
+.skeleton-art{width:52px;height:52px;border-radius:12px;flex-shrink:0}
+.skeleton-lines{flex:1;display:flex;flex-direction:column;gap:8px}
+.skeleton-line{height:12px}
+.skeleton-line.short{width:60%}
+/* === SPRING PHYSICS === */
+.song-row:active{transform:scale(.98);transition:transform .08s}
+#play-btn:active{transform:scale(.92)!important}
+.dk-btn:active{transform:scale(.97)}
+.card-sound-btn:active{transform:scale(.96)}
+/* === PWA INSTALL PROMPT === */
+#pwa-prompt{position:fixed;left:12px;right:12px;bottom:calc(var(--tab-h) + 12px);z-index:90;background:var(--bg2);border:0.5px solid var(--b2);border-radius:20px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 -4px 40px rgba(0,0,0,.5);backdrop-filter:blur(20px);transform:translateY(120%);transition:transform .4s cubic-bezier(.32,.72,0,1);max-width:406px;margin:0 auto}
+#pwa-prompt.show{transform:translateY(0)}
+.pwa-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(150deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pwa-text{flex:1;min-width:0}
+.pwa-title{font:700 14px/1 'Plus Jakarta Sans';color:var(--text);margin-bottom:4px}
+.pwa-sub{font-size:12px;color:var(--muted);line-height:1.4}
+.pwa-btn{padding:9px 14px;border-radius:10px;background:var(--a);color:var(--ink);font:700 12px/1 'Plus Jakarta Sans';flex-shrink:0;border:none;cursor:pointer}
+.pwa-dismiss{width:28px;height:28px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;cursor:pointer;font-size:16px;border:none}
+/* === FAQ === */
+.faq-item{background:var(--s1);border:0.5px solid var(--b1);border-radius:14px;margin-bottom:8px;overflow:hidden;cursor:pointer}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;font:600 14px/1.4 'Plus Jakarta Sans'}
+.faq-chev{font-size:12px;color:var(--muted);transition:transform .2s;flex-shrink:0;margin-left:12px}
+.faq-a{padding:0 16px 14px;font-size:13px;color:var(--soft);line-height:1.6;display:none}
+.faq-item.open .faq-a{display:block}
+.faq-item.open .faq-chev{transform:rotate(180deg)}
+/* === PRO BANNER === */
+.pro-banner{background:linear-gradient(135deg,rgba(184,153,255,.15) 0%,rgba(245,164,76,.10) 100%);border:0.5px solid rgba(184,153,255,.3);border-radius:18px;padding:18px 20px;margin-bottom:24px;position:relative;overflow:hidden}
+.pro-banner::before{content:'✦';position:absolute;right:16px;top:10px;font-size:40px;opacity:.08;color:var(--p)}
+.pro-banner-label{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--p);margin-bottom:8px}
+.pro-banner-title{font:700 18px/1.2 'Space Grotesk';letter-spacing:-.01em;margin-bottom:4px}
+.pro-banner-sub{font-size:13px;color:var(--soft);line-height:1.5;margin-bottom:14px}
+.pro-banner-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,var(--p) 0%,var(--a) 100%);color:#fff;font:700 13px/1 'Plus Jakarta Sans';border:none;cursor:pointer}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
@@ -428,7 +471,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   <div class="ob-body hidden" id="ob-3">
     <div class="eyebrow" style="color:var(--p)">APP LANGUAGE</div>
     <div class="ob-title" style="font-size:30px">What language<br>do <em>you</em> speak?</div>
-    <div class="ob-sub">SongLingo will switch all buttons, labels, and messages into your language.</div>
+    <div class="ob-sub">Melozi will switch all buttons, labels, and messages into your language.</div>
     <select class="select-field" id="ob-app-lang" onchange="setAppLanguage(this.value)">
       <option value="English">🇬🇧 English</option>
       <option value="Malay">🇲🇾 Bahasa Melayu</option>
@@ -473,18 +516,18 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
         <div class="ob-sp-sub" id="ob-sp-sub">Lyrics scroll automatically with your music</div>
       </div>
     </div>
-    <div class="ob-sub">SongLingo reads what's playing. No need to search or type song names.</div>
+    <div class="ob-sub">Melozi reads what's playing. No need to search or type song names.</div>
   </div>
 
-  <!-- Step 5: API key -->
+  <!-- Step 6: All set -->
   <div class="ob-body hidden" id="ob-6">
-    <div class="eyebrow" style="color:var(--p)">AI TRANSLATION</div>
-    <div class="ob-title" style="font-size:30px">Add your<br>Anthropic key</div>
-    <div class="ob-field">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-      <input id="ob-apikey" type="password" placeholder="sk-ant-…" oninput="S.apiKey=this.value;localStorage.setItem('ht_key',this.value)">
+    <div style="font-size:56px;margin-bottom:8px">🎉</div>
+    <div class="ob-title" style="font-size:32px">You're all set.<br><em>Let's go.</em></div>
+    <div class="ob-sub">Melozi is ready. Connect Spotify, play a song, and watch the lyrics appear in real-time.</div>
+    <div style="background:var(--s1);border:0.5px solid var(--b2);border-radius:16px;padding:16px 18px;margin-top:4px">
+      <div style="font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">ONE MORE THING</div>
+      <div style="font-size:14px;color:var(--soft);line-height:1.6">To enable AI translations, add a free Anthropic API key in <strong style="color:var(--text)">Profile → AI Translation</strong> after you're inside. Takes 2 minutes.</div>
     </div>
-    <div class="ob-sub">Free at <span style="color:var(--a)">console.anthropic.com</span> · ~$0.02 per song · stored only in your browser.</div>
   </div>
 
   <div class="ob-dots">
@@ -508,7 +551,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   <div class="home-hdr">
     <div class="home-logo">
       <div class="home-logo-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg></div>
-      <div class="home-logo-name">SongLingo</div>
+      <div class="home-logo-name">Melozi</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <div id="home-live-pill" class="live-pill hidden">Live</div>
@@ -752,16 +795,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           </div>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </div>
-        <div class="prof-row" onclick="openApiKeySheet()">
-          <div class="prof-row-ic a">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-          </div>
-          <div class="prof-row-txt">
-            <div class="prof-row-label">Anthropic API Key</div>
-            <div class="prof-row-value" id="prof-key-status">Not set</div>
-          </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
-        </div>
+
         <div class="prof-row" onclick="redoSetup()">
           <div class="prof-row-ic p">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M20 10A8 8 0 0112 4a8 8 0 00-7.5 5.3M4 14A8 8 0 0012 20a8 8 0 007.5-5.3"/></svg>
@@ -776,6 +810,52 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
 
     <button class="prof-disconnect hidden" id="prof-disconnect" onclick="disconnectSpotify()">Disconnect Spotify</button>
+
+    <!-- Pro Plan Banner -->
+    <div class="pro-banner" style="margin-top:8px">
+      <div class="pro-banner-label">✦ Coming Soon</div>
+      <div class="pro-banner-title">Melozi Pro</div>
+      <div class="pro-banner-sub">Unlimited songs, all languages, no API key needed. Be the first to know when it launches.</div>
+      <button class="pro-banner-btn" onclick="alert('Drop your email at hello@melozi.app and we\'ll notify you when Pro launches! 🎵')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        Notify me
+      </button>
+    </div>
+
+    <!-- FAQ -->
+    <div class="prof-section">
+      <div class="prof-section-label">Help & FAQ</div>
+      <div id="faq-list">
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Why do I need an Anthropic API key? <span class="faq-chev">▾</span></div>
+          <div class="faq-a">Melozi uses Claude AI to generate pinyin, romanization, and translations. The key lets the AI run directly in your browser. Get a free key at <strong>console.anthropic.com</strong> — each song costs roughly $0.02. We're working on a subscription model so you won't need this soon.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Why isn't my song loading? <span class="faq-chev">▾</span></div>
+          <div class="faq-a">Melozi fetches synced lyrics from LRCLIB. Not every song has synced lyrics available. Try searching with the exact song title. Songs by major artists in Mandarin, Korean, and Japanese have the best coverage.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Why do I need Spotify? <span class="faq-chev">▾</span></div>
+          <div class="faq-a">Spotify tells Melozi which song you're currently playing, so lyrics sync automatically — no searching needed. Melozi also lets you start songs from the app directly. You need Spotify Premium for remote playback control.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">The pinyin looks wrong for some words <span class="faq-chev">▾</span></div>
+          <div class="faq-a">AI translation isn't perfect! Tones and multi-syllable words can occasionally be miscombined. We're continually improving the prompts. If you spot an error, tap ⋯ in the player and use "Re-translate this song."</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Will my saved words sync across devices? <span class="faq-chev">▾</span></div>
+          <div class="faq-a">Not yet — your deck is currently saved locally in your browser. Cross-device sync is coming with the Melozi Pro account system. For now, install Melozi as a home screen app to keep your data safe.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">How do I add Melozi to my home screen? <span class="faq-chev">▾</span></div>
+          <div class="faq-a">On iPhone: tap the Share button in Safari → "Add to Home Screen." On Android: tap the menu (⋮) → "Add to Home Screen." This makes Melozi feel like a native app with no browser bar.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:16px 0 8px">
+      <div style="font-size:12px;color:var(--dim);line-height:1.6">Melozi v0.9 · Made with ♥ for language learners<br>Questions? <span style="color:var(--a)">hello@melozi.app</span></div>
+    </div>
     <div style="height:16px"></div>
   </div>
 </div>
@@ -937,7 +1017,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   <div style="text-align:center;padding:4px 0 22px">
     <div id="dw-char" style="font:400 84px/1 'Noto Serif SC',serif;color:var(--text);margin-bottom:12px">字</div>
     <div id="dw-pin" style="font:400 20px/1 'JetBrains Mono',monospace;color:var(--a);letter-spacing:.04em;margin-bottom:8px"></div>
-    <div id="dw-eng" style="font:700 22px/1.2 'Sora',sans-serif;letter-spacing:-.02em;color:var(--text)"></div>
+    <div id="dw-eng" style="font:700 22px/1.2 'Space Grotesk',sans-serif;letter-spacing:-.02em;color:var(--text)"></div>
   </div>
   <div id="dw-song" style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:20px;font-style:italic"></div>
   <div id="dw-ctx" class="hidden" style="background:var(--s1);border:0.5px solid var(--b1);border-radius:14px;padding:14px;margin-bottom:20px">
@@ -957,16 +1037,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 </div>
 
-<!-- API key sheet -->
-<div id="sheet-apikey" class="bsheet">
-  <div class="sh-handle" onclick="closeAllSheets()"></div>
-  <div class="sh-title">Anthropic API Key</div>
-  <div class="ob-field" style="margin-bottom:14px">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-    <input id="profile-apikey" type="password" placeholder="sk-ant-…" oninput="saveApiKey(this.value)">
+<!-- PWA Install Prompt -->
+<div id="pwa-prompt" class="hidden">
+  <div class="pwa-icon">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg>
   </div>
-  <div style="font-size:13px;color:var(--muted);line-height:1.6">Free at <span style="color:var(--a)">console.anthropic.com</span> · ~$0.02 per song · stored only in this browser.</div>
-  <button class="btn btn-a" style="width:100%;margin-top:16px;border-radius:14px" onclick="closeAllSheets()">Done</button>
+  <div class="pwa-text">
+    <div class="pwa-title">Add Melozi to your Home Screen</div>
+    <div class="pwa-sub">Tap Share → "Add to Home Screen" for the full app experience</div>
+  </div>
+  <button class="pwa-btn" onclick="document.getElementById('pwa-prompt').classList.remove('show');localStorage.setItem('pwa_prompted','1')">Got it</button>
+  <button class="pwa-dismiss" onclick="document.getElementById('pwa-prompt').classList.remove('show');localStorage.setItem('pwa_prompted','1')">×</button>
 </div>
 
 </div><!-- #app -->
@@ -974,7 +1055,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 <script>
 // ── STATE ──────────────────────────────────────────────────────────────────
 const S = {
-  apiKey: localStorage.getItem('ht_key') || '',
   appLanguage: localStorage.getItem('sl_app_lang') || 'English',
   title: '', artist: '', lyrics: [],
   saved: JSON.parse(localStorage.getItem('ht_deck') || '[]'),
@@ -998,14 +1078,14 @@ const S = {
 };
 const LANG_CODE={'English':'en','Malay':'ms','Indonesian':'id','Thai':'th','Spanish':'es','French':'fr','German':'de','Arabic':'ar'};
 const TRANSLATIONS={
-en:{listen:'Listen',deck:'Deck',profile:'Profile',goodMorning:'Good morning,',goodAfternoon:'Good afternoon,',goodEvening:'Good evening,',letsListen:"let's listen.",cardsDue:'cards due',dayStreak:'day streak',tapToReveal:'TAP TO REVEAL',saveToDeck:'Save to deck',inDeck:'✓ In Deck',hearIt:'Hear it',gotIt:'Got it',again:'Again',hard:'Hard',previouslyListened:'Previously Listened',playOnSpotify:'Play a song on Spotify',detectsAuto:'SongLingo will detect it automatically',syncedSpotify:'Synced with Spotify',translating:'Translating…',startListening:'Start Listening',deckEmpty:'Your deck is empty.',tapWordToSave:'Tap any word in the Player to save it here.',searchWords:'Search saved words…',allWords:'All saved words',fromLine:'FROM THIS LINE',from:'from:',connectSpotify:'Connect Spotify',translateTo:'Translate to',appLangLabel:'App Language',cards:'Cards',list:'List',popularPrefix:'Popular',popularSuffix:'Songs',continueLearning:'Previously Listened',},
-ms:{listen:'Dengar',deck:'Dek',profile:'Profil',goodMorning:'Selamat pagi,',goodAfternoon:'Selamat tengah hari,',goodEvening:'Selamat petang,',letsListen:'jom dengar lagu.',cardsDue:'kad untuk ulang kaji',dayStreak:'hari berturut-turut',tapToReveal:'KETIK UNTUK LIHAT',saveToDeck:'Simpan ke dek',inDeck:'✓ Dalam Dek',hearIt:'Dengar',gotIt:'Faham',again:'Ulang',hard:'Susah',previouslyListened:'Pernah Didengari',playOnSpotify:'Main lagu di Spotify',detectsAuto:'SongLingo akan mengesannya secara automatik',syncedSpotify:'Disegerakkan dengan Spotify',translating:'Menterjemah…',startListening:'Mula Mendengar',deckEmpty:'Dek anda kosong.',tapWordToSave:'Ketik sebarang perkataan dalam Pemain untuk simpan di sini.',searchWords:'Cari perkataan…',allWords:'Semua perkataan disimpan',fromLine:'DARIPADA BARIS INI',from:'daripada:',connectSpotify:'Sambung Spotify',translateTo:'Terjemah ke',appLangLabel:'Bahasa Apl',cards:'Kad',list:'Senarai',popularPrefix:'Lagu',popularSuffix:'Popular',continueLearning:'Pernah Didengari',},
-id:{listen:'Dengarkan',deck:'Dek',profile:'Profil',goodMorning:'Selamat pagi,',goodAfternoon:'Selamat siang,',goodEvening:'Selamat malam,',letsListen:'ayo dengarkan.',cardsDue:'kartu untuk diulang',dayStreak:'hari beruntun',tapToReveal:'KETUK UNTUK LIHAT',saveToDeck:'Simpan ke dek',inDeck:'✓ Di Dek',hearIt:'Dengar',gotIt:'Mengerti',again:'Ulangi',hard:'Sulit',previouslyListened:'Pernah Didengar',playOnSpotify:'Putar lagu di Spotify',detectsAuto:'SongLingo akan mendeteksinya otomatis',syncedSpotify:'Tersinkron dengan Spotify',translating:'Menerjemahkan…',startListening:'Mulai Mendengar',deckEmpty:'Dek Anda kosong.',tapWordToSave:'Ketuk kata apapun di Pemutar untuk disimpan di sini.',searchWords:'Cari kata tersimpan…',allWords:'Semua kata tersimpan',fromLine:'DARI BARIS INI',from:'dari:',connectSpotify:'Sambungkan Spotify',translateTo:'Terjemahkan ke',appLangLabel:'Bahasa Aplikasi',cards:'Kartu',list:'Daftar',popularPrefix:'Lagu',popularSuffix:'Populer',continueLearning:'Pernah Didengar',},
-th:{listen:'ฟัง',deck:'สำรับ',profile:'โปรไฟล์',goodMorning:'สวัสดีตอนเช้า,',goodAfternoon:'สวัสดีตอนบ่าย,',goodEvening:'สวัสดีตอนเย็น,',letsListen:'มาฟังเพลงกัน.',cardsDue:'ไพ่ที่ต้องทบทวน',dayStreak:'วันติดต่อกัน',tapToReveal:'แตะเพื่อดู',saveToDeck:'บันทึกลงสำรับ',inDeck:'✓ ในสำรับ',hearIt:'ฟัง',gotIt:'เข้าใจ',again:'ทำซ้ำ',hard:'ยาก',previouslyListened:'ฟังไปแล้ว',playOnSpotify:'เล่นเพลงใน Spotify',detectsAuto:'SongLingo จะตรวจพบโดยอัตโนมัติ',syncedSpotify:'ซิงค์กับ Spotify',translating:'กำลังแปล…',startListening:'เริ่มฟัง',deckEmpty:'สำรับของคุณว่างเปล่า',tapWordToSave:'แตะคำใดๆ ในเพลงเพื่อบันทึก',searchWords:'ค้นหาคำที่บันทึก…',allWords:'คำทั้งหมดที่บันทึก',fromLine:'จากบรรทัดนี้',from:'จาก:',connectSpotify:'เชื่อมต่อ Spotify',translateTo:'แปลเป็น',appLangLabel:'ภาษาแอป',cards:'ไพ่',list:'รายการ',popularPrefix:'เพลง',popularSuffix:'ยอดนิยม',continueLearning:'ฟังไปแล้ว',},
-es:{listen:'Escuchar',deck:'Baraja',profile:'Perfil',goodMorning:'Buenos días,',goodAfternoon:'Buenas tardes,',goodEvening:'Buenas noches,',letsListen:'vamos a escuchar.',cardsDue:'tarjetas pendientes',dayStreak:'días seguidos',tapToReveal:'TOCA PARA VER',saveToDeck:'Guardar en baraja',inDeck:'✓ En baraja',hearIt:'Escuchar',gotIt:'Entendido',again:'Repetir',hard:'Difícil',previouslyListened:'Escuchado antes',playOnSpotify:'Pon una canción en Spotify',detectsAuto:'SongLingo lo detectará automáticamente',syncedSpotify:'Sincronizado con Spotify',translating:'Traduciendo…',startListening:'Empezar a escuchar',deckEmpty:'Tu baraja está vacía.',tapWordToSave:'Toca cualquier palabra en el reproductor para guardarla.',searchWords:'Buscar palabras…',allWords:'Todas las palabras guardadas',fromLine:'DE ESTA LÍNEA',from:'de:',connectSpotify:'Conectar Spotify',translateTo:'Traducir a',appLangLabel:'Idioma de la app',cards:'Tarjetas',list:'Lista',popularPrefix:'Canciones',popularSuffix:'Populares',continueLearning:'Escuchado antes',},
-fr:{listen:'Écouter',deck:'Deck',profile:'Profil',goodMorning:'Bonjour,',goodAfternoon:'Bon après-midi,',goodEvening:'Bonsoir,',letsListen:"à l'écoute.",cardsDue:'cartes à réviser',dayStreak:'jours consécutifs',tapToReveal:'TOUCHER POUR VOIR',saveToDeck:'Ajouter au deck',inDeck:'✓ Dans le deck',hearIt:'Écouter',gotIt:'Compris',again:'Répéter',hard:'Difficile',previouslyListened:'Écouté récemment',playOnSpotify:'Lance une chanson sur Spotify',detectsAuto:'SongLingo la détectera automatiquement',syncedSpotify:'Synchronisé avec Spotify',translating:'Traduction…',startListening:"Commencer à écouter",deckEmpty:'Votre deck est vide.',tapWordToSave:'Touche un mot dans le lecteur pour le sauvegarder.',searchWords:'Rechercher des mots…',allWords:'Tous les mots sauvegardés',fromLine:'DE CETTE LIGNE',from:'de :',connectSpotify:'Connecter Spotify',translateTo:'Traduire en',appLangLabel:"Langue de l'app",cards:'Cartes',list:'Liste',popularPrefix:'Chansons',popularSuffix:'Populaires',continueLearning:'Écouté récemment',},
-de:{listen:'Hören',deck:'Deck',profile:'Profil',goodMorning:'Guten Morgen,',goodAfternoon:'Guten Tag,',goodEvening:'Guten Abend,',letsListen:'lass uns hören.',cardsDue:'Karten zur Wiederholung',dayStreak:'Tage in Folge',tapToReveal:'TIPPEN ZUM ANZEIGEN',saveToDeck:'Ins Deck speichern',inDeck:'✓ Im Deck',hearIt:'Anhören',gotIt:'Verstanden',again:'Wiederholen',hard:'Schwer',previouslyListened:'Zuletzt gehört',playOnSpotify:'Spiele ein Lied auf Spotify',detectsAuto:'SongLingo erkennt es automatisch',syncedSpotify:'Mit Spotify synchronisiert',translating:'Übersetze…',startListening:'Anfangen zuzuhören',deckEmpty:'Dein Deck ist leer.',tapWordToSave:'Tippe auf ein Wort im Player, um es zu speichern.',searchWords:'Gespeicherte Wörter suchen…',allWords:'Alle gespeicherten Wörter',fromLine:'AUS DIESER ZEILE',from:'aus:',connectSpotify:'Spotify verbinden',translateTo:'Übersetzen nach',appLangLabel:'App-Sprache',cards:'Karten',list:'Liste',popularPrefix:'Beliebte',popularSuffix:'Lieder',continueLearning:'Zuletzt gehört',},
-ar:{listen:'استمع',deck:'البطاقات',profile:'الملف',goodMorning:'صباح الخير،',goodAfternoon:'مساء الخير،',goodEvening:'مساء النور،',letsListen:'لنستمع.',cardsDue:'بطاقات للمراجعة',dayStreak:'أيام متتالية',tapToReveal:'انقر للكشف',saveToDeck:'حفظ في البطاقات',inDeck:'✓ في البطاقات',hearIt:'استمع',gotIt:'فهمت',again:'مجدداً',hard:'صعب',previouslyListened:'تم الاستماع سابقاً',playOnSpotify:'شغّل أغنية على Spotify',detectsAuto:'سيكتشف SongLingo ذلك تلقائياً',syncedSpotify:'متزامن مع Spotify',translating:'جارٍ الترجمة…',startListening:'ابدأ الاستماع',deckEmpty:'بطاقاتك فارغة.',tapWordToSave:'انقر على أي كلمة في المشغّل لحفظها.',searchWords:'ابحث في الكلمات…',allWords:'جميع الكلمات المحفوظة',fromLine:'من هذا السطر',from:'من:',connectSpotify:'ربط Spotify',translateTo:'الترجمة إلى',appLangLabel:'لغة التطبيق',cards:'البطاقات',list:'القائمة',popularPrefix:'أغاني',popularSuffix:'شهيرة',continueLearning:'تم الاستماع سابقاً',},
+en:{listen:'Listen',deck:'Deck',profile:'Profile',goodMorning:'Good morning,',goodAfternoon:'Good afternoon,',goodEvening:'Good evening,',letsListen:"let's listen.",cardsDue:'cards due',dayStreak:'day streak',tapToReveal:'TAP TO REVEAL',saveToDeck:'Save to deck',inDeck:'✓ In Deck',hearIt:'Hear it',gotIt:'Got it',again:'Again',hard:'Hard',previouslyListened:'Previously Listened',playOnSpotify:'Play a song on Spotify',detectsAuto:'Melozi will detect it automatically',syncedSpotify:'Synced with Spotify',translating:'Translating…',startListening:'Start Listening',deckEmpty:'Your deck is empty.',tapWordToSave:'Tap any word in the Player to save it here.',searchWords:'Search saved words…',allWords:'All saved words',fromLine:'FROM THIS LINE',from:'from:',connectSpotify:'Connect Spotify',translateTo:'Translate to',appLangLabel:'App Language',cards:'Cards',list:'List',popularPrefix:'Popular',popularSuffix:'Songs',continueLearning:'Previously Listened',},
+ms:{listen:'Dengar',deck:'Dek',profile:'Profil',goodMorning:'Selamat pagi,',goodAfternoon:'Selamat tengah hari,',goodEvening:'Selamat petang,',letsListen:'jom dengar lagu.',cardsDue:'kad untuk ulang kaji',dayStreak:'hari berturut-turut',tapToReveal:'KETIK UNTUK LIHAT',saveToDeck:'Simpan ke dek',inDeck:'✓ Dalam Dek',hearIt:'Dengar',gotIt:'Faham',again:'Ulang',hard:'Susah',previouslyListened:'Pernah Didengari',playOnSpotify:'Main lagu di Spotify',detectsAuto:'Melozi akan mengesannya secara automatik',syncedSpotify:'Disegerakkan dengan Spotify',translating:'Menterjemah…',startListening:'Mula Mendengar',deckEmpty:'Dek anda kosong.',tapWordToSave:'Ketik sebarang perkataan dalam Pemain untuk simpan di sini.',searchWords:'Cari perkataan…',allWords:'Semua perkataan disimpan',fromLine:'DARIPADA BARIS INI',from:'daripada:',connectSpotify:'Sambung Spotify',translateTo:'Terjemah ke',appLangLabel:'Bahasa Apl',cards:'Kad',list:'Senarai',popularPrefix:'Lagu',popularSuffix:'Popular',continueLearning:'Pernah Didengari',},
+id:{listen:'Dengarkan',deck:'Dek',profile:'Profil',goodMorning:'Selamat pagi,',goodAfternoon:'Selamat siang,',goodEvening:'Selamat malam,',letsListen:'ayo dengarkan.',cardsDue:'kartu untuk diulang',dayStreak:'hari beruntun',tapToReveal:'KETUK UNTUK LIHAT',saveToDeck:'Simpan ke dek',inDeck:'✓ Di Dek',hearIt:'Dengar',gotIt:'Mengerti',again:'Ulangi',hard:'Sulit',previouslyListened:'Pernah Didengar',playOnSpotify:'Putar lagu di Spotify',detectsAuto:'Melozi akan mendeteksinya otomatis',syncedSpotify:'Tersinkron dengan Spotify',translating:'Menerjemahkan…',startListening:'Mulai Mendengar',deckEmpty:'Dek Anda kosong.',tapWordToSave:'Ketuk kata apapun di Pemutar untuk disimpan di sini.',searchWords:'Cari kata tersimpan…',allWords:'Semua kata tersimpan',fromLine:'DARI BARIS INI',from:'dari:',connectSpotify:'Sambungkan Spotify',translateTo:'Terjemahkan ke',appLangLabel:'Bahasa Aplikasi',cards:'Kartu',list:'Daftar',popularPrefix:'Lagu',popularSuffix:'Populer',continueLearning:'Pernah Didengar',},
+th:{listen:'ฟัง',deck:'สำรับ',profile:'โปรไฟล์',goodMorning:'สวัสดีตอนเช้า,',goodAfternoon:'สวัสดีตอนบ่าย,',goodEvening:'สวัสดีตอนเย็น,',letsListen:'มาฟังเพลงกัน.',cardsDue:'ไพ่ที่ต้องทบทวน',dayStreak:'วันติดต่อกัน',tapToReveal:'แตะเพื่อดู',saveToDeck:'บันทึกลงสำรับ',inDeck:'✓ ในสำรับ',hearIt:'ฟัง',gotIt:'เข้าใจ',again:'ทำซ้ำ',hard:'ยาก',previouslyListened:'ฟังไปแล้ว',playOnSpotify:'เล่นเพลงใน Spotify',detectsAuto:'Melozi จะตรวจพบโดยอัตโนมัติ',syncedSpotify:'ซิงค์กับ Spotify',translating:'กำลังแปล…',startListening:'เริ่มฟัง',deckEmpty:'สำรับของคุณว่างเปล่า',tapWordToSave:'แตะคำใดๆ ในเพลงเพื่อบันทึก',searchWords:'ค้นหาคำที่บันทึก…',allWords:'คำทั้งหมดที่บันทึก',fromLine:'จากบรรทัดนี้',from:'จาก:',connectSpotify:'เชื่อมต่อ Spotify',translateTo:'แปลเป็น',appLangLabel:'ภาษาแอป',cards:'ไพ่',list:'รายการ',popularPrefix:'เพลง',popularSuffix:'ยอดนิยม',continueLearning:'ฟังไปแล้ว',},
+es:{listen:'Escuchar',deck:'Baraja',profile:'Perfil',goodMorning:'Buenos días,',goodAfternoon:'Buenas tardes,',goodEvening:'Buenas noches,',letsListen:'vamos a escuchar.',cardsDue:'tarjetas pendientes',dayStreak:'días seguidos',tapToReveal:'TOCA PARA VER',saveToDeck:'Guardar en baraja',inDeck:'✓ En baraja',hearIt:'Escuchar',gotIt:'Entendido',again:'Repetir',hard:'Difícil',previouslyListened:'Escuchado antes',playOnSpotify:'Pon una canción en Spotify',detectsAuto:'Melozi lo detectará automáticamente',syncedSpotify:'Sincronizado con Spotify',translating:'Traduciendo…',startListening:'Empezar a escuchar',deckEmpty:'Tu baraja está vacía.',tapWordToSave:'Toca cualquier palabra en el reproductor para guardarla.',searchWords:'Buscar palabras…',allWords:'Todas las palabras guardadas',fromLine:'DE ESTA LÍNEA',from:'de:',connectSpotify:'Conectar Spotify',translateTo:'Traducir a',appLangLabel:'Idioma de la app',cards:'Tarjetas',list:'Lista',popularPrefix:'Canciones',popularSuffix:'Populares',continueLearning:'Escuchado antes',},
+fr:{listen:'Écouter',deck:'Deck',profile:'Profil',goodMorning:'Bonjour,',goodAfternoon:'Bon après-midi,',goodEvening:'Bonsoir,',letsListen:"à l'écoute.",cardsDue:'cartes à réviser',dayStreak:'jours consécutifs',tapToReveal:'TOUCHER POUR VOIR',saveToDeck:'Ajouter au deck',inDeck:'✓ Dans le deck',hearIt:'Écouter',gotIt:'Compris',again:'Répéter',hard:'Difficile',previouslyListened:'Écouté récemment',playOnSpotify:'Lance une chanson sur Spotify',detectsAuto:'Melozi la détectera automatiquement',syncedSpotify:'Synchronisé avec Spotify',translating:'Traduction…',startListening:"Commencer à écouter",deckEmpty:'Votre deck est vide.',tapWordToSave:'Touche un mot dans le lecteur pour le sauvegarder.',searchWords:'Rechercher des mots…',allWords:'Tous les mots sauvegardés',fromLine:'DE CETTE LIGNE',from:'de :',connectSpotify:'Connecter Spotify',translateTo:'Traduire en',appLangLabel:"Langue de l'app",cards:'Cartes',list:'Liste',popularPrefix:'Chansons',popularSuffix:'Populaires',continueLearning:'Écouté récemment',},
+de:{listen:'Hören',deck:'Deck',profile:'Profil',goodMorning:'Guten Morgen,',goodAfternoon:'Guten Tag,',goodEvening:'Guten Abend,',letsListen:'lass uns hören.',cardsDue:'Karten zur Wiederholung',dayStreak:'Tage in Folge',tapToReveal:'TIPPEN ZUM ANZEIGEN',saveToDeck:'Ins Deck speichern',inDeck:'✓ Im Deck',hearIt:'Anhören',gotIt:'Verstanden',again:'Wiederholen',hard:'Schwer',previouslyListened:'Zuletzt gehört',playOnSpotify:'Spiele ein Lied auf Spotify',detectsAuto:'Melozi erkennt es automatisch',syncedSpotify:'Mit Spotify synchronisiert',translating:'Übersetze…',startListening:'Anfangen zuzuhören',deckEmpty:'Dein Deck ist leer.',tapWordToSave:'Tippe auf ein Wort im Player, um es zu speichern.',searchWords:'Gespeicherte Wörter suchen…',allWords:'Alle gespeicherten Wörter',fromLine:'AUS DIESER ZEILE',from:'aus:',connectSpotify:'Spotify verbinden',translateTo:'Übersetzen nach',appLangLabel:'App-Sprache',cards:'Karten',list:'Liste',popularPrefix:'Beliebte',popularSuffix:'Lieder',continueLearning:'Zuletzt gehört',},
+ar:{listen:'استمع',deck:'البطاقات',profile:'الملف',goodMorning:'صباح الخير،',goodAfternoon:'مساء الخير،',goodEvening:'مساء النور،',letsListen:'لنستمع.',cardsDue:'بطاقات للمراجعة',dayStreak:'أيام متتالية',tapToReveal:'انقر للكشف',saveToDeck:'حفظ في البطاقات',inDeck:'✓ في البطاقات',hearIt:'استمع',gotIt:'فهمت',again:'مجدداً',hard:'صعب',previouslyListened:'تم الاستماع سابقاً',playOnSpotify:'شغّل أغنية على Spotify',detectsAuto:'سيكتشف Melozi ذلك تلقائياً',syncedSpotify:'متزامن مع Spotify',translating:'جارٍ الترجمة…',startListening:'ابدأ الاستماع',deckEmpty:'بطاقاتك فارغة.',tapWordToSave:'انقر على أي كلمة في المشغّل لحفظها.',searchWords:'ابحث في الكلمات…',allWords:'جميع الكلمات المحفوظة',fromLine:'من هذا السطر',from:'من:',connectSpotify:'ربط Spotify',translateTo:'الترجمة إلى',appLangLabel:'لغة التطبيق',cards:'البطاقات',list:'القائمة',popularPrefix:'أغاني',popularSuffix:'شهيرة',continueLearning:'تم الاستماع سابقاً',},
 };
 function t(key){const code=LANG_CODE[S.appLanguage]||'en';return TRANSLATIONS[code]?.[key]??TRANSLATIONS.en[key]??key;}
 
@@ -1051,11 +1131,7 @@ const LANG_CONFIG = {
 // ── INIT ───────────────────────────────────────────────────────────────────
 window.onload = async () => {
   updateStreak();
-  if (S.apiKey) {
-    const ki = document.getElementById('profile-apikey');
-    if (ki) ki.value = S.apiKey;
-    updateKeyStatus();
-  }
+
   setTargetLanguage(S.targetLanguage, true);
   setSourceLang(S.sourceLang, true);
   setAppLanguage(S.appLanguage, true); // apply UI translations on load
@@ -1088,7 +1164,10 @@ window.onload = async () => {
     obGoto(1); // always start at step 1
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
-  initCardSwipe(); // wire up drag/swipe on the deck card
+  initCardSwipe();
+  initPlayerSwipeDown();
+  initPwaPrompt();
+  showPopularSkeleton(); // show skeleton before fetch
 };
 
 // ── STREAK ─────────────────────────────────────────────────────────────────
@@ -1129,7 +1208,7 @@ function goTab(tab) {
   });
   if (tab === 'deck') renderDeck();
   if (tab === 'profile') renderProfile();
-  if (tab === 'home') { updateHomeNowPlaying(); updateContinueLearning(); fetchPopularSpotify(); }
+  if (tab === 'home') { updateHomeNowPlaying(); updateContinueLearning(); showPopularSkeleton(); fetchPopularSpotify(); }
 }
 function goBack() { showScreen(S.prevView || 'home'); document.getElementById('tab-bar').classList.remove('hidden'); }
 
@@ -1152,6 +1231,8 @@ function obGoto(step) {
     const sel = document.getElementById('ob-app-lang');
     if (sel) sel.value = S.appLanguage;
   }
+  const continueBtn = document.querySelector('.ob-footer .btn-a');
+  if (continueBtn) continueBtn.textContent = step === 6 ? "Let's go 🎵" : 'Continue →';
   const leftBtn = document.getElementById('ob-left-btn');
   if (leftBtn) {
     if (step === 1) { leftBtn.textContent = 'Skip setup'; leftBtn.onclick = skipOnboarding; }
@@ -1221,7 +1302,7 @@ function updateHomeNowPlaying() {
     sec.innerHTML = `
       <div class="np-idle" onclick="openPlayer()">
         <div class="np-idle-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg></div>
-        <div><div class="np-idle-title">Play a song on Spotify</div><div class="np-idle-sub">SongLingo will detect it automatically</div></div>
+        <div><div class="np-idle-title">Play a song on Spotify</div><div class="np-idle-sub">Melozi will detect it automatically</div></div>
       </div>`;
   } else {
     if (pill) pill.classList.add('hidden');
@@ -1267,7 +1348,6 @@ function openPlayer() { S.prevView = S.tab; showScreen('player'); }
 
 // ── LOAD SONG (from home/popular) ──────────────────────────────────────────
 async function loadSong(title, artist) {
-  if (!S.apiKey) { openApiKeySheet(); return; }
   S.prevView = S.tab;
   // Search Spotify and play the track automatically
   const token = await getValidToken();
@@ -1515,8 +1595,7 @@ async function playSpotifyCard(uri,title,artist){
 
 // ── AUTO-LOAD LYRICS ───────────────────────────────────────────────────────
 async function autoLoadSpotifyTrack(title,artist){
-  const apiKey=S.apiKey;
-  if(!apiKey||!title||title==='—')return;
+  if(!title||title==='—')return;
   S.spotifyAutoLoading=true;
   try{
     const r=await fetch(`/api/lyrics?${new URLSearchParams({title,artist})}`);
@@ -1526,14 +1605,13 @@ async function autoLoadSpotifyTrack(title,artist){
     const filterFn=cfg.filter?(l=>cfg.filter.test(l.text)):(l=>l.text.trim().length>2);
     const lrcLines=parseLrc(data.lrc).filter(filterFn);
     if(!lrcLines.length){S.spotifyAutoLoading=false;return;}
-    await loadAndTranslate(data.title||title,data.artist||artist,apiKey,lrcLines);
+    await loadAndTranslate(data.title||title,data.artist||artist,lrcLines);
   }catch(e){}
   S.spotifyAutoLoading=false;
 }
 
-async function loadAndTranslate(title,artist,apiKey,lrcLines){
-  S.title=title;S.artist=artist;S.apiKey=apiKey;
-  localStorage.setItem('ht_key',apiKey);
+async function loadAndTranslate(title,artist,lrcLines){
+  S.title=title;S.artist=artist;
   addToHistory(title, artist, S.spotifyCurrentAlbumArt); // track history
   S.lyrics=lrcLines.map(l=>({...l,characters:l.text,pinyin:null,english:null,words:null}));
   S.activeIdx=0;S.offset=0;
@@ -1545,7 +1623,7 @@ async function loadAndTranslate(title,artist,apiKey,lrcLines){
   showScreen('player');
   rerender();
   updateHomeNowPlaying();
-  await annotateInChunks(S.lyrics,apiKey);
+  await annotateInChunks(S.lyrics);
   if(tran)tran.classList.add('hidden');
   rerender();
   updateHomeNowPlaying();
@@ -1557,21 +1635,21 @@ async function loadAndTranslate(title,artist,apiKey,lrcLines){
   const sdur=document.getElementById('si-duration');if(sdur&&lrcLines.length){const last=lrcLines[lrcLines.length-1].time;const m=Math.floor(last/60);const s=String(Math.floor(last%60)).padStart(2,'0');sdur.textContent=`${m}:${s}`;}
 }
 
-async function annotateInChunks(arr,apiKey){
-  if(!apiKey||!apiKey.startsWith('sk-ant-'))return;
+async function annotateInChunks(arr){
+  if(!arr||arr.length===0)return;
   const SIZE=8;
   for(let i=0;i<arr.length;i+=SIZE){
     const prog=document.getElementById('pl-translate-progress');
     if(prog)prog.textContent=`Translating ${Math.min(i+SIZE,arr.length)}/${arr.length}…`;
     try{
-      const result=await annotateChunk(arr.slice(i,i+SIZE).map(l=>l.text||l.characters),apiKey);
+      const result=await annotateChunk(arr.slice(i,i+SIZE).map(l=>l.text||l.characters));
       result.forEach((item,j)=>{const idx=i+j;if(arr[idx]){arr[idx].characters=item.characters||arr[idx].characters;arr[idx].pinyin=item.pinyin||arr[idx].pinyin;arr[idx].english=item.english||arr[idx].english;arr[idx].words=item.words?.length?item.words:arr[idx].words;}});
       rerender();
     }catch(e){return;}
   }
 }
 
-async function annotateChunk(lines,apiKey){
+async function annotateChunk(lines){
   const tl=S.targetLanguage||'English';const src=S.sourceLang||'zh';
   const numbered=lines.map((l,i)=>`${i+1}. ${l}`).join('\n');
   const PROMPTS={
@@ -1611,7 +1689,7 @@ Natural ${tl} translation in "english" field.`,
   };
   const SYSTEM={zh:'You are a Mandarin annotation tool. Output ONLY valid JSON.',ko:'You are a Korean annotation tool. Output ONLY valid JSON.',ja:'You are a Japanese annotation tool. Output ONLY valid JSON.'};
   const prompt=PROMPTS[src]||PROMPTS.zh;const systemMsg=SYSTEM[src]||SYSTEM.zh;
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
+  const resp=await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
   const txt=await resp.text();if(!resp.ok){let m=`API error ${resp.status}`;try{m=JSON.parse(txt).error?.message||m;}catch{}throw new Error(m);}
   const data=JSON.parse(txt);let raw=(data.content?.[0]?.text||'').replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
   try{return JSON.parse(raw);}catch{try{return JSON.parse(raw+']');}catch{throw new Error('Parse error');}}
@@ -1777,7 +1855,7 @@ function retranslateSong(){
   if(!S.lyrics.length)return;
   S.lyrics.forEach(l=>{l.pinyin=null;l.english=null;l.words=null;});
   const tran=document.getElementById('pl-translating');if(tran)tran.classList.remove('hidden');
-  annotateInChunks(S.lyrics,S.apiKey).then(()=>{if(tran)tran.classList.add('hidden');rerender();});
+  annotateInChunks(S.lyrics).then(()=>{if(tran)tran.classList.add('hidden');rerender();});
 }
 
 function saveAllWords(){
@@ -1959,6 +2037,70 @@ function renderDeckList() {
   container.innerHTML = statusBar + rows;
 }
 
+// ── HAPTIC FEEDBACK ────────────────────────────────────────────────────────
+function haptic(type='light'){
+  if(!navigator.vibrate)return;
+  if(type==='light')navigator.vibrate(8);
+  else if(type==='medium')navigator.vibrate(16);
+  else if(type==='success')navigator.vibrate([10,5,10,5,20]);
+}
+
+// ── SWIPE DOWN TO CLOSE PLAYER ─────────────────────────────────────────────
+function initPlayerSwipeDown(){
+  const player=document.getElementById('screen-player');
+  if(!player)return;
+  let sy=0,dragging=false;
+  const hdr=player.querySelector('.pl-hdr');
+  if(hdr){
+    hdr.addEventListener('touchstart',e=>{sy=e.touches[0].clientY;dragging=true;},{passive:true});
+    hdr.addEventListener('touchmove',e=>{
+      if(!dragging)return;
+      const dy=e.touches[0].clientY-sy;
+      if(dy>0){player.style.transform=`translateY(${Math.min(dy*.5,100)}px)`;player.style.transition='none';}
+    },{passive:true});
+    hdr.addEventListener('touchend',e=>{
+      if(!dragging)return;dragging=false;
+      const dy=e.changedTouches[0].clientY-sy;
+      player.style.transition='transform .3s cubic-bezier(.32,.72,0,1)';
+      player.style.transform='';
+      setTimeout(()=>player.style.transition='',300);
+      if(dy>60){haptic('light');goBack();}
+    });
+  }
+}
+
+// ── FAQ TOGGLE ─────────────────────────────────────────────────────────────
+function toggleFaq(el){
+  const wasOpen=el.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+  if(!wasOpen)el.classList.add('open');
+}
+
+// API is now server-side - no key banner needed
+function updateApiBanner(){const e=document.getElementById('api-banner');if(e)e.remove();}
+
+// ── SKELETON LOADING ───────────────────────────────────────────────────────
+function showPopularSkeleton(){
+  const grid=document.getElementById('popular-grid');if(!grid)return;
+  grid.innerHTML=Array.from({length:5},()=>`
+    <div class="skeleton-row">
+      <div class="skeleton skeleton-art"></div>
+      <div class="skeleton-lines">
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line short"></div>
+      </div>
+    </div>`).join('');
+}
+
+// ── PWA INSTALL PROMPT ─────────────────────────────────────────────────────
+function initPwaPrompt(){
+  if(localStorage.getItem('pwa_prompted'))return;
+  if(window.matchMedia('(display-mode: standalone)').matches)return;
+  const prompt=document.getElementById('pwa-prompt');if(!prompt)return;
+  prompt.classList.remove('hidden');
+  setTimeout(()=>prompt.classList.add('show'),4000);
+}
+
 // ── SWIPE + FLIP ───────────────────────────────────────────────────────────
 const drag = { on:false, sx:0, sy:0, cx:0, cy:0 };
 const SWIPE_THRESH = 80;
@@ -2030,8 +2172,10 @@ function commitSwipe() {
   const adx = Math.abs(dx), ady = Math.abs(dy);
   hideStamps();
   if (adx > SWIPE_THRESH && adx > ady) {
+    haptic(dx > 0 ? 'success' : 'medium');
     flyOff(dx > 0 ? 'right' : 'left', dx > 0 ? 'got' : 'again');
   } else if (dy > SWIPE_THRESH && ady > adx) {
+    haptic('light');
     flyOff('down', 'hard');
   } else {
     snapBack();
@@ -2121,7 +2265,6 @@ function resetCard() {
 // ── PROFILE ────────────────────────────────────────────────────────────────
 function renderProfile(){
   renderProfileSpotify();
-  const kv=document.getElementById('prof-key-status');if(kv)kv.textContent=S.apiKey?'sk-ant-••••••••':'Not set';
   const lv=document.getElementById('prof-lang-value');if(lv)lv.textContent=S.targetLanguage||'English';
   const ps=document.getElementById('prof-sub');if(ps){const langNames={zh:'Mandarin',ko:'Korean',ja:'Japanese'};ps.textContent=`你好 · Learning ${langNames[S.sourceLang]||'Mandarin'}`;}
   const sn=document.getElementById('streak-num');if(sn)sn.textContent=S.streak;
@@ -2134,12 +2277,7 @@ function renderProfileSpotify(){
   else{if(status)status.textContent='Not connected';if(disc)disc.classList.add('hidden');}
 }
 
-function saveApiKey(val){
-  S.apiKey=val;localStorage.setItem('ht_key',val);updateKeyStatus();
-}
-function updateKeyStatus(){
-  const kv=document.getElementById('prof-key-status');if(kv)kv.textContent=S.apiKey?'sk-ant-••••••••':'Not set';
-}
+
 
 // ── SHEETS ─────────────────────────────────────────────────────────────────
 function openSheet(name){
@@ -2150,7 +2288,7 @@ function openSheet(name){
 }
 function closeAllSheets(){
   document.getElementById('sheet-backdrop').classList.remove('open');
-  ['word','display','info','lang','apikey','deck-word','app-lang'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
+  ['word','display','info','lang','deck-word','app-lang'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
   document.body.style.overflow='';
 }
 function openDisplaySheet(){openSheet('display');}
@@ -2162,10 +2300,7 @@ function openLangSheet(){
   document.getElementById('lang-sheet-select').value=S.targetLanguage;
   openSheet('lang');
 }
-function openApiKeySheet(){
-  const ki=document.getElementById('profile-apikey');if(ki)ki.value=S.apiKey;
-  openSheet('apikey');
-}
+
 
 // ── TOGGLES ────────────────────────────────────────────────────────────────
 function toggleSwitch(which){
@@ -2196,7 +2331,7 @@ function setTargetLanguage(lang,silent=false){
 
 // ── UTILS ──────────────────────────────────────────────────────────────────
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function exportCSV(){const rows=['Character,Pinyin,English,Song',...S.saved.map(w=>`"${w.char}","${w.pinyin}","${w.english}","${w.song||''}"`)];const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'})),download:'songlingo-deck.csv'});a.click();}
+function exportCSV(){const rows=['Character,Pinyin,English,Song',...S.saved.map(w=>`"${w.char}","${w.pinyin}","${w.english}","${w.song||''}"`)];const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'})),download:'melozi-deck.csv'});a.click();}
 </script>
 </body>
 </html>
