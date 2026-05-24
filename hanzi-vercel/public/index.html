@@ -1282,12 +1282,8 @@ async function loadSong(title, artist) {
         const data = await r.json();
         const track = data.tracks?.items?.[0];
         if (track?.uri) {
-          await fetch('https://api.spotify.com/v1/me/player/play', {
-            method: 'PUT',
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uris: [track.uri] })
-          });
-          S.spotifyCurrentTrackId = null; // force re-detect on next poll
+          await spotifyPlay(token, { uris: [track.uri] });
+          S.spotifyCurrentTrackId = null;
         }
       }
     } catch(e) {}
@@ -1440,9 +1436,9 @@ async function fetchPopularSpotify(){
 
   // Fallback: search for each hardcoded song and get Spotify art
   const SONGS = {
-    zh:[{q:'告白气球 周杰伦',t:'告白气球',a:'周杰伦',en:'Love Confession · Jay Chou (周杰伦)'},{q:'晴天 周杰伦',t:'晴天',a:'周杰伦',en:'Sunny Day · Jay Chou (周杰伦)'},{q:'稻香 周杰伦',t:'稻香',a:'周杰伦',en:'Rice Field · Jay Chou (周杰伦)'},{q:'待我如初 大头针',t:'待我如初',a:'大头针',en:'As Before · Dandelion (大头针)'},{q:'喜欢你 邓紫棋',t:'喜欢你',a:'邓紫棋',en:'I Like You · G.E.M. (邓紫棋)'},{q:'突然好想你 五月天',t:'突然好想你',a:'五月天',en:'Missing You · Mayday (五月天)'}],
-    ko:[{q:'봄날 BTS',t:'봄날',a:'BTS',en:'Spring Day · BTS (방탄소년단)'},{q:'LOVE SCENARIO iKON',t:'LOVE SCENARIO',a:'iKON',en:'Love Scenario · iKON (아이콘)'},{q:'Eight IU',t:'Eight',a:'IU',en:'Eight · IU (아이유)'},{q:'Celebrity IU',t:'Celebrity',a:'IU',en:'Celebrity · IU (아이유)'},{q:'Dynamite BTS',t:'Dynamite',a:'BTS',en:'Dynamite · BTS (방탄소년단)'},{q:'Lilac IU',t:'Lilac',a:'IU',en:'Lilac · IU (아이유)'}],
-    ja:[{q:'うっせぇわ Ado',t:'うっせぇわ',a:'Ado',en:'Usseewa · Ado'},{q:'炎 LiSA',t:'炎',a:'LiSA',en:'Homura · LiSA (リサ)'},{q:'紅蓮華 LiSA',t:'紅蓮華',a:'LiSA',en:'Gurenge · LiSA (リサ)'},{q:'廻廻奇譚 Eve',t:'廻廻奇譚',a:'Eve',en:'Kaikai Kitan · Eve'},{q:'夜に駆ける YOASOBI',t:'夜に駆ける',a:'YOASOBI',en:'Into the Night · YOASOBI'},{q:'ドライフラワー 優里',t:'ドライフラワー',a:'優里',en:'Dry Flower · Yuuri (優里)'}],
+    zh:[{q:'告白气球 周杰伦',t:'告白气球',a:'周杰伦',en:'周杰伦 (Jay Chou)'},{q:'晴天 周杰伦',t:'晴天',a:'周杰伦',en:'周杰伦 (Jay Chou)'},{q:'稻香 周杰伦',t:'稻香',a:'周杰伦',en:'周杰伦 (Jay Chou)'},{q:'待我如初 大头针',t:'待我如初',a:'大头针',en:'大头针 (Dandelion)'},{q:'喜欢你 邓紫棋',t:'喜欢你',a:'邓紫棋',en:'邓紫棋 G.E.M. (I Like You)'},{q:'突然好想你 五月天',t:'突然好想你',a:'五月天',en:'五月天 (Missing You)'}],
+    ko:[{q:'봄날 BTS',t:'봄날',a:'BTS',en:'BTS 방탄소년단 (Spring Day)'},{q:'LOVE SCENARIO iKON',t:'LOVE SCENARIO',a:'iKON',en:'iKON 아이콘 (Love Scenario)'},{q:'Eight IU',t:'Eight',a:'IU',en:'IU 아이유 (Eight)'},{q:'Celebrity IU',t:'Celebrity',a:'IU',en:'IU 아이유 (Celebrity)'},{q:'Dynamite BTS',t:'Dynamite',a:'BTS',en:'BTS 방탄소년단 (Dynamite)'},{q:'Lilac IU',t:'Lilac',a:'IU',en:'IU 아이유 (Lilac)'}],
+    ja:[{q:'うっせぇわ Ado',t:'うっせぇわ',a:'Ado',en:'Usseewa · Ado'},{q:'炎 LiSA',t:'炎',a:'LiSA',en:'LiSA リサ (Homura)'},{q:'紅蓮華 LiSA',t:'紅蓮華',a:'LiSA',en:'LiSA リサ (Gurenge)'},{q:'廻廻奇譚 Eve',t:'廻廻奇譚',a:'Eve',en:'Eve (Kaikai Kitan)'},{q:'夜に駆ける YOASOBI',t:'夜に駆ける',a:'YOASOBI',en:'YOASOBI (Into the Night)'},{q:'ドライフラワー 優里',t:'ドライフラワー',a:'優里',en:'優里 Yuuri (Dry Flower)'}],
   };
   const songs = SONGS[S.sourceLang] || SONGS.zh;
   if (heading) heading.innerHTML = `Popular ${langLabel} Songs on ${spSvg} Spotify`;
@@ -1472,7 +1468,7 @@ async function fetchPopularSpotify(){
 
 // No Spotify connected — show tiles with names only
 function fetchPopularFallback(){
-  const SONGS={zh:[{t:'告白气球',a:'周杰伦',en:'Love Confession · Jay Chou (周杰伦)'},{t:'晴天',a:'周杰伦',en:'Sunny Day · Jay Chou (周杰伦)'},{t:'稻香',a:'周杰伦',en:'Rice Field · Jay Chou (周杰伦)'},{t:'待我如初',a:'大头针',en:'As Before · Dandelion (大头针)'},{t:'喜欢你',a:'邓紫棋',en:'I Like You · G.E.M. (邓紫棋)'},{t:'突然好想你',a:'五月天',en:'Missing You · Mayday (五月天)'}],ko:[{t:'봄날',a:'BTS',en:'Spring Day · BTS'},{t:'LOVE SCENARIO',a:'iKON',en:'Love Scenario · iKON'},{t:'Eight',a:'IU',en:'Eight · IU'},{t:'Celebrity',a:'IU',en:'Celebrity · IU'},{t:'Dynamite',a:'BTS',en:'Dynamite · BTS'},{t:'Lilac',a:'IU',en:'Lilac · IU'}],ja:[{t:'うっせぇわ',a:'Ado',en:'Usseewa · Ado'},{t:'炎',a:'LiSA',en:'Homura · LiSA'},{t:'紅蓮華',a:'LiSA',en:'Gurenge · LiSA'},{t:'廻廻奇譚',a:'Eve',en:'Kaikai Kitan · Eve'},{t:'夜に駆ける',a:'YOASOBI',en:'Into the Night · YOASOBI'},{t:'ドライフラワー',a:'優里',en:'Dry Flower · Yuuri'}]};
+  const SONGS={zh:[{t:'告白气球',a:'周杰伦',en:'周杰伦 (Jay Chou)'},{t:'晴天',a:'周杰伦',en:'周杰伦 (Jay Chou)'},{t:'稻香',a:'周杰伦',en:'周杰伦 (Jay Chou)'},{t:'待我如初',a:'大头针',en:'大头针 (Dandelion)'},{t:'喜欢你',a:'邓紫棋',en:'邓紫棋 G.E.M. (I Like You)'},{t:'突然好想你',a:'五月天',en:'五月天 (Missing You)'}],ko:[{t:'봄날',a:'BTS',en:'BTS (Spring Day)'},{t:'LOVE SCENARIO',a:'iKON',en:'iKON (Love Scenario)'},{t:'Eight',a:'IU',en:'IU (Eight)'},{t:'Celebrity',a:'IU',en:'IU (Celebrity)'},{t:'Dynamite',a:'BTS',en:'BTS (Dynamite)'},{t:'Lilac',a:'IU',en:'IU (Lilac)'}],ja:[{t:'うっせぇわ',a:'Ado',en:'Usseewa · Ado'},{t:'炎',a:'LiSA',en:'LiSA (Homura)'},{t:'紅蓮華',a:'LiSA',en:'LiSA (Gurenge)'},{t:'廻廻奇譚',a:'Eve',en:'Eve (Kaikai Kitan)'},{t:'夜に駆ける',a:'YOASOBI',en:'YOASOBI (Into the Night)'},{t:'ドライフラワー',a:'優里',en:'優里 Yuuri (Dry Flower)'}]};
   const songs=SONGS[S.sourceLang]||SONGS.zh;
   const tiles=['art-a','art-t','art-r','art-i','art-s','art-t'];
   const grid=document.getElementById('popular-grid');if(!grid)return;
@@ -1486,9 +1482,33 @@ function fetchPopularFallback(){
       <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
     </div>`).join('');
 }
+// Central Spotify play function — handles no-active-device by finding one
+async function spotifyPlay(token, body) {
+  const tryPlay = async (extraParam='') => fetch(
+    `https://api.spotify.com/v1/me/player/play${extraParam}`,
+    { method:'PUT', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify(body) }
+  );
+  let resp = await tryPlay();
+  if (resp.status === 204 || resp.status === 200) return true; // success
+  if (resp.status === 403) { alert('Playback control requires Spotify Premium.'); return false; }
+  // 404/202 = no active device — find one and retry
+  try {
+    const devResp = await fetch('https://api.spotify.com/v1/me/player/devices', { headers:{'Authorization':'Bearer '+token} });
+    if (!devResp.ok) return false;
+    const { devices } = await devResp.json();
+    const device = devices?.find(d => !d.is_restricted) || devices?.[0];
+    if (!device) { return false; }
+    // Transfer playback to device then play
+    await fetch('https://api.spotify.com/v1/me/player', { method:'PUT', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({ device_ids:[device.id], play:false }) });
+    await new Promise(r => setTimeout(r, 400)); // brief wait for transfer
+    await tryPlay(`?device_id=${device.id}`);
+    return true;
+  } catch(e) { return false; }
+}
+
 async function playSpotifyCard(uri,title,artist){
   const token=await getValidToken();
-  if(token){try{await fetch('https://api.spotify.com/v1/me/player/play',{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({uris:[uri]})});}catch(e){}}
+  if(token) await spotifyPlay(token, {uris:[uri]});
   S.spotifyCurrentTrackId=null;
   autoLoadSpotifyTrack(title,artist);
 }
@@ -1609,11 +1629,12 @@ async function handlePlayPause(){
       const state=await stateResp.json();
       S.spotifyIsPlaying=state.is_playing;
     }
-    const endpoint=S.spotifyIsPlaying
-      ?'https://api.spotify.com/v1/me/player/pause'
-      :'https://api.spotify.com/v1/me/player/play';
-    const resp=await fetch(endpoint,{method:'PUT',headers:{'Authorization':'Bearer '+token}});
-    if(resp.status===403){alert('Playback control requires Spotify Premium.');return;}
+    if (S.spotifyIsPlaying) {
+      await fetch('https://api.spotify.com/v1/me/player/pause',{method:'PUT',headers:{'Authorization':'Bearer '+token}});
+    } else {
+      const ok = await spotifyPlay(token, {});
+      if (!ok) return;
+    }
     S.spotifyIsPlaying=!S.spotifyIsPlaying;S.running=S.spotifyIsPlaying;
     updatePlayButtons();
   }catch(e){}
