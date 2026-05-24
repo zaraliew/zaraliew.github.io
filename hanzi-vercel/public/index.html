@@ -1047,7 +1047,12 @@ function obGoto(step) {
   document.getElementById('ob-prog').style.width = (step/5*100)+'%';
   document.getElementById('ob-count').textContent = step+'/5';
   S.obStep = step;
-  // Left button: Back on steps 2-5, Skip on step 1
+  // Sync language selector UI to actual state (localStorage may differ from default HTML)
+  if (step === 2) {
+    document.querySelectorAll('#ob-2 .ob-opt').forEach(el => {
+      el.classList.toggle('sel', el.dataset.lang === S.sourceLang);
+    });
+  }
   const leftBtn = document.getElementById('ob-left-btn');
   if (leftBtn) {
     if (step === 1) { leftBtn.textContent = 'Skip setup'; leftBtn.onclick = skipOnboarding; }
@@ -1163,13 +1168,33 @@ function openPlayer() { S.prevView = S.tab; showScreen('player'); }
 
 // ── LOAD SONG (from home/popular) ──────────────────────────────────────────
 async function loadSong(title, artist) {
-  if (!S.apiKey) {
-    openApiKeySheet(); return;
-  }
+  if (!S.apiKey) { openApiKeySheet(); return; }
   S.prevView = S.tab;
+  // Search Spotify and play the track automatically
+  const token = await getValidToken();
+  if (token) {
+    try {
+      const q = encodeURIComponent((title + ' ' + artist).trim());
+      const market = LANG_CONFIG[S.sourceLang]?.market || 'TW';
+      const r = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=1&market=${market}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const track = data.tracks?.items?.[0];
+        if (track?.uri) {
+          await fetch('https://api.spotify.com/v1/me/player/play', {
+            method: 'PUT',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uris: [track.uri] })
+          });
+          S.spotifyCurrentTrackId = null; // force re-detect on next poll
+        }
+      }
+    } catch(e) {}
+  }
   await autoLoadSpotifyTrack(title, artist || '');
 }
-
 // ── SPOTIFY: PKCE AUTH ─────────────────────────────────────────────────────
 function generateCodeVerifier(len=128){const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';const arr=new Uint8Array(len);crypto.getRandomValues(arr);return Array.from(arr).map(b=>chars[b%chars.length]).join('');}
 async function generateCodeChallenge(v){const d=new TextEncoder().encode(v);const dg=await crypto.subtle.digest('SHA-256',d);return btoa(String.fromCharCode(...new Uint8Array(dg))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
@@ -1341,26 +1366,26 @@ async function fetchPopularITunes(){
       </div>
       <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
     </div>`).join('');
-  // Fetch real artwork — only swap once image has loaded successfully
+  // Fetch real artwork — swap fallback only after image confirms loaded
   const countries = S.sourceLang==='zh'?['tw','cn','hk']:S.sourceLang==='ko'?['kr','us']:['jp','us'];
   for (let i = 0; i < songs.length; i++) {
     (async (song, idx) => {
       for (const country of countries) {
         try {
           const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.t+' '+song.a)}&entity=song&limit=5&country=${country}&media=music`);
+          if (!r.ok) continue;
           const data = await r.json();
           const result = data.results?.find(x => x.artworkUrl100);
           if (!result) continue;
           const art = result.artworkUrl100.replace('100x100bb','300x300bb').replace('100x100bb.jpg','300x300bb.jpg');
-          // Pre-load image before swapping so fallback never disappears
-          await new Promise((res, rej) => {
-            const img = new Image();
-            img.onload = res; img.onerror = rej;
-            img.src = art;
-          });
           const artEl = document.getElementById('pop-art-'+idx);
-          if (artEl) artEl.innerHTML = `<img src="${art}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
-          return; // success — stop trying countries
+          if (!artEl) return;
+          const img = document.createElement('img');
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:12px;display:block';
+          img.onload = () => { artEl.innerHTML = ''; artEl.appendChild(img); };
+          img.onerror = () => {}; // keep fallback tile on error
+          img.src = art;
+          return; // found a result, stop trying countries
         } catch(e) { continue; }
       }
     })(songs[i], i);
