@@ -189,7 +189,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 #k-curr .pin{font-size:13px;opacity:1}
 .k-word{display:inline;cursor:pointer;border-radius:6px;padding:1px 3px;transition:background .15s}
 .k-word:active{background:var(--abg)}
-.k-word.is-saved{background:var(--abg);color:var(--a)}
+.k-word.is-saved{background:var(--abg) !important;color:var(--a) !important;border-radius:6px}
 .pl-prog{padding:12px 24px 8px;flex-shrink:0}
 .prog-track{height:3px;background:rgba(255,255,255,.08);border-radius:2px;cursor:pointer;position:relative}
 .prog-fill{height:100%;background:var(--a);border-radius:2px;width:0%;position:absolute;top:0;left:0;pointer-events:none}
@@ -1291,39 +1291,80 @@ async function fetchPopularSpotify(){
       </div>`;
     }).join('');
     const heading=document.getElementById('popular-heading');
-    if(heading)heading.innerHTML='Popular on <svg style="vertical-align:-2px;margin-left:4px" width="11" height="11" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg> Spotify';
+    const ll={zh:'Chinese',ko:'Korean',ja:'Japanese'}[S.sourceLang]||'Chinese';
+    if(heading)heading.innerHTML=`Popular ${ll} Songs on <svg style="vertical-align:-2px;margin-left:4px" width="11" height="11" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg> Spotify`;
   }catch(e){fetchPopularITunes();}
 }
 
 // iTunes Search API - free, no auth, returns artwork
 async function fetchPopularITunes(){
-  const songsByLang = {
-    zh: [{t:'告白气球',a:'周杰伦'},{t:'晴天',a:'周杰伦'},{t:'稻香',a:'周杰伦'},{t:'待我如初',a:'大头针'},{t:'喜欢你',a:'邓紫棋'},{t:'突然好想你',a:'五月天'}],
-    ko: [{t:'봄날',a:'BTS'},{t:'LOVE SCENARIO',a:'iKON'},{t:'Eight',a:'IU'},{t:'Celebrity',a:'IU'},{t:'Dynamite',a:'BTS'},{t:'Lilac',a:'IU'}],
-    ja: [{t:'うっせぇわ',a:'Ado'},{t:'炎',a:'LiSA'},{t:'紅蓮華',a:'LiSA'},{t:'廻廻奇譚',a:'Eve'},{t:'夜に駆ける',a:'YOASOBI'},{t:'ドライフラワー',a:'優里'}],
+  const SONGS = {
+    zh: [
+      {t:'告白气球',a:'周杰伦',en:'Love Confession · Jay Chou (周杰伦)'},
+      {t:'晴天',a:'周杰伦',en:'Sunny Day · Jay Chou (周杰伦)'},
+      {t:'稻香',a:'周杰伦',en:'Rice Field · Jay Chou (周杰伦)'},
+      {t:'待我如初',a:'大头针',en:'As Before · Dandelion (大头针)'},
+      {t:'喜欢你',a:'邓紫棋',en:'I Like You · G.E.M. (邓紫棋)'},
+      {t:'突然好想你',a:'五月天',en:'Missing You · Mayday (五月天)'},
+    ],
+    ko: [
+      {t:'봄날',a:'BTS',en:'Spring Day · BTS (방탄소년단)'},
+      {t:'LOVE SCENARIO',a:'iKON',en:'Love Scenario · iKON (아이콘)'},
+      {t:'Eight',a:'IU',en:'Eight · IU (아이유)'},
+      {t:'Celebrity',a:'IU',en:'Celebrity · IU (아이유)'},
+      {t:'Dynamite',a:'BTS',en:'Dynamite · BTS (방탄소년단)'},
+      {t:'Lilac',a:'IU',en:'Lilac · IU (아이유)'},
+    ],
+    ja: [
+      {t:'うっせぇわ',a:'Ado',en:'Usseewa · Ado (アド)'},
+      {t:'炎',a:'LiSA',en:'Homura · LiSA (リサ)'},
+      {t:'紅蓮華',a:'LiSA',en:'Gurenge · LiSA (リサ)'},
+      {t:'廻廻奇譚',a:'Eve',en:'Kaikai Kitan · Eve (イヴ)'},
+      {t:'夜に駆ける',a:'YOASOBI',en:'Into the Night · YOASOBI'},
+      {t:'ドライフラワー',a:'優里',en:'Dry Flower · Yuuri (優里)'},
+    ],
   };
-  const songs = songsByLang[S.sourceLang] || songsByLang.zh;
+  const LANG_LABEL = { zh:'Chinese', ko:'Korean', ja:'Japanese' };
+  const songs = SONGS[S.sourceLang] || SONGS.zh;
   const tiles = ['art-a','art-t','art-r','art-i','art-s','art-t'];
   const grid = document.getElementById('popular-grid'); if(!grid)return;
-  // Show immediately with fallback tiles
+  // Update heading with language name
+  const heading = document.getElementById('popular-heading');
+  if (heading) heading.textContent = `Popular ${LANG_LABEL[S.sourceLang]||'Chinese'} Songs`;
+  // Render immediately with gradient tiles
   grid.innerHTML = songs.map((s,i) => `
     <div class="song-row" id="pop-row-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
-      <div class="sr-art" id="pop-art-${i}"><div class="sr-art-fallback ${tiles[i]}"></div></div>
-      <div class="sr-info"><div class="sr-title cjk">${esc(s.t)}</div><div class="sr-meta">${esc(s.a)}</div></div>
+      <div class="sr-art" id="pop-art-${i}"><div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div></div>
+      <div class="sr-info">
+        <div class="sr-title cjk">${esc(s.t)}</div>
+        <div class="sr-meta">${esc(s.en)}</div>
+      </div>
       <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
     </div>`).join('');
-  // Fetch artwork in background from iTunes
-  songs.forEach(async (s, i) => {
-    try {
-      const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(s.t+' '+s.a)}&entity=song&limit=1&country=tw&media=music`);
-      const data = await r.json();
-      const art = data.results?.[0]?.artworkUrl100?.replace('100x100bb','300x300bb');
-      if (art) {
-        const artEl = document.getElementById('pop-art-'+i);
-        if (artEl) artEl.innerHTML = `<img src="${art}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" onerror="this.parentNode.innerHTML='<div class=sr-art-fallback ${tiles[i]}></div>'">`;
+  // Fetch real artwork — only swap once image has loaded successfully
+  const countries = S.sourceLang==='zh'?['tw','cn','hk']:S.sourceLang==='ko'?['kr','us']:['jp','us'];
+  for (let i = 0; i < songs.length; i++) {
+    (async (song, idx) => {
+      for (const country of countries) {
+        try {
+          const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.t+' '+song.a)}&entity=song&limit=5&country=${country}&media=music`);
+          const data = await r.json();
+          const result = data.results?.find(x => x.artworkUrl100);
+          if (!result) continue;
+          const art = result.artworkUrl100.replace('100x100bb','300x300bb').replace('100x100bb.jpg','300x300bb.jpg');
+          // Pre-load image before swapping so fallback never disappears
+          await new Promise((res, rej) => {
+            const img = new Image();
+            img.onload = res; img.onerror = rej;
+            img.src = art;
+          });
+          const artEl = document.getElementById('pop-art-'+idx);
+          if (artEl) artEl.innerHTML = `<img src="${art}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`;
+          return; // success — stop trying countries
+        } catch(e) { continue; }
       }
-    } catch(e) {}
-  });
+    })(songs[i], i);
+  }
 }
 
 async function playSpotifyCard(uri,title,artist){
@@ -1395,9 +1436,39 @@ async function annotateChunk(lines,apiKey){
   const tl=S.targetLanguage||'English';const src=S.sourceLang||'zh';
   const numbered=lines.map((l,i)=>`${i+1}. ${l}`).join('\n');
   const PROMPTS={
-    zh:`Annotate these Mandarin Chinese song lyric lines with pinyin (tone marks required) and natural ${tl} translation. Convert any traditional Chinese to simplified.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]\n\nRules: tone marks required, simplified Chinese only, natural ${tl} in "english" field, group words naturally.`,
-    ko:`Annotate these Korean song lyric lines with Revised Romanization and natural ${tl} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"안녕","pinyin":"annyeong","english":"hello","words":[{"char":"안녕","pinyin":"annyeong","english":"hello"}]}]\n\nRules: Revised Romanization in "pinyin", natural ${tl} in "english".`,
-    ja:`Annotate these Japanese song lyric lines with Hepburn romaji and natural ${tl} translation.\n\n${numbered}\n\nReturn JSON array:\n[{"line":1,"characters":"こんにちは","pinyin":"konnichiwa","english":"hello","words":[{"char":"こんにちは","pinyin":"konnichiwa","english":"hello"}]}]\n\nRules: Hepburn romaji in "pinyin", natural ${tl} in "english".`,
+    zh:`Annotate these Mandarin Chinese song lyric lines with pinyin and natural ${tl} translation. Convert traditional Chinese to simplified.
+
+${numbered}
+
+Return a JSON array ONLY (no markdown):
+[{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]
+
+CRITICAL PINYIN RULE: Every Chinese character = exactly ONE pinyin syllable. Multi-character words MUST have one space between each syllable. NEVER combine syllables.
+✓ CORRECT: 慢慢→"màn màn", 城市→"chéng shì", 时间→"shí jiān", 朋友→"péng yǒu", 回声→"huí shēng", 月光→"yuè guāng"
+✗ WRONG: 慢慢→"mànmàn", 城市→"chéngshì", 时间→"shíjiān"
+Tone marks required on every syllable. Simplified Chinese only. Natural ${tl} translation in "english" field.`,
+    ko:`Annotate these Korean song lyric lines with Revised Romanization and natural ${tl} translation.
+
+${numbered}
+
+Return a JSON array ONLY (no markdown):
+[{"line":1,"characters":"안녕하세요","pinyin":"an-nyeong-ha-se-yo","english":"hello","words":[{"char":"안녕","pinyin":"an-nyeong","english":"hello"},{"char":"하세요","pinyin":"ha-se-yo","english":"(polite ending)"}]}]
+
+CRITICAL ROMANIZATION RULE: Use hyphens between syllables within each word. Every Korean syllable block = one romanization syllable.
+✓ CORRECT: 사랑→"sa-rang", 하늘→"ha-neul", 마음→"ma-eum"
+✗ WRONG: 사랑→"sarang" (no spaces/hyphens), 하늘→"haneul"
+Natural ${tl} translation in "english" field.`,
+    ja:`Annotate these Japanese song lyric lines with Hepburn romaji and natural ${tl} translation.
+
+${numbered}
+
+Return a JSON array ONLY (no markdown):
+[{"line":1,"characters":"ありがとう","pinyin":"a-ri-ga-to-u","english":"thank you","words":[{"char":"ありがとう","pinyin":"a-ri-ga-to-u","english":"thank you"}]}]
+
+CRITICAL ROMAJI RULE: Separate each mora (syllable unit) with a hyphen within words. Every hiragana/katakana character = one mora.
+✓ CORRECT: ありがとう→"a-ri-ga-to-u", こんにちは→"kon-ni-chi-wa", 夜に→"yo-ru-ni"
+✗ WRONG: ありがとう→"arigatou" (no hyphens)
+Natural ${tl} translation in "english" field.`,
   };
   const SYSTEM={zh:'You are a Mandarin annotation tool. Output ONLY valid JSON.',ko:'You are a Korean annotation tool. Output ONLY valid JSON.',ja:'You are a Japanese annotation tool. Output ONLY valid JSON.'};
   const prompt=PROMPTS[src]||PROMPTS.zh;const systemMsg=SYSTEM[src]||SYSTEM.zh;
@@ -1413,13 +1484,30 @@ function parseLrc(lrc){const lines=[];for(const line of lrc.split('\n')){const m
 async function handlePlayPause(){
   const token=await getValidToken();if(!token){alert('Connect Spotify to control playback.');return;}
   try{
-    const endpoint=S.spotifyIsPlaying?'https://api.spotify.com/v1/me/player/pause':'https://api.spotify.com/v1/me/player/play';
+    // Get fresh playback state before toggling
+    const stateResp=await fetch('https://api.spotify.com/v1/me/player',{headers:{'Authorization':'Bearer '+token}});
+    if(stateResp.status===200){
+      const state=await stateResp.json();
+      S.spotifyIsPlaying=state.is_playing;
+    }
+    const endpoint=S.spotifyIsPlaying
+      ?'https://api.spotify.com/v1/me/player/pause'
+      :'https://api.spotify.com/v1/me/player/play';
     const resp=await fetch(endpoint,{method:'PUT',headers:{'Authorization':'Bearer '+token}});
     if(resp.status===403){alert('Playback control requires Spotify Premium.');return;}
     S.spotifyIsPlaying=!S.spotifyIsPlaying;S.running=S.spotifyIsPlaying;
     updatePlayButtons();
   }catch(e){}
 }
+
+// Re-sync when user returns to the app
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&S.spotifyToken){
+    pollSpotify();
+    if(!S.spotifyPollInterval)startSpotifyPolling();
+  }
+});
+window.addEventListener('focus',()=>{if(S.spotifyToken)pollSpotify();});
 
 function updatePlayButtons(){
   const isPlaying=S.spotifyIsPlaying;
