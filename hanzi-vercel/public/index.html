@@ -424,8 +424,25 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
   </div>
 
-  <!-- Step 3: Translate to -->
+  <!-- Step 3: App language -->
   <div class="ob-body hidden" id="ob-3">
+    <div class="eyebrow" style="color:var(--p)">APP LANGUAGE</div>
+    <div class="ob-title" style="font-size:30px">What language<br>do <em>you</em> speak?</div>
+    <div class="ob-sub">SongLingo will switch all buttons, labels, and messages into your language.</div>
+    <select class="select-field" id="ob-app-lang" onchange="setAppLanguage(this.value)">
+      <option value="English">🇬🇧 English</option>
+      <option value="Malay">🇲🇾 Bahasa Melayu</option>
+      <option value="Indonesian">🇮🇩 Bahasa Indonesia</option>
+      <option value="Thai">🇹🇭 ภาษาไทย</option>
+      <option value="Spanish">🇪🇸 Español</option>
+      <option value="French">🇫🇷 Français</option>
+      <option value="German">🇩🇪 Deutsch</option>
+      <option value="Arabic">🇸🇦 العربية</option>
+    </select>
+  </div>
+
+  <!-- Step 4: Translate to -->
+  <div class="ob-body hidden" id="ob-4">
     <div class="eyebrow" style="color:var(--a)">YOUR LANGUAGE</div>
     <div class="ob-title" style="font-size:30px">Translate lyrics<br>into…</div>
     <select class="select-field" id="ob-target-lang" onchange="S.targetLanguage=this.value;localStorage.setItem('sl_lang',this.value)">
@@ -444,7 +461,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 
   <!-- Step 4: Spotify -->
-  <div class="ob-body hidden" id="ob-4">
+  <div class="ob-body hidden" id="ob-5">
     <div class="eyebrow" style="color:var(--g)">AUTO-SYNC</div>
     <div class="ob-title" style="font-size:30px">Connect<br>Spotify</div>
     <div class="ob-sp-card" id="ob-sp-card" onclick="handleSpotifyConnect()">
@@ -460,7 +477,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 
   <!-- Step 5: API key -->
-  <div class="ob-body hidden" id="ob-5">
+  <div class="ob-body hidden" id="ob-6">
     <div class="eyebrow" style="color:var(--p)">AI TRANSLATION</div>
     <div class="ob-title" style="font-size:30px">Add your<br>Anthropic key</div>
     <div class="ob-field">
@@ -476,6 +493,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="ob-dot" id="od-3"></div>
     <div class="ob-dot" id="od-4"></div>
     <div class="ob-dot" id="od-5"></div>
+    <div class="ob-dot" id="od-6"></div>
   </div>
   <div class="ob-footer">
     <span class="ob-skip" id="ob-left-btn" onclick="obBack()">Skip setup</span>
@@ -634,7 +652,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
             <div id="card-front-char" class="cjk">字</div>
             <div id="card-front-lyric" class="card-front-lyric cjk"></div>
             <div id="card-front-song"></div>
-            <div class="card-tap" id="card-tap-hint">TAP TO REVEAL</div>
+            <div class="card-tap" id="card-tap-hint" data-i18n="tapToReveal">TAP TO REVEAL</div>
           </div>
           <div class="card-face back">
             <div id="card-back-pin"></div>
@@ -656,9 +674,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
 
     <div id="card-btns" class="dk-btns">
-      <button class="dk-btn" onclick="cardAction('again')">Again</button>
-      <button class="dk-btn" onclick="cardAction('hard')">Hard</button>
-      <button class="dk-btn got" onclick="cardAction('got')">Got it</button>
+      <button class="dk-btn" onclick="cardAction('again')" data-i18n="again">Again</button>
+      <button class="dk-btn" onclick="cardAction('hard')" data-i18n="hard">Hard</button>
+      <button class="dk-btn got" onclick="cardAction('got')" data-i18n="gotIt">Got it</button>
     </div>
   </div>
 
@@ -714,6 +732,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="prof-section">
       <div class="prof-section-label">App Settings</div>
       <div class="prof-card">
+        <div class="prof-row" onclick="openAppLangSheet()">
+          <div class="prof-row-ic a">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 5h12M9 3v2m4.5 12.5a2 2 0 01-3-1.7V11l-4 1.3M21 12h-2.5a2 2 0 00-2 2v5a2 2 0 002 2H21v-4h-1.5"/></svg>
+          </div>
+          <div class="prof-row-txt">
+            <div class="prof-row-label" data-i18n="appLangLabel">App Language</div>
+            <div class="prof-row-value" id="prof-app-lang-value">English</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
         <div class="prof-row" onclick="openLangSheet()">
           <div class="prof-row-ic p">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a13.5 13.5 0 010 18M12 3a13.5 13.5 0 000 18"/></svg>
@@ -760,20 +788,20 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="tab-icon-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12L12 3l9 9"/><path d="M9 21V12h6v9"/></svg>
     </div>
-    <span>Listen</span>
+    <span data-i18n="listen">Listen</span>
   </button>
   <button class="tab-item" id="tab-deck" onclick="goTab('deck')">
     <div class="tab-icon-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="6" width="14" height="14" rx="2"/><path d="M8 6V4a2 2 0 012-2h8a2 2 0 012 2v14"/></svg>
       <span id="deck-badge" class="tab-badge">0</span>
     </div>
-    <span>Deck</span>
+    <span data-i18n="deck">Deck</span>
   </button>
   <button class="tab-item" id="tab-profile" onclick="goTab('profile')">
     <div class="tab-icon-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>
     </div>
-    <span>Profile</span>
+    <span data-i18n="profile">Profile</span>
   </button>
 </nav>
 
@@ -866,6 +894,24 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 </div>
 
+<!-- App language sheet -->
+<div id="sheet-app-lang" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div class="sh-title">App Language</div>
+  <select class="select-field" onchange="setAppLanguage(this.value);closeAllSheets()" id="app-lang-sheet-select">
+    <option value="English">🇬🇧 English</option>
+    <option value="Malay">🇲🇾 Bahasa Melayu</option>
+    <option value="Indonesian">🇮🇩 Bahasa Indonesia</option>
+    <option value="Thai">🇹🇭 ภาษาไทย</option>
+    <option value="Spanish">🇪🇸 Español</option>
+    <option value="French">🇫🇷 Français</option>
+    <option value="German">🇩🇪 Deutsch</option>
+    <option value="Arabic">🇸🇦 العربية</option>
+  </select>
+  <div style="font-size:13px;color:var(--muted);margin-top:12px;line-height:1.6">Changes all buttons and labels in the app. The lyrics translation language is separate.</div>
+  <div style="height:8px"></div>
+</div>
+
 <!-- Language picker sheet -->
 <div id="sheet-lang" class="bsheet">
   <div class="sh-handle" onclick="closeAllSheets()"></div>
@@ -929,6 +975,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 // ── STATE ──────────────────────────────────────────────────────────────────
 const S = {
   apiKey: localStorage.getItem('ht_key') || '',
+  appLanguage: localStorage.getItem('sl_app_lang') || 'English',
   title: '', artist: '', lyrics: [],
   saved: JSON.parse(localStorage.getItem('ht_deck') || '[]'),
   syncStart: null, offset: 0, running: false, speed: 1,
@@ -949,6 +996,52 @@ const S = {
   setupDone: !!localStorage.getItem('sl_setup'),
   obStep: 1, obLang: localStorage.getItem('sl_source') || 'zh',
 };
+const LANG_CODE={'English':'en','Malay':'ms','Indonesian':'id','Thai':'th','Spanish':'es','French':'fr','German':'de','Arabic':'ar'};
+const TRANSLATIONS={
+en:{listen:'Listen',deck:'Deck',profile:'Profile',goodMorning:'Good morning,',goodAfternoon:'Good afternoon,',goodEvening:'Good evening,',letsListen:"let's listen.",cardsDue:'cards due',dayStreak:'day streak',tapToReveal:'TAP TO REVEAL',saveToDeck:'Save to deck',inDeck:'✓ In Deck',hearIt:'Hear it',gotIt:'Got it',again:'Again',hard:'Hard',previouslyListened:'Previously Listened',playOnSpotify:'Play a song on Spotify',detectsAuto:'SongLingo will detect it automatically',syncedSpotify:'Synced with Spotify',translating:'Translating…',startListening:'Start Listening',deckEmpty:'Your deck is empty.',tapWordToSave:'Tap any word in the Player to save it here.',searchWords:'Search saved words…',allWords:'All saved words',fromLine:'FROM THIS LINE',from:'from:',connectSpotify:'Connect Spotify',translateTo:'Translate to',appLangLabel:'App Language',cards:'Cards',list:'List',popularPrefix:'Popular',popularSuffix:'Songs',continueLearning:'Previously Listened',},
+ms:{listen:'Dengar',deck:'Dek',profile:'Profil',goodMorning:'Selamat pagi,',goodAfternoon:'Selamat tengah hari,',goodEvening:'Selamat petang,',letsListen:'jom dengar lagu.',cardsDue:'kad untuk ulang kaji',dayStreak:'hari berturut-turut',tapToReveal:'KETIK UNTUK LIHAT',saveToDeck:'Simpan ke dek',inDeck:'✓ Dalam Dek',hearIt:'Dengar',gotIt:'Faham',again:'Ulang',hard:'Susah',previouslyListened:'Pernah Didengari',playOnSpotify:'Main lagu di Spotify',detectsAuto:'SongLingo akan mengesannya secara automatik',syncedSpotify:'Disegerakkan dengan Spotify',translating:'Menterjemah…',startListening:'Mula Mendengar',deckEmpty:'Dek anda kosong.',tapWordToSave:'Ketik sebarang perkataan dalam Pemain untuk simpan di sini.',searchWords:'Cari perkataan…',allWords:'Semua perkataan disimpan',fromLine:'DARIPADA BARIS INI',from:'daripada:',connectSpotify:'Sambung Spotify',translateTo:'Terjemah ke',appLangLabel:'Bahasa Apl',cards:'Kad',list:'Senarai',popularPrefix:'Lagu',popularSuffix:'Popular',continueLearning:'Pernah Didengari',},
+id:{listen:'Dengarkan',deck:'Dek',profile:'Profil',goodMorning:'Selamat pagi,',goodAfternoon:'Selamat siang,',goodEvening:'Selamat malam,',letsListen:'ayo dengarkan.',cardsDue:'kartu untuk diulang',dayStreak:'hari beruntun',tapToReveal:'KETUK UNTUK LIHAT',saveToDeck:'Simpan ke dek',inDeck:'✓ Di Dek',hearIt:'Dengar',gotIt:'Mengerti',again:'Ulangi',hard:'Sulit',previouslyListened:'Pernah Didengar',playOnSpotify:'Putar lagu di Spotify',detectsAuto:'SongLingo akan mendeteksinya otomatis',syncedSpotify:'Tersinkron dengan Spotify',translating:'Menerjemahkan…',startListening:'Mulai Mendengar',deckEmpty:'Dek Anda kosong.',tapWordToSave:'Ketuk kata apapun di Pemutar untuk disimpan di sini.',searchWords:'Cari kata tersimpan…',allWords:'Semua kata tersimpan',fromLine:'DARI BARIS INI',from:'dari:',connectSpotify:'Sambungkan Spotify',translateTo:'Terjemahkan ke',appLangLabel:'Bahasa Aplikasi',cards:'Kartu',list:'Daftar',popularPrefix:'Lagu',popularSuffix:'Populer',continueLearning:'Pernah Didengar',},
+th:{listen:'ฟัง',deck:'สำรับ',profile:'โปรไฟล์',goodMorning:'สวัสดีตอนเช้า,',goodAfternoon:'สวัสดีตอนบ่าย,',goodEvening:'สวัสดีตอนเย็น,',letsListen:'มาฟังเพลงกัน.',cardsDue:'ไพ่ที่ต้องทบทวน',dayStreak:'วันติดต่อกัน',tapToReveal:'แตะเพื่อดู',saveToDeck:'บันทึกลงสำรับ',inDeck:'✓ ในสำรับ',hearIt:'ฟัง',gotIt:'เข้าใจ',again:'ทำซ้ำ',hard:'ยาก',previouslyListened:'ฟังไปแล้ว',playOnSpotify:'เล่นเพลงใน Spotify',detectsAuto:'SongLingo จะตรวจพบโดยอัตโนมัติ',syncedSpotify:'ซิงค์กับ Spotify',translating:'กำลังแปล…',startListening:'เริ่มฟัง',deckEmpty:'สำรับของคุณว่างเปล่า',tapWordToSave:'แตะคำใดๆ ในเพลงเพื่อบันทึก',searchWords:'ค้นหาคำที่บันทึก…',allWords:'คำทั้งหมดที่บันทึก',fromLine:'จากบรรทัดนี้',from:'จาก:',connectSpotify:'เชื่อมต่อ Spotify',translateTo:'แปลเป็น',appLangLabel:'ภาษาแอป',cards:'ไพ่',list:'รายการ',popularPrefix:'เพลง',popularSuffix:'ยอดนิยม',continueLearning:'ฟังไปแล้ว',},
+es:{listen:'Escuchar',deck:'Baraja',profile:'Perfil',goodMorning:'Buenos días,',goodAfternoon:'Buenas tardes,',goodEvening:'Buenas noches,',letsListen:'vamos a escuchar.',cardsDue:'tarjetas pendientes',dayStreak:'días seguidos',tapToReveal:'TOCA PARA VER',saveToDeck:'Guardar en baraja',inDeck:'✓ En baraja',hearIt:'Escuchar',gotIt:'Entendido',again:'Repetir',hard:'Difícil',previouslyListened:'Escuchado antes',playOnSpotify:'Pon una canción en Spotify',detectsAuto:'SongLingo lo detectará automáticamente',syncedSpotify:'Sincronizado con Spotify',translating:'Traduciendo…',startListening:'Empezar a escuchar',deckEmpty:'Tu baraja está vacía.',tapWordToSave:'Toca cualquier palabra en el reproductor para guardarla.',searchWords:'Buscar palabras…',allWords:'Todas las palabras guardadas',fromLine:'DE ESTA LÍNEA',from:'de:',connectSpotify:'Conectar Spotify',translateTo:'Traducir a',appLangLabel:'Idioma de la app',cards:'Tarjetas',list:'Lista',popularPrefix:'Canciones',popularSuffix:'Populares',continueLearning:'Escuchado antes',},
+fr:{listen:'Écouter',deck:'Deck',profile:'Profil',goodMorning:'Bonjour,',goodAfternoon:'Bon après-midi,',goodEvening:'Bonsoir,',letsListen:"à l'écoute.",cardsDue:'cartes à réviser',dayStreak:'jours consécutifs',tapToReveal:'TOUCHER POUR VOIR',saveToDeck:'Ajouter au deck',inDeck:'✓ Dans le deck',hearIt:'Écouter',gotIt:'Compris',again:'Répéter',hard:'Difficile',previouslyListened:'Écouté récemment',playOnSpotify:'Lance une chanson sur Spotify',detectsAuto:'SongLingo la détectera automatiquement',syncedSpotify:'Synchronisé avec Spotify',translating:'Traduction…',startListening:"Commencer à écouter",deckEmpty:'Votre deck est vide.',tapWordToSave:'Touche un mot dans le lecteur pour le sauvegarder.',searchWords:'Rechercher des mots…',allWords:'Tous les mots sauvegardés',fromLine:'DE CETTE LIGNE',from:'de :',connectSpotify:'Connecter Spotify',translateTo:'Traduire en',appLangLabel:"Langue de l'app",cards:'Cartes',list:'Liste',popularPrefix:'Chansons',popularSuffix:'Populaires',continueLearning:'Écouté récemment',},
+de:{listen:'Hören',deck:'Deck',profile:'Profil',goodMorning:'Guten Morgen,',goodAfternoon:'Guten Tag,',goodEvening:'Guten Abend,',letsListen:'lass uns hören.',cardsDue:'Karten zur Wiederholung',dayStreak:'Tage in Folge',tapToReveal:'TIPPEN ZUM ANZEIGEN',saveToDeck:'Ins Deck speichern',inDeck:'✓ Im Deck',hearIt:'Anhören',gotIt:'Verstanden',again:'Wiederholen',hard:'Schwer',previouslyListened:'Zuletzt gehört',playOnSpotify:'Spiele ein Lied auf Spotify',detectsAuto:'SongLingo erkennt es automatisch',syncedSpotify:'Mit Spotify synchronisiert',translating:'Übersetze…',startListening:'Anfangen zuzuhören',deckEmpty:'Dein Deck ist leer.',tapWordToSave:'Tippe auf ein Wort im Player, um es zu speichern.',searchWords:'Gespeicherte Wörter suchen…',allWords:'Alle gespeicherten Wörter',fromLine:'AUS DIESER ZEILE',from:'aus:',connectSpotify:'Spotify verbinden',translateTo:'Übersetzen nach',appLangLabel:'App-Sprache',cards:'Karten',list:'Liste',popularPrefix:'Beliebte',popularSuffix:'Lieder',continueLearning:'Zuletzt gehört',},
+ar:{listen:'استمع',deck:'البطاقات',profile:'الملف',goodMorning:'صباح الخير،',goodAfternoon:'مساء الخير،',goodEvening:'مساء النور،',letsListen:'لنستمع.',cardsDue:'بطاقات للمراجعة',dayStreak:'أيام متتالية',tapToReveal:'انقر للكشف',saveToDeck:'حفظ في البطاقات',inDeck:'✓ في البطاقات',hearIt:'استمع',gotIt:'فهمت',again:'مجدداً',hard:'صعب',previouslyListened:'تم الاستماع سابقاً',playOnSpotify:'شغّل أغنية على Spotify',detectsAuto:'سيكتشف SongLingo ذلك تلقائياً',syncedSpotify:'متزامن مع Spotify',translating:'جارٍ الترجمة…',startListening:'ابدأ الاستماع',deckEmpty:'بطاقاتك فارغة.',tapWordToSave:'انقر على أي كلمة في المشغّل لحفظها.',searchWords:'ابحث في الكلمات…',allWords:'جميع الكلمات المحفوظة',fromLine:'من هذا السطر',from:'من:',connectSpotify:'ربط Spotify',translateTo:'الترجمة إلى',appLangLabel:'لغة التطبيق',cards:'البطاقات',list:'القائمة',popularPrefix:'أغاني',popularSuffix:'شهيرة',continueLearning:'تم الاستماع سابقاً',},
+};
+function t(key){const code=LANG_CODE[S.appLanguage]||'en';return TRANSLATIONS[code]?.[key]??TRANSLATIONS.en[key]??key;}
+
+function setAppLanguage(lang,silent=false){
+  S.appLanguage=lang;
+  if(!silent)localStorage.setItem('sl_app_lang',lang);
+  applyTranslations();
+  const sel=document.getElementById('app-lang-sheet-select');if(sel)sel.value=lang;
+  const sel2=document.getElementById('ob-app-lang');if(sel2)sel2.value=lang;
+  const pv=document.getElementById('prof-app-lang-value');if(pv)pv.textContent=lang;
+}
+
+function applyTranslations(){
+  // data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.dataset.i18n; const tx=t(k); if(tx)el.textContent=tx;
+  });
+  // Dynamic elements
+  updateStreak();
+  const ss=document.getElementById('pl-synced-pill');
+  if(ss){const dot=ss.querySelector('.dot');ss.innerHTML='';if(dot)ss.appendChild(dot);ss.appendChild(Object.assign(document.createElement('span'),{textContent:' '+t('syncedSpotify')}));}
+  const tp=document.getElementById('pl-translate-progress');
+  if(tp)tp.textContent=t('translating');
+  const ch=document.getElementById('card-tap-hint');if(ch)ch.textContent=t('tapToReveal');
+  // Deck empty state
+  const de=document.querySelector('.dk-empty h3');if(de)de.textContent=t('deckEmpty');
+  const dep=document.querySelector('.dk-empty p');if(dep)dep.textContent=t('tapWordToSave');
+  // Save to deck button in word sheet
+  const ttAdd=document.getElementById('tt-add');
+  if(ttAdd&&!ttAdd.textContent.includes('✓'))ttAdd.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> ${t('saveToDeck')}`;
+  // Profile
+  const pv=document.getElementById('prof-app-lang-value');if(pv)pv.textContent=S.appLanguage;
+  const lv=document.getElementById('prof-lang-value');if(lv)lv.textContent=S.targetLanguage;
+  // RTL for Arabic
+  document.documentElement.dir=S.appLanguage==='Arabic'?'rtl':'ltr';
+}
 const LANG_CONFIG = {
   zh: { pinyin:'Pinyin', charLabel:'Characters', genre:'genre:mandopop', market:'TW', filter:/[\u4e00-\u9fff]/, placeholder:'Search any Mandarin song…' },
   ko: { pinyin:'Romanization', charLabel:'Hangul', genre:'genre:k-pop', market:'KR', filter:/[\uAC00-\uD7AF]/, placeholder:'Search any Korean song…' },
@@ -965,6 +1058,7 @@ window.onload = async () => {
   }
   setTargetLanguage(S.targetLanguage, true);
   setSourceLang(S.sourceLang, true);
+  setAppLanguage(S.appLanguage, true); // apply UI translations on load
   setInterval(tick, 250);
   document.getElementById('progress-track-h')?.addEventListener('click', e => {
     if (!S.lyrics.length) return;
@@ -979,7 +1073,7 @@ window.onload = async () => {
   if (params.get('code')) {
     await handleSpotifyCallback(params.get('code'));
     if (S.setupDone) { showScreen('home'); }
-    else { showScreen('onboarding'); obGoto(4); }
+    else { showScreen('onboarding'); obGoto(5); }
     return;
   }
   if (S.spotifyToken) {
@@ -1009,10 +1103,11 @@ function updateStreak() {
   localStorage.setItem('sl_streak', S.streak);
   localStorage.setItem('sl_last_active', today);
   const h = new Date().getHours();
-  const g1 = h < 12 ? 'Good morning,' : h < 17 ? 'Good afternoon,' : 'Good evening,';
+  const g1 = h < 12 ? t('goodMorning') : h < 17 ? t('goodAfternoon') : t('goodEvening');
   const el1 = document.getElementById('home-greet1'); if (el1) el1.textContent = g1;
+  const g2 = document.getElementById('home-greet-2'); if (g2) g2.textContent = t('letsListen');
   const sn = document.getElementById('streak-num'); if (sn) sn.textContent = S.streak;
-  const sd = document.getElementById('home-streak-display'); if (sd) sd.textContent = `${S.streak}-day streak 🔥`;
+  const sd = document.getElementById('home-streak-display'); if (sd) sd.textContent = `${S.streak}-${t('dayStreak')} 🔥`;
 }
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────────
@@ -1040,18 +1135,22 @@ function goBack() { showScreen(S.prevView || 'home'); document.getElementById('t
 
 // ── ONBOARDING ─────────────────────────────────────────────────────────────
 function obGoto(step) {
-  for (let i=1;i<=5;i++) {
+  for (let i=1;i<=6;i++) {
     document.getElementById('ob-'+i)?.classList.toggle('hidden', i!==step);
     document.getElementById('od-'+i)?.classList.toggle('active', i===step);
   }
   document.getElementById('ob-prog').style.width = (step/5*100)+'%';
   document.getElementById('ob-count').textContent = step+'/5';
   S.obStep = step;
-  // Sync language selector UI to actual state (localStorage may differ from default HTML)
+  // Sync language selector UI to actual state
   if (step === 2) {
     document.querySelectorAll('#ob-2 .ob-opt').forEach(el => {
       el.classList.toggle('sel', el.dataset.lang === S.sourceLang);
     });
+  }
+  if (step === 3) {
+    const sel = document.getElementById('ob-app-lang');
+    if (sel) sel.value = S.appLanguage;
   }
   const leftBtn = document.getElementById('ob-left-btn');
   if (leftBtn) {
@@ -1064,7 +1163,7 @@ function obBack() {
 }
 function obNext() {
   const step = S.obStep || 1;
-  if (step < 5) obGoto(step + 1);
+  if (step < 6) obGoto(step + 1);
   else finishOnboarding();
 }
 function obSelectLang(el) {
@@ -1295,103 +1394,98 @@ function getHistory() { return JSON.parse(localStorage.getItem('sl_history') || 
 
 // ── SPOTIFY: POPULAR ───────────────────────────────────────────────────────
 async function fetchPopularSpotify(){
-  const token=await getValidToken();if(!token){fetchPopularITunes();return;}
-  const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
-  try{
-    const r=await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(cfg.genre)}&type=track&limit=12&market=${cfg.market}`,{headers:{'Authorization':'Bearer '+token}});
-    if(!r.ok){fetchPopularITunes();return;}
-    const data=await r.json();
-    const tracks=(data.tracks?.items||[]).filter(t=>t.album?.images?.length>0).slice(0,6);
-    if(tracks.length<3){fetchPopularITunes();return;}
-    const grid=document.getElementById('popular-grid');if(!grid)return;
-    const tiles=['art-a','art-t','art-r','art-i','art-s','art-t'];
-    grid.innerHTML=tracks.map((t,i)=>{
-      const img=t.album.images[2]?.url||t.album.images[1]?.url||t.album.images[0]?.url;
-      const safeTitle=t.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      const safeArtist=(t.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      return `<div class="song-row" onclick="playSpotifyCard('${t.uri}','${safeTitle}','${safeArtist}')">
-        <div class="sr-art">${img?`<img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`:`<div class="sr-art-fallback ${tiles[i]}"></div>`}</div>
-        <div class="sr-info"><div class="sr-title cjk">${esc(t.name)}</div><div class="sr-meta">${esc(t.artists.map(a=>a.name).join(', '))}</div></div>
-        <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
-      </div>`;
-    }).join('');
-    const heading=document.getElementById('popular-heading');
-    const ll={zh:'Chinese',ko:'Korean',ja:'Japanese'}[S.sourceLang]||'Chinese';
-    if(heading)heading.innerHTML=`Popular ${ll} Songs on <svg style="vertical-align:-2px;margin-left:4px" width="11" height="11" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg> Spotify`;
-  }catch(e){fetchPopularITunes();}
-}
-
-// iTunes Search API - free, no auth, returns artwork
-async function fetchPopularITunes(){
-  const SONGS = {
-    zh: [
-      {t:'告白气球',a:'周杰伦',en:'Love Confession · Jay Chou (周杰伦)'},
-      {t:'晴天',a:'周杰伦',en:'Sunny Day · Jay Chou (周杰伦)'},
-      {t:'稻香',a:'周杰伦',en:'Rice Field · Jay Chou (周杰伦)'},
-      {t:'待我如初',a:'大头针',en:'As Before · Dandelion (大头针)'},
-      {t:'喜欢你',a:'邓紫棋',en:'I Like You · G.E.M. (邓紫棋)'},
-      {t:'突然好想你',a:'五月天',en:'Missing You · Mayday (五月天)'},
-    ],
-    ko: [
-      {t:'봄날',a:'BTS',en:'Spring Day · BTS (방탄소년단)'},
-      {t:'LOVE SCENARIO',a:'iKON',en:'Love Scenario · iKON (아이콘)'},
-      {t:'Eight',a:'IU',en:'Eight · IU (아이유)'},
-      {t:'Celebrity',a:'IU',en:'Celebrity · IU (아이유)'},
-      {t:'Dynamite',a:'BTS',en:'Dynamite · BTS (방탄소년단)'},
-      {t:'Lilac',a:'IU',en:'Lilac · IU (아이유)'},
-    ],
-    ja: [
-      {t:'うっせぇわ',a:'Ado',en:'Usseewa · Ado (アド)'},
-      {t:'炎',a:'LiSA',en:'Homura · LiSA (リサ)'},
-      {t:'紅蓮華',a:'LiSA',en:'Gurenge · LiSA (リサ)'},
-      {t:'廻廻奇譚',a:'Eve',en:'Kaikai Kitan · Eve (イヴ)'},
-      {t:'夜に駆ける',a:'YOASOBI',en:'Into the Night · YOASOBI'},
-      {t:'ドライフラワー',a:'優里',en:'Dry Flower · Yuuri (優里)'},
-    ],
-  };
-  const LANG_LABEL = { zh:'Chinese', ko:'Korean', ja:'Japanese' };
-  const songs = SONGS[S.sourceLang] || SONGS.zh;
-  const tiles = ['art-a','art-t','art-r','art-i','art-s','art-t'];
+  const token = await getValidToken();
+  if (!token) { fetchPopularFallback(); return; }
+  const PLAYLISTS = { zh:'37i9dQZF1DX1RxBljMscXZ', ko:'37i9dQZF1DX9tPFwdkgD8E', ja:'37i9dQZF1DXaQMBs4CFF5f' };
+  const playlistId = PLAYLISTS[S.sourceLang] || PLAYLISTS.zh;
+  const market = LANG_CONFIG[S.sourceLang]?.market || 'TW';
+  const langLabel = {zh:'Chinese',ko:'Korean',ja:'Japanese'}[S.sourceLang]||'Chinese';
   const grid = document.getElementById('popular-grid'); if(!grid)return;
-  // Update heading with language name
   const heading = document.getElementById('popular-heading');
-  if (heading) heading.textContent = `Popular ${LANG_LABEL[S.sourceLang]||'Chinese'} Songs`;
-  // Render immediately with gradient tiles
-  grid.innerHTML = songs.map((s,i) => `
-    <div class="song-row" id="pop-row-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
-      <div class="sr-art" id="pop-art-${i}"><div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div></div>
-      <div class="sr-info">
-        <div class="sr-title cjk">${esc(s.t)}</div>
-        <div class="sr-meta">${esc(s.en)}</div>
+  const tiles = ['art-a','art-t','art-r','art-i','art-s','art-t'];
+  const spSvg = `<svg style="vertical-align:-2px;margin-left:4px" width="11" height="11" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>`;
+
+  const renderTrack = (t, i, uri) => {
+    const img = t.album?.images?.[1]?.url || t.album?.images?.[0]?.url;
+    const title = t.name; const artist = t.artists.map(a=>a.name).join(', ');
+    const st = title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const sa = (t.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const onclick = uri ? `playSpotifyCard('${uri}','${st}','${sa}')` : `loadSong(${JSON.stringify(title)},${JSON.stringify(t.artists[0]?.name||'')})`;
+    return `<div class="song-row" id="pr-${i}" onclick="${onclick}">
+      <div class="sr-art" id="pa-${i}">${img
+        ? `<img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`
+        : `<div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div>`}
       </div>
+      <div class="sr-info"><div class="sr-title cjk">${esc(title)}</div><div class="sr-meta">${esc(artist)}</div></div>
+      <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
+    </div>`;
+  };
+
+  // Try curated playlist first
+  try {
+    const r = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=6&market=${market}&fields=items(track(name,uri,artists(name),album(images)))`,
+      { headers: { 'Authorization': 'Bearer ' + token } }
+    );
+    if (r.ok) {
+      const data = await r.json();
+      const tracks = (data.items||[]).map(i=>i.track).filter(t=>t?.name);
+      if (tracks.length >= 3) {
+        if (heading) heading.innerHTML = `Popular ${langLabel} Songs on ${spSvg} Spotify`;
+        grid.innerHTML = tracks.slice(0,6).map((t,i) => renderTrack(t, i, t.uri)).join('');
+        return;
+      }
+    }
+  } catch(e) {}
+
+  // Fallback: search for each hardcoded song and get Spotify art
+  const SONGS = {
+    zh:[{q:'告白气球 周杰伦',t:'告白气球',a:'周杰伦',en:'Love Confession · Jay Chou (周杰伦)'},{q:'晴天 周杰伦',t:'晴天',a:'周杰伦',en:'Sunny Day · Jay Chou (周杰伦)'},{q:'稻香 周杰伦',t:'稻香',a:'周杰伦',en:'Rice Field · Jay Chou (周杰伦)'},{q:'待我如初 大头针',t:'待我如初',a:'大头针',en:'As Before · Dandelion (大头针)'},{q:'喜欢你 邓紫棋',t:'喜欢你',a:'邓紫棋',en:'I Like You · G.E.M. (邓紫棋)'},{q:'突然好想你 五月天',t:'突然好想你',a:'五月天',en:'Missing You · Mayday (五月天)'}],
+    ko:[{q:'봄날 BTS',t:'봄날',a:'BTS',en:'Spring Day · BTS (방탄소년단)'},{q:'LOVE SCENARIO iKON',t:'LOVE SCENARIO',a:'iKON',en:'Love Scenario · iKON (아이콘)'},{q:'Eight IU',t:'Eight',a:'IU',en:'Eight · IU (아이유)'},{q:'Celebrity IU',t:'Celebrity',a:'IU',en:'Celebrity · IU (아이유)'},{q:'Dynamite BTS',t:'Dynamite',a:'BTS',en:'Dynamite · BTS (방탄소년단)'},{q:'Lilac IU',t:'Lilac',a:'IU',en:'Lilac · IU (아이유)'}],
+    ja:[{q:'うっせぇわ Ado',t:'うっせぇわ',a:'Ado',en:'Usseewa · Ado'},{q:'炎 LiSA',t:'炎',a:'LiSA',en:'Homura · LiSA (リサ)'},{q:'紅蓮華 LiSA',t:'紅蓮華',a:'LiSA',en:'Gurenge · LiSA (リサ)'},{q:'廻廻奇譚 Eve',t:'廻廻奇譚',a:'Eve',en:'Kaikai Kitan · Eve'},{q:'夜に駆ける YOASOBI',t:'夜に駆ける',a:'YOASOBI',en:'Into the Night · YOASOBI'},{q:'ドライフラワー 優里',t:'ドライフラワー',a:'優里',en:'Dry Flower · Yuuri (優里)'}],
+  };
+  const songs = SONGS[S.sourceLang] || SONGS.zh;
+  if (heading) heading.innerHTML = `Popular ${langLabel} Songs on ${spSvg} Spotify`;
+  // Render with gradient tiles immediately
+  grid.innerHTML = songs.map((s,i)=>`
+    <div class="song-row" id="pr-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
+      <div class="sr-art" id="pa-${i}"><div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div></div>
+      <div class="sr-info"><div class="sr-title cjk">${esc(s.t)}</div><div class="sr-meta">${esc(s.en)}</div></div>
       <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
     </div>`).join('');
-  // Fetch real artwork — swap fallback only after image confirms loaded
-  const countries = S.sourceLang==='zh'?['tw','cn','hk']:S.sourceLang==='ko'?['kr','us']:['jp','us'];
-  for (let i = 0; i < songs.length; i++) {
-    (async (song, idx) => {
-      for (const country of countries) {
-        try {
-          const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.t+' '+song.a)}&entity=song&limit=5&country=${country}&media=music`);
-          if (!r.ok) continue;
-          const data = await r.json();
-          const result = data.results?.find(x => x.artworkUrl100);
-          if (!result) continue;
-          const art = result.artworkUrl100.replace('100x100bb','300x300bb').replace('100x100bb.jpg','300x300bb.jpg');
-          const artEl = document.getElementById('pop-art-'+idx);
-          if (!artEl) return;
-          const img = document.createElement('img');
-          img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:12px;display:block';
-          img.onload = () => { artEl.innerHTML = ''; artEl.appendChild(img); };
-          img.onerror = () => {}; // keep fallback tile on error
-          img.src = art;
-          return; // found a result, stop trying countries
-        } catch(e) { continue; }
-      }
-    })(songs[i], i);
-  }
+  // Search Spotify for each → swap in real image + URI
+  songs.forEach(async (s, i) => {
+    try {
+      const r = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(s.q)}&type=track&limit=1&market=${market}`,{headers:{'Authorization':'Bearer '+token}});
+      if(!r.ok)return;
+      const data = await r.json();
+      const track = data.tracks?.items?.[0]; if(!track)return;
+      // Update onclick to Spotify URI
+      const row = document.getElementById('pr-'+i);
+      if(row){const st=track.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");const sa=(track.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");row.setAttribute('onclick',`playSpotifyCard('${track.uri}','${st}','${sa}')`);}
+      // Swap artwork - Spotify CDN images always work
+      const img = track.album.images[1]?.url || track.album.images[0]?.url;
+      if(img){const artEl=document.getElementById('pa-'+i);if(artEl){const el=document.createElement('img');el.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:12px;display:block';el.onload=()=>{artEl.innerHTML='';artEl.appendChild(el);};el.src=img;}}
+    } catch(e){}
+  });
 }
 
+// No Spotify connected — show tiles with names only
+function fetchPopularFallback(){
+  const SONGS={zh:[{t:'告白气球',a:'周杰伦',en:'Love Confession · Jay Chou (周杰伦)'},{t:'晴天',a:'周杰伦',en:'Sunny Day · Jay Chou (周杰伦)'},{t:'稻香',a:'周杰伦',en:'Rice Field · Jay Chou (周杰伦)'},{t:'待我如初',a:'大头针',en:'As Before · Dandelion (大头针)'},{t:'喜欢你',a:'邓紫棋',en:'I Like You · G.E.M. (邓紫棋)'},{t:'突然好想你',a:'五月天',en:'Missing You · Mayday (五月天)'}],ko:[{t:'봄날',a:'BTS',en:'Spring Day · BTS'},{t:'LOVE SCENARIO',a:'iKON',en:'Love Scenario · iKON'},{t:'Eight',a:'IU',en:'Eight · IU'},{t:'Celebrity',a:'IU',en:'Celebrity · IU'},{t:'Dynamite',a:'BTS',en:'Dynamite · BTS'},{t:'Lilac',a:'IU',en:'Lilac · IU'}],ja:[{t:'うっせぇわ',a:'Ado',en:'Usseewa · Ado'},{t:'炎',a:'LiSA',en:'Homura · LiSA'},{t:'紅蓮華',a:'LiSA',en:'Gurenge · LiSA'},{t:'廻廻奇譚',a:'Eve',en:'Kaikai Kitan · Eve'},{t:'夜に駆ける',a:'YOASOBI',en:'Into the Night · YOASOBI'},{t:'ドライフラワー',a:'優里',en:'Dry Flower · Yuuri'}]};
+  const songs=SONGS[S.sourceLang]||SONGS.zh;
+  const tiles=['art-a','art-t','art-r','art-i','art-s','art-t'];
+  const grid=document.getElementById('popular-grid');if(!grid)return;
+  const langLabel={zh:'Chinese',ko:'Korean',ja:'Japanese'}[S.sourceLang]||'Chinese';
+  const heading=document.getElementById('popular-heading');
+  if(heading)heading.textContent=`Popular ${langLabel} Songs`;
+  grid.innerHTML=songs.map((s,i)=>`
+    <div class="song-row" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
+      <div class="sr-art"><div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div></div>
+      <div class="sr-info"><div class="sr-title cjk">${esc(s.t)}</div><div class="sr-meta">${esc(s.en)}</div></div>
+      <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
+    </div>`).join('');
+}
 async function playSpotifyCard(uri,title,artist){
   const token=await getValidToken();
   if(token){try{await fetch('https://api.spotify.com/v1/me/player/play',{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({uris:[uri]})});}catch(e){}}
@@ -2035,10 +2129,14 @@ function openSheet(name){
 }
 function closeAllSheets(){
   document.getElementById('sheet-backdrop').classList.remove('open');
-  ['word','display','info','lang','apikey','deck-word'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
+  ['word','display','info','lang','apikey','deck-word','app-lang'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
   document.body.style.overflow='';
 }
 function openDisplaySheet(){openSheet('display');}
+function openAppLangSheet(){
+  const sel=document.getElementById('app-lang-sheet-select');if(sel)sel.value=S.appLanguage;
+  openSheet('app-lang');
+}
 function openLangSheet(){
   document.getElementById('lang-sheet-select').value=S.targetLanguage;
   openSheet('lang');
