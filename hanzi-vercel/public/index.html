@@ -408,7 +408,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .pwa-title{font:700 14px/1 'Plus Jakarta Sans';color:var(--text);margin-bottom:4px}
 .pwa-sub{font-size:12px;color:var(--muted);line-height:1.4}
 .pwa-btn{padding:9px 14px;border-radius:10px;background:var(--a);color:var(--ink);font:700 12px/1 'Plus Jakarta Sans';flex-shrink:0;border:none;cursor:pointer}
-.pwa-dismiss{width:28px;height:28px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;cursor:pointer;font-size:16px;border:none}
+.pwa-dismiss{width:44px;height:44px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;color:var(--soft);flex-shrink:0;cursor:pointer;font-size:20px;border:none;margin:-8px -8px -8px 0}
 /* === FAQ === */
 .faq-item{background:var(--s1);border:0.5px solid var(--b1);border-radius:14px;margin-bottom:8px;overflow:hidden;cursor:pointer}
 .faq-q{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;font:600 14px/1.4 'Plus Jakarta Sans'}
@@ -521,13 +521,43 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
   <!-- Step 6: All set -->
   <div class="ob-body hidden" id="ob-6">
-    <div style="font-size:56px;margin-bottom:8px">🎉</div>
-    <div class="ob-title" style="font-size:32px">You're all set.<br><em>Let's go.</em></div>
-    <div class="ob-sub">Melozi is ready. Connect Spotify, play a song, and watch the lyrics appear in real-time.</div>
-    <div style="background:var(--s1);border:0.5px solid var(--b2);border-radius:16px;padding:16px 18px;margin-top:4px">
-      <div style="font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">ONE MORE THING</div>
-      <div style="font-size:14px;color:var(--soft);line-height:1.6">To enable AI translations, add a free Anthropic API key in <strong style="color:var(--text)">Profile → AI Translation</strong> after you're inside. Takes 2 minutes.</div>
+    <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(145deg,#f5a44c 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M9 17V7l9-2v10"/><circle cx="7" cy="17" r="2"/><circle cx="16" cy="15" r="2"/></svg>
     </div>
+    <div class="ob-title" style="font-size:30px">Start learning<br><em>for free.</em></div>
+    <div class="ob-sub">7 days free, then just $5.99/month. Cancel anytime.</div>
+
+    <!-- Feature list -->
+    <div style="background:var(--s1);border:0.5px solid var(--b1);border-radius:18px;padding:18px 20px;margin-top:8px;text-align:left">
+      <div style="font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--p);margin-bottom:14px">✦ EVERYTHING INCLUDED</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(30,215,96,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1ed760" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div style="font-size:14px;color:var(--soft)">Unlimited songs & real-time AI lyrics</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(30,215,96,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1ed760" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div style="font-size:14px;color:var(--soft)">Mandarin, Korean &amp; Japanese</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(30,215,96,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1ed760" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div style="font-size:14px;color:var(--soft)">Vocabulary deck with spaced repetition</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(30,215,96,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1ed760" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div style="font-size:14px;color:var(--soft)">Syncs with Spotify automatically</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--dim);margin-top:14px;text-align:center;line-height:1.6">No payment required during beta · $5.99/month or $49.99/year after</div>
   </div>
 
   <div class="ob-dots">
@@ -811,15 +841,29 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
     <button class="prof-disconnect hidden" id="prof-disconnect" onclick="disconnectSpotify()">Disconnect Spotify</button>
 
-    <!-- Pro Plan Banner -->
+    <!-- Subscription Banner -->
     <div class="pro-banner" style="margin-top:8px">
-      <div class="pro-banner-label">✦ Coming Soon</div>
-      <div class="pro-banner-title">Melozi Pro</div>
-      <div class="pro-banner-sub">Unlimited songs, all languages, no API key needed. Be the first to know when it launches.</div>
-      <button class="pro-banner-btn" onclick="alert('Drop your email at hello@melozi.app and we\'ll notify you when Pro launches! 🎵')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-        Notify me
-      </button>
+      <div class="pro-banner-label">✦ YOUR PLAN</div>
+      <div class="pro-banner-title" style="font-size:22px">Free Trial</div>
+      <div class="pro-banner-sub">7 days free, then $5.99/month or $49.99/year. All features included — cancel anytime.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="pro-banner-btn" onclick="alert('Subscription management coming soon — you\'re on the free trial for now! 🎵')">
+          Upgrade to Pro →
+        </button>
+        <button style="padding:10px 14px;border-radius:10px;background:transparent;color:var(--muted);font:600 13px/1 'Plus Jakarta Sans';border:0.5px solid var(--b2);cursor:pointer" onclick="alert('You\'re currently on a free trial. No payment has been charged.')">
+          Manage
+        </button>
+      </div>
+      <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid rgba(184,153,255,.15);display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1ed760" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          Unlimited songs · All 3 languages · Real-time AI
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1ed760" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+          Vocabulary deck · Spaced repetition · Spotify sync
+        </div>
+      </div>
     </div>
 
     <!-- FAQ -->
@@ -827,28 +871,32 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div class="prof-section-label">Help & FAQ</div>
       <div id="faq-list">
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">Why do I need an Anthropic API key? <span class="faq-chev">▾</span></div>
-          <div class="faq-a">Melozi uses Claude AI to generate pinyin, romanization, and translations. The key lets the AI run directly in your browser. Get a free key at <strong>console.anthropic.com</strong> — each song costs roughly $0.02. We're working on a subscription model so you won't need this soon.</div>
+          <div class="faq-q">How much does Melozi cost? <span class="faq-chev">▾</span></div>
+          <div class="faq-a">Melozi Pro is $5.99/month or $49.99/year (save ~30%). Both plans include unlimited songs, all three languages, real-time AI translations, and your full vocabulary deck. You get a 7-day free trial to start — no credit card required during beta.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">Why isn't my song loading? <span class="faq-chev">▾</span></div>
-          <div class="faq-a">Melozi fetches synced lyrics from LRCLIB. Not every song has synced lyrics available. Try searching with the exact song title. Songs by major artists in Mandarin, Korean, and Japanese have the best coverage.</div>
+          <div class="faq-q">How do I cancel? <span class="faq-chev">▾</span></div>
+          <div class="faq-a">Cancel anytime from Profile → Manage Subscription. You'll keep access until the end of your billing period. No questions asked, no cancellation fees.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-q">Why do I need Spotify? <span class="faq-chev">▾</span></div>
-          <div class="faq-a">Spotify tells Melozi which song you're currently playing, so lyrics sync automatically — no searching needed. Melozi also lets you start songs from the app directly. You need Spotify Premium for remote playback control.</div>
+          <div class="faq-a">Spotify tells Melozi which song you're currently playing so lyrics sync automatically — no searching needed. You can also tap any song in the Popular list and Melozi starts it on Spotify for you. Spotify Premium is required for remote playback control.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">The pinyin looks wrong for some words <span class="faq-chev">▾</span></div>
-          <div class="faq-a">AI translation isn't perfect! Tones and multi-syllable words can occasionally be miscombined. We're continually improving the prompts. If you spot an error, tap ⋯ in the player and use "Re-translate this song."</div>
+          <div class="faq-q">Why isn't my song loading? <span class="faq-chev">▾</span></div>
+          <div class="faq-a">Melozi fetches synced lyrics from LRCLIB, a community lyrics database. Not every song has synced lyrics yet — major artists in Mandarin, Korean, and Japanese have the best coverage. Try the exact song title if a search fails.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">The pinyin or romanization looks off <span class="faq-chev">▾</span></div>
+          <div class="faq-a">AI translation is very good but not perfect — tones on multi-character words can occasionally be combined incorrectly. Tap ⋯ in the player and use "Re-translate this song" to try again. We're continuously improving accuracy.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-q">Will my saved words sync across devices? <span class="faq-chev">▾</span></div>
-          <div class="faq-a">Not yet — your deck is currently saved locally in your browser. Cross-device sync is coming with the Melozi Pro account system. For now, install Melozi as a home screen app to keep your data safe.</div>
+          <div class="faq-a">Cross-device sync is coming soon with Melozi accounts. For now your deck is saved locally — install Melozi to your home screen to keep it safe and avoid losing your words if you clear your browser.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
-          <div class="faq-q">How do I add Melozi to my home screen? <span class="faq-chev">▾</span></div>
-          <div class="faq-a">On iPhone: tap the Share button in Safari → "Add to Home Screen." On Android: tap the menu (⋮) → "Add to Home Screen." This makes Melozi feel like a native app with no browser bar.</div>
+          <div class="faq-q">How do I install Melozi on my phone? <span class="faq-chev">▾</span></div>
+          <div class="faq-a">iPhone: tap Share in Safari → "Add to Home Screen." Android: tap the menu (⋮) → "Add to Home Screen." This gives you a full-screen app experience with no browser bar, and keeps your data safe between sessions.</div>
         </div>
       </div>
     </div>
@@ -1046,8 +1094,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="pwa-title">Add Melozi to your Home Screen</div>
     <div class="pwa-sub">Tap Share → "Add to Home Screen" for the full app experience</div>
   </div>
-  <button class="pwa-btn" onclick="document.getElementById('pwa-prompt').classList.remove('show');localStorage.setItem('pwa_prompted','1')">Got it</button>
-  <button class="pwa-dismiss" onclick="document.getElementById('pwa-prompt').classList.remove('show');localStorage.setItem('pwa_prompted','1')">×</button>
+  <button class="pwa-btn" onclick="dismissPwa()">Got it</button>
+  <button class="pwa-dismiss" onclick="dismissPwa()" aria-label="Dismiss">✕</button>
 </div>
 
 </div><!-- #app -->
@@ -1232,7 +1280,7 @@ function obGoto(step) {
     if (sel) sel.value = S.appLanguage;
   }
   const continueBtn = document.querySelector('.ob-footer .btn-a');
-  if (continueBtn) continueBtn.textContent = step === 6 ? "Let's go 🎵" : 'Continue →';
+  if (continueBtn) continueBtn.textContent = step === 6 ? 'Start free trial →' : 'Continue →';
   const leftBtn = document.getElementById('ob-left-btn');
   if (leftBtn) {
     if (step === 1) { leftBtn.textContent = 'Skip setup'; leftBtn.onclick = skipOnboarding; }
@@ -1472,79 +1520,68 @@ function getHistory() { return JSON.parse(localStorage.getItem('sl_history') || 
 async function fetchPopularSpotify(){
   const token = await getValidToken();
   if (!token) { fetchPopularFallback(); return; }
-  const PLAYLISTS = { zh:'37i9dQZF1DX1RxBljMscXZ', ko:'37i9dQZF1DX9tPFwdkgD8E', ja:'37i9dQZF1DXaQMBs4CFF5f' };
-  const playlistId = PLAYLISTS[S.sourceLang] || PLAYLISTS.zh;
-  const market = LANG_CONFIG[S.sourceLang]?.market || 'TW';
+
+  const cfg = LANG_CONFIG[S.sourceLang] || LANG_CONFIG.zh;
+  const market = cfg.market || 'TW';
   const langLabel = {zh:'Chinese',ko:'Korean',ja:'Japanese'}[S.sourceLang]||'Chinese';
   const grid = document.getElementById('popular-grid'); if(!grid)return;
   const heading = document.getElementById('popular-heading');
   const tiles = ['art-a','art-t','art-r','art-i','art-s','art-t'];
   const spSvg = `<svg style="vertical-align:-2px;margin-left:4px" width="11" height="11" viewBox="0 0 24 24" fill="#1ed760"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>`;
 
-  const renderTrack = (t, i, uri) => {
-    const img = t.album?.images?.[1]?.url || t.album?.images?.[0]?.url;
-    const title = t.name; const artist = t.artists.map(a=>a.name).join(', ');
-    const st = title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    const sa = (t.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    const onclick = uri ? `playSpotifyCard('${uri}','${st}','${sa}')` : `loadSong(${JSON.stringify(title)},${JSON.stringify(t.artists[0]?.name||'')})`;
-    return `<div class="song-row" id="pr-${i}" onclick="${onclick}">
-      <div class="sr-art" id="pa-${i}">${img
-        ? `<img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">`
-        : `<div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div>`}
-      </div>
-      <div class="sr-info"><div class="sr-title cjk">${esc(title)}</div><div class="sr-meta">${esc(artist)}</div></div>
-      <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
-    </div>`;
+  const renderTracks = (tracks) => {
+    if (heading) heading.innerHTML = `Popular ${langLabel} Songs on ${spSvg} Spotify`;
+    grid.innerHTML = tracks.map((t, i) => {
+      const img = t.album?.images?.[1]?.url || t.album?.images?.[0]?.url;
+      const title = t.name;
+      const artist = t.artists?.map(a=>a.name).join(', ') || '';
+      const st = title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const sa = (t.artists?.[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return `<div class="song-row" onclick="playSpotifyCard('${t.uri}','${st}','${sa}')">
+        <div class="sr-art">${img
+          ? `<img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px" loading="lazy">`
+          : `<div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div>`}
+        </div>
+        <div class="sr-info">
+          <div class="sr-title cjk">${esc(title)}</div>
+          <div class="sr-meta">${esc(artist)}</div>
+        </div>
+        <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
+      </div>`;
+    }).join('');
   };
 
-  // Try curated playlist first
+  // 1. Try curated playlist (best: real popular tracks, fresh album art)
+  const PLAYLISTS = { zh:'37i9dQZF1DX1RxBljMscXZ', ko:'37i9dQZF1DX9tPFwdkgD8E', ja:'37i9dQZF1DXaQMBs4CFF5f' };
   try {
     const r = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=6&market=${market}&fields=items(track(name,uri,artists(name),album(images)))`,
+      `https://api.spotify.com/v1/playlists/${PLAYLISTS[S.sourceLang]||PLAYLISTS.zh}/tracks?limit=8&market=${market}&fields=items(track(name,uri,artists(name),album(images)))`,
       { headers: { 'Authorization': 'Bearer ' + token } }
     );
     if (r.ok) {
       const data = await r.json();
-      const tracks = (data.items||[]).map(i=>i.track).filter(t=>t?.name);
-      if (tracks.length >= 3) {
-        if (heading) heading.innerHTML = `Popular ${langLabel} Songs on ${spSvg} Spotify`;
-        grid.innerHTML = tracks.slice(0,6).map((t,i) => renderTrack(t, i, t.uri)).join('');
-        return;
-      }
+      const tracks = (data.items||[]).map(i=>i.track).filter(t=>t?.name&&t?.album?.images?.length);
+      if (tracks.length >= 3) { renderTracks(tracks.slice(0,6)); return; }
     }
   } catch(e) {}
 
-  // Fallback: search for each hardcoded song and get Spotify art
-  const SONGS = {
-    zh:[{q:'告白气球 周杰伦',t:'告白气球',a:'周杰伦',en:'周杰伦 (Jay Chou)'},{q:'晴天 周杰伦',t:'晴天',a:'周杰伦',en:'周杰伦 (Jay Chou)'},{q:'稻香 周杰伦',t:'稻香',a:'周杰伦',en:'周杰伦 (Jay Chou)'},{q:'待我如初 大头针',t:'待我如初',a:'大头针',en:'大头针 (Dandelion)'},{q:'喜欢你 邓紫棋',t:'喜欢你',a:'邓紫棋',en:'邓紫棋 G.E.M. (I Like You)'},{q:'突然好想你 五月天',t:'突然好想你',a:'五月天',en:'五月天 (Missing You)'}],
-    ko:[{q:'봄날 BTS',t:'봄날',a:'BTS',en:'BTS 방탄소년단 (Spring Day)'},{q:'LOVE SCENARIO iKON',t:'LOVE SCENARIO',a:'iKON',en:'iKON 아이콘 (Love Scenario)'},{q:'Eight IU',t:'Eight',a:'IU',en:'IU 아이유 (Eight)'},{q:'Celebrity IU',t:'Celebrity',a:'IU',en:'IU 아이유 (Celebrity)'},{q:'Dynamite BTS',t:'Dynamite',a:'BTS',en:'BTS 방탄소년단 (Dynamite)'},{q:'Lilac IU',t:'Lilac',a:'IU',en:'IU 아이유 (Lilac)'}],
-    ja:[{q:'うっせぇわ Ado',t:'うっせぇわ',a:'Ado',en:'Usseewa · Ado'},{q:'炎 LiSA',t:'炎',a:'LiSA',en:'LiSA リサ (Homura)'},{q:'紅蓮華 LiSA',t:'紅蓮華',a:'LiSA',en:'LiSA リサ (Gurenge)'},{q:'廻廻奇譚 Eve',t:'廻廻奇譚',a:'Eve',en:'Eve (Kaikai Kitan)'},{q:'夜に駆ける YOASOBI',t:'夜に駆ける',a:'YOASOBI',en:'YOASOBI (Into the Night)'},{q:'ドライフラワー 優里',t:'ドライフラワー',a:'優里',en:'優里 Yuuri (Dry Flower)'}],
-  };
-  const songs = SONGS[S.sourceLang] || SONGS.zh;
-  if (heading) heading.innerHTML = `Popular ${langLabel} Songs on ${spSvg} Spotify`;
-  // Render with gradient tiles immediately
-  grid.innerHTML = songs.map((s,i)=>`
-    <div class="song-row" id="pr-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
-      <div class="sr-art" id="pa-${i}"><div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div></div>
-      <div class="sr-info"><div class="sr-title cjk">${esc(s.t)}</div><div class="sr-meta">${esc(s.en)}</div></div>
-      <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
-    </div>`).join('');
-  // Search Spotify for each → swap in real image + URI
-  songs.forEach(async (s, i) => {
-    try {
-      const r = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(s.q)}&type=track&limit=1&market=${market}`,{headers:{'Authorization':'Bearer '+token}});
-      if(!r.ok)return;
+  // 2. Genre search — the original reliable approach (single call, images baked in)
+  try {
+    const r = await fetch(
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(cfg.genre)}&type=track&limit=12&market=${market}`,
+      { headers: { 'Authorization': 'Bearer ' + token } }
+    );
+    if (r.ok) {
       const data = await r.json();
-      const track = data.tracks?.items?.[0]; if(!track)return;
-      // Update onclick to Spotify URI
-      const row = document.getElementById('pr-'+i);
-      if(row){const st=track.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");const sa=(track.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");row.setAttribute('onclick',`playSpotifyCard('${track.uri}','${st}','${sa}')`);}
-      // Swap artwork - Spotify CDN images always work
-      const img = track.album.images[1]?.url || track.album.images[0]?.url;
-      if(img){const artEl=document.getElementById('pa-'+i);if(artEl){const el=document.createElement('img');el.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:12px;display:block';el.onload=()=>{artEl.innerHTML='';artEl.appendChild(el);};el.src=img;}}
-    } catch(e){}
-  });
+      const tracks = (data.tracks?.items||[]).filter(t=>t.album?.images?.length>0).slice(0,6);
+      if (tracks.length >= 2) { renderTracks(tracks); return; }
+    }
+  } catch(e) {}
+
+  // 3. Last resort: no images, just names
+  fetchPopularFallback();
 }
+
 
 // No Spotify connected — show tiles with names only
 function fetchPopularFallback(){
@@ -2093,6 +2130,13 @@ function showPopularSkeleton(){
 }
 
 // ── PWA INSTALL PROMPT ─────────────────────────────────────────────────────
+function dismissPwa(){
+  const p=document.getElementById('pwa-prompt');if(!p)return;
+  p.classList.remove('show');
+  localStorage.setItem('pwa_prompted','1');
+  setTimeout(()=>p.classList.add('hidden'),420);
+}
+
 function initPwaPrompt(){
   if(localStorage.getItem('pwa_prompted'))return;
   if(window.matchMedia('(display-mode: standalone)').matches)return;
