@@ -381,9 +381,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 #stamp-hard{bottom:28px;left:50%;color:var(--a);border-color:var(--a);transform:translateX(-50%) rotate(-4deg)}
 /* utils */
 /* ── ONBOARDING TOUR ───────────────────────────────────────────────────────── */
-#tour-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none;transition:opacity .3s}
+#tour-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none}
 #tour-overlay.active{pointer-events:all}
-#tour-spotlight{position:fixed;border-radius:16px;border:2px solid rgba(245,164,76,.6);box-shadow:0 0 0 9999px rgba(5,2,14,.78);z-index:9991;pointer-events:none;transition:all .38s cubic-bezier(.4,0,.2,1)}
+.tour-dim{position:fixed;background:rgba(5,2,14,.82);z-index:9991;pointer-events:none;transition:all .32s cubic-bezier(.4,0,.2,1)}
+#tour-ring{position:fixed;border:2.5px solid var(--a);border-radius:14px;z-index:9992;pointer-events:none;display:none;box-shadow:0 0 0 4px rgba(245,164,76,.12),0 0 24px rgba(245,164,76,.28);animation:trpulse 1.8s ease-in-out infinite}
+@keyframes trpulse{0%,100%{box-shadow:0 0 0 4px rgba(245,164,76,.12),0 0 24px rgba(245,164,76,.28)}50%{box-shadow:0 0 0 10px rgba(245,164,76,.06),0 0 36px rgba(245,164,76,.45)}}
 #tour-card{position:fixed;z-index:9992;background:#150e22;border:0.5px solid rgba(245,164,76,.3);border-radius:20px;padding:20px 20px 16px;width:calc(100% - 48px);max-width:360px;box-shadow:0 12px 48px rgba(0,0,0,.7);transition:all .38s cubic-bezier(.4,0,.2,1)}
 #tour-card .t-step{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--a);opacity:.7;margin-bottom:8px}
 #tour-card .t-title{font:700 18px/1.25 'Space Grotesk';letter-spacing:-.01em;margin-bottom:8px}
@@ -1116,8 +1118,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
 <!-- ── ONBOARDING TOUR ──────────────────────────────────────────────── -->
 <div id="tour-overlay"></div>
-<div id="tour-spotlight" style="display:none"></div>
-<div id="tour-arrow" style="display:none"></div>
+<div id="tour-dim-top" class="tour-dim" style="display:none"></div>
+<div id="tour-dim-bottom" class="tour-dim" style="display:none"></div>
+<div id="tour-dim-left" class="tour-dim" style="display:none"></div>
+<div id="tour-dim-right" class="tour-dim" style="display:none"></div>
+<div id="tour-ring"></div>
 <div id="tour-card" style="display:none">
   <div class="t-step" id="t-step-lbl"></div>
   <div class="t-title" id="t-title"></div>
@@ -1144,6 +1149,7 @@ const S = {
   view: 'onboarding', prevView: 'home', tab: 'home',
   spotifyClientId: '',
   spotifyToken: localStorage.getItem('spotify_token') || null,
+  popularImagesLoaded: false,
   spotifyRefreshToken: localStorage.getItem('spotify_refresh') || null,
   spotifyTokenExpiry: parseInt(localStorage.getItem('spotify_expiry') || '0'),
   spotifyPollInterval: null, spotifyIsPlaying: false,
@@ -1396,59 +1402,61 @@ function startTour(){
 function renderTourStep(){
   const step=TOUR_STEPS[tourStep];
   const card=document.getElementById('tour-card');
-  const spotlight=document.getElementById('tour-spotlight');
-  const arrow=document.getElementById('tour-arrow');
-  const overlay=document.getElementById('tour-overlay');
+  const ring=document.getElementById('tour-ring');
+  const dims=['tour-dim-top','tour-dim-bottom','tour-dim-left','tour-dim-right'];
   const vw=window.innerWidth, vh=window.innerHeight;
 
   document.getElementById('t-step-lbl').textContent=step.step;
-  document.getElementById('t-title').textContent=(step.icon?' ':'')+step.title;
+  document.getElementById('t-title').textContent=step.title;
   document.getElementById('t-body').textContent=step.body;
   document.getElementById('t-next-btn').textContent=step.cta;
-  const dots=document.getElementById('tour-dots');
-  dots.innerHTML=TOUR_STEPS.map((_,i)=>`<span class="${i===tourStep?'on':''}"></span>`).join('');
+  const dotsEl=document.getElementById('tour-dots');
+  dotsEl.innerHTML=TOUR_STEPS.map((_,i)=>`<span class="${i===tourStep?'on':''}"></span>`).join('');
 
   const target=step.targetFn?.();
   card.style.display='block';
-  arrow.style.display='none';
+
+  const hideDims=()=>{dims.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});ring.style.display='none';};
 
   if(!target){
-    spotlight.style.display='none';
-    overlay.style.background='rgba(5,2,14,.82)';
-    card.style.left='24px';card.style.right='24px';card.style.width='auto';
-    card.style.top='50%';card.style.transform='translateY(-50%)';card.style.bottom='auto';
+    hideDims();
+    // Full screen dark overlay via background on the overlay element
+    document.getElementById('tour-overlay').style.background='rgba(5,2,14,.85)';
+    card.style.cssText='display:block;position:fixed;left:16px;right:16px;top:50%;transform:translateY(-50%);bottom:auto;z-index:9994;background:#150e22;border:0.5px solid rgba(245,164,76,.3);border-radius:20px;padding:20px 20px 16px;box-shadow:0 12px 48px rgba(0,0,0,.7)';
     return;
   }
 
-  overlay.style.background='transparent';
+  document.getElementById('tour-overlay').style.background='transparent';
   const r=target.getBoundingClientRect();
-  const pad=6;
+  const pad=10;
+  const t=Math.max(0,r.top-pad), b=Math.min(vh,r.bottom+pad);
+  const l=Math.max(0,r.left-pad), ri=Math.min(vw,r.right+pad);
 
-  // Spotlight using box-shadow — reliable on iOS
-  spotlight.style.cssText=`display:block;position:fixed;border-radius:14px;border:2px solid rgba(245,164,76,.7);box-shadow:0 0 0 9999px rgba(5,2,14,.80);z-index:9991;pointer-events:none;transition:all .38s cubic-bezier(.4,0,.2,1);left:${r.left-pad}px;top:${r.top-pad}px;width:${r.width+pad*2}px;height:${r.height+pad*2}px`;
+  // 4 dimming panels around target
+  document.getElementById('tour-dim-top').style.cssText=`display:block;top:0;left:0;right:0;height:${t}px`;
+  document.getElementById('tour-dim-bottom').style.cssText=`display:block;top:${b}px;left:0;right:0;bottom:0`;
+  document.getElementById('tour-dim-left').style.cssText=`display:block;top:${t}px;left:0;width:${l}px;height:${b-t}px`;
+  document.getElementById('tour-dim-right').style.cssText=`display:block;top:${t}px;left:${ri}px;right:0;height:${b-t}px`;
 
-  // Smart card placement — never go off-screen
-  card.style.left='16px';card.style.right='16px';card.style.width='auto';card.style.transform='none';
-  const CARD_H = 170; // estimated card height
-  const SAFE_TOP = 60; // status bar clearance
-  const SAFE_BOTTOM = 100; // tab bar clearance
+  // Pulsing ring highlight around target
+  ring.style.cssText=`display:block;position:fixed;left:${l}px;top:${t}px;width:${ri-l}px;height:${b-t}px;border-radius:14px`;
+
+  // Smart card positioning — never clip off screen
+  const CARD_H=180, SAFE_TOP=72, SAFE_BOTTOM=130;
+  let cardTop, cardBottom='auto';
+  card.style.background='#150e22';card.style.border='0.5px solid rgba(245,164,76,.3)';
+  card.style.borderRadius='20px';card.style.padding='20px 20px 16px';card.style.boxShadow='0 12px 48px rgba(0,0,0,.7)';
+  card.style.left='16px';card.style.right='16px';card.style.position='fixed';card.style.zIndex='9994';card.style.transform='none';
 
   if(step.placement==='below'){
-    let topPos = r.bottom + pad + 16;
-    // If card would go off bottom, put it above instead
-    if(topPos + CARD_H > vh - SAFE_BOTTOM) topPos = Math.max(SAFE_TOP, r.top - CARD_H - pad - 16);
-    topPos = Math.max(SAFE_TOP, topPos);
-    card.style.top = topPos + 'px';
-    card.style.bottom = 'auto';
-    // Arrow pointing up to spotlight
-    arrow.style.cssText=`display:block;position:fixed;left:28px;top:${topPos-8}px;width:14px;height:14px;background:#150e22;border-top:0.5px solid rgba(245,164,76,.3);border-left:0.5px solid rgba(245,164,76,.3);transform:rotate(45deg);z-index:9993`;
-  } else if(step.placement==='above'){
-    // Tab bar items: card above
-    const bottomPos = vh - r.top + pad + 12;
-    card.style.bottom = bottomPos + 'px';
-    card.style.top = 'auto';
-    // Arrow pointing down
-    arrow.style.cssText=`display:block;position:fixed;left:28px;bottom:${bottomPos-8}px;width:14px;height:14px;background:#150e22;border-bottom:0.5px solid rgba(245,164,76,.3);border-right:0.5px solid rgba(245,164,76,.3);transform:rotate(45deg);z-index:9993`;
+    cardTop=b+14;
+    if(cardTop+CARD_H>vh-SAFE_BOTTOM) cardTop=Math.max(SAFE_TOP, t-CARD_H-14);
+    card.style.top=Math.max(SAFE_TOP,cardTop)+'px';card.style.bottom='auto';
+  } else {
+    // Above target (tab bar items)
+    const spaceAbove=t-SAFE_TOP;
+    if(spaceAbove>=CARD_H){card.style.top='auto';card.style.bottom=(vh-t+14)+'px';}
+    else{card.style.top=SAFE_TOP+'px';card.style.bottom='auto';}
   }
 }
 
@@ -1459,7 +1467,7 @@ function tourNext(){
 }
 
 function tourDismiss(){
-  ['tour-overlay','tour-spotlight','tour-arrow','tour-card'].forEach(id=>{
+  ['tour-overlay','tour-dim-top','tour-dim-bottom','tour-dim-left','tour-dim-right','tour-ring','tour-card'].forEach(id=>{
     const el=document.getElementById(id);if(el){el.style.display='none';el.classList.remove('active');}
   });
   document.getElementById('tour-overlay').style.background='';
@@ -1632,7 +1640,10 @@ async function pollSpotify(){
   const token=await getValidToken();if(!token)return;
   try{
     const resp=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{'Authorization':'Bearer '+token}});
-    if(resp.status===204){return;}
+    if(resp.status===204){
+      if(!S.popularImagesLoaded){S.popularImagesLoaded=true;fetchPopularSpotify();}
+      return;
+    }
     if(resp.status===401){await refreshSpotifyToken();return;}
     if(!resp.ok)return;
     const data=await resp.json();
@@ -1648,6 +1659,8 @@ async function pollSpotify(){
     const trackUri=data.item?.uri||null;
     if(albumArt)S.spotifyCurrentAlbumArt=albumArt;
     if(trackUri)S.spotifyCurrentTrackUri=trackUri;
+    // Spotify confirmed working — load popular song images now if not yet loaded
+    if(!S.popularImagesLoaded){S.popularImagesLoaded=true;fetchPopularSpotify();}
     // Update live home card
     const tf=document.getElementById('np-time-footer');
     if(tf){const mm=Math.floor(pos/60);const ss=String(Math.floor(pos%60)).padStart(2,'0');tf.textContent=`${mm}:${ss} · ${S.spotifyIsPlaying?'synced':'paused'}`;}
