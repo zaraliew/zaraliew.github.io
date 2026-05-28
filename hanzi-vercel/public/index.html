@@ -1346,36 +1346,43 @@ function finishOnboarding() {
 // ── ONBOARDING TOUR ──────────────────────────────────────────────────────────
 const TOUR_STEPS = [
   {
-    targetFn: () => null, // centred welcome card
-    arrow: null,
-    step: 'Welcome to Melozi',
-    title: 'A quick tour 🎵',
-    body: 'Let us show you around the app — it takes 30 seconds.',
-    cta: "Let's go →"
+    targetFn: ()=>null,
+    step:'Welcome',
+    title:'A quick tour 🎵',
+    body:"You'll be learning from music in 60 seconds. Here's everything you need to know.",
+    cta:"Let's go →"
   },
   {
-    targetFn: () => document.querySelector('.song-row'),
-    arrow: 'below',
-    step: 'Step 1 of 3',
-    title: 'Tap any song to start',
-    body: 'Melozi loads the lyrics with pinyin and translation in real-time. Works with any song playing on Spotify too.',
-    cta: 'Got it →'
+    targetFn: ()=>document.querySelector('.song-row'),
+    placement:'below',
+    step:'1 of 4',
+    title:'Tap any song to start',
+    body:'Lyrics load instantly with pinyin, romanization, and translation. Or just play anything on Spotify — it follows along automatically.',
+    cta:'Got it →'
   },
   {
-    targetFn: () => document.getElementById('tab-deck'),
-    arrow: 'above',
-    step: 'Step 2 of 3',
-    title: 'Build your vocabulary',
-    body: 'Tap any word in the lyrics to save it. Your personal deck appears here for spaced-repetition flashcard practice.',
-    cta: 'Got it →'
+    targetFn: ()=>null,
+    step:'2 of 4',
+    title:'Control what you see',
+    body:'Inside the player, tap the Aa button to toggle characters, pinyin, and translation on or off — focus on what helps you most.',
+    cta:'Got it →',
+    icon:'👁'
   },
   {
-    targetFn: () => document.getElementById('tab-profile'),
-    arrow: 'above',
-    step: 'Step 3 of 3',
-    title: 'Settings & your plan',
-    body: 'Manage your language preferences, Spotify connection, and subscription here.',
-    cta: "Start listening 🎵"
+    targetFn: ()=>document.getElementById('tab-deck'),
+    placement:'above',
+    step:'3 of 4',
+    title:'Build your vocabulary',
+    body:'Tap any word in the lyrics to save it to your deck. Review with spaced-repetition flashcards anytime.',
+    cta:'Got it →'
+  },
+  {
+    targetFn: ()=>null,
+    step:'4 of 4',
+    title:'Review your saved words',
+    body:'In the Deck, tap the card to flip and reveal pinyin + translation. Swipe right (Got it ✓), left (Again), or down (Hard) to score yourself.',
+    cta:"Start listening 🎵",
+    icon:'🃏'
   }
 ];
 let tourStep = 0;
@@ -1392,66 +1399,56 @@ function renderTourStep(){
   const spotlight=document.getElementById('tour-spotlight');
   const arrow=document.getElementById('tour-arrow');
   const overlay=document.getElementById('tour-overlay');
+  const vw=window.innerWidth, vh=window.innerHeight;
 
-  // Content
   document.getElementById('t-step-lbl').textContent=step.step;
-  document.getElementById('t-title').textContent=step.title;
+  document.getElementById('t-title').textContent=(step.icon?' ':'')+step.title;
   document.getElementById('t-body').textContent=step.body;
   document.getElementById('t-next-btn').textContent=step.cta;
-
-  // Dots
   const dots=document.getElementById('tour-dots');
   dots.innerHTML=TOUR_STEPS.map((_,i)=>`<span class="${i===tourStep?'on':''}"></span>`).join('');
 
   const target=step.targetFn?.();
   card.style.display='block';
+  arrow.style.display='none';
 
   if(!target){
-    // Centred card — no spotlight
     spotlight.style.display='none';
-    arrow.style.display='none';
     overlay.style.background='rgba(5,2,14,.82)';
-    // Position card in centre
-    card.style.left='24px';card.style.right='24px';card.style.width='auto';card.style.maxWidth='';
-    card.style.top='50%';card.style.transform='translateY(-50%)';
-    card.style.bottom='auto';
-  } else {
-    overlay.style.background='transparent';
-    const r=target.getBoundingClientRect();
-    const pad=8;
-    // Spotlight
-    spotlight.style.display='block';
-    spotlight.style.left=(r.left-pad)+'px';
-    spotlight.style.top=(r.top-pad)+'px';
-    spotlight.style.width=(r.width+pad*2)+'px';
-    spotlight.style.height=(r.height+pad*2)+'px';
+    card.style.left='24px';card.style.right='24px';card.style.width='auto';
+    card.style.top='50%';card.style.transform='translateY(-50%)';card.style.bottom='auto';
+    return;
+  }
 
-    // Card position
-    card.style.left='24px';card.style.right='24px';card.style.width='auto';card.style.maxWidth='';
-    card.style.transform='none';
+  overlay.style.background='transparent';
+  const r=target.getBoundingClientRect();
+  const pad=6;
 
-    if(step.arrow==='below'){
-      // Card below the target
-      const cardTop=r.bottom+pad+16;
-      card.style.top=cardTop+'px';card.style.bottom='auto';
-      // Arrow above card pointing up at target
-      arrow.style.display='block';
-      arrow.style.left='36px';
-      arrow.style.top=(cardTop-7)+'px';
-      arrow.style.transform='rotate(-135deg)';
-    } else {
-      // Card above the target (for tab bar items)
-      card.style.bottom=(window.innerHeight-r.top+pad+16)+'px';
-      card.style.top='auto';
-      arrow.style.display='block';
-      arrow.style.left='36px';
-      arrow.style.top=(window.innerHeight-r.top+pad+16-7-parseInt(card.offsetHeight||120))+'px';
-      // Simpler: just position arrow at bottom of card area pointing down
-      const cardBottom=window.innerHeight-r.top+pad+16;
-      arrow.style.top='auto';
-      arrow.style.bottom=(cardBottom-7)+'px';
-      arrow.style.transform='rotate(45deg)';
-    }
+  // Spotlight using box-shadow — reliable on iOS
+  spotlight.style.cssText=`display:block;position:fixed;border-radius:14px;border:2px solid rgba(245,164,76,.7);box-shadow:0 0 0 9999px rgba(5,2,14,.80);z-index:9991;pointer-events:none;transition:all .38s cubic-bezier(.4,0,.2,1);left:${r.left-pad}px;top:${r.top-pad}px;width:${r.width+pad*2}px;height:${r.height+pad*2}px`;
+
+  // Smart card placement — never go off-screen
+  card.style.left='16px';card.style.right='16px';card.style.width='auto';card.style.transform='none';
+  const CARD_H = 170; // estimated card height
+  const SAFE_TOP = 60; // status bar clearance
+  const SAFE_BOTTOM = 100; // tab bar clearance
+
+  if(step.placement==='below'){
+    let topPos = r.bottom + pad + 16;
+    // If card would go off bottom, put it above instead
+    if(topPos + CARD_H > vh - SAFE_BOTTOM) topPos = Math.max(SAFE_TOP, r.top - CARD_H - pad - 16);
+    topPos = Math.max(SAFE_TOP, topPos);
+    card.style.top = topPos + 'px';
+    card.style.bottom = 'auto';
+    // Arrow pointing up to spotlight
+    arrow.style.cssText=`display:block;position:fixed;left:28px;top:${topPos-8}px;width:14px;height:14px;background:#150e22;border-top:0.5px solid rgba(245,164,76,.3);border-left:0.5px solid rgba(245,164,76,.3);transform:rotate(45deg);z-index:9993`;
+  } else if(step.placement==='above'){
+    // Tab bar items: card above
+    const bottomPos = vh - r.top + pad + 12;
+    card.style.bottom = bottomPos + 'px';
+    card.style.top = 'auto';
+    // Arrow pointing down
+    arrow.style.cssText=`display:block;position:fixed;left:28px;bottom:${bottomPos-8}px;width:14px;height:14px;background:#150e22;border-bottom:0.5px solid rgba(245,164,76,.3);border-right:0.5px solid rgba(245,164,76,.3);transform:rotate(45deg);z-index:9993`;
   }
 }
 
@@ -1463,8 +1460,7 @@ function tourNext(){
 
 function tourDismiss(){
   ['tour-overlay','tour-spotlight','tour-arrow','tour-card'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.style.display='none';el.classList.remove('active');}
+    const el=document.getElementById(id);if(el){el.style.display='none';el.classList.remove('active');}
   });
   document.getElementById('tour-overlay').style.background='';
   localStorage.setItem('ml_tour_done','1');
@@ -1620,7 +1616,7 @@ async function refreshSpotifyToken(){
   if(!S.spotifyRefreshToken||!S.spotifyClientId)return false;
   try{const resp=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:S.spotifyClientId,grant_type:'refresh_token',refresh_token:S.spotifyRefreshToken})});const d=await resp.json();if(d.access_token){S.spotifyToken=d.access_token;S.spotifyTokenExpiry=Date.now()+(d.expires_in*1000);if(d.refresh_token){S.spotifyRefreshToken=d.refresh_token;localStorage.setItem('spotify_refresh',S.spotifyRefreshToken);}localStorage.setItem('spotify_token',S.spotifyToken);localStorage.setItem('spotify_expiry',String(S.spotifyTokenExpiry));return true;}}catch(e){}return false;
 }
-async function getValidToken(){if(!S.spotifyToken)return null;if(Date.now()>S.spotifyTokenExpiry-60000){const ok=await refreshSpotifyToken();if(!ok){disconnectSpotify();return null;}}return S.spotifyToken;}
+async function getValidToken(){if(!S.spotifyToken)return null;if(Date.now()>S.spotifyTokenExpiry-60000){await refreshSpotifyToken();}return S.spotifyToken||null;}
 
 function updateObSpotifyCard(connected) {
   const card=document.getElementById('ob-sp-card');const title=document.getElementById('ob-sp-title');const sub=document.getElementById('ob-sp-sub');
@@ -1680,7 +1676,8 @@ function getHistory() { return JSON.parse(localStorage.getItem('sl_history') || 
 
 // ── SPOTIFY: POPULAR ───────────────────────────────────────────────────────
 async function fetchPopularSpotify(){
-  const token = await getValidToken();
+  let token = await getValidToken();
+  if (!token) token = localStorage.getItem('spotify_token'); // use stored token as fallback
   if (!token) { fetchPopularFallback(); return; }
 
   const cfg = LANG_CONFIG[S.sourceLang] || LANG_CONFIG.zh;
