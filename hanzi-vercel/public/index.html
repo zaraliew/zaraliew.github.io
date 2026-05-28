@@ -380,6 +380,22 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 #stamp-again{top:28px;left:24px;color:#ff4444;border-color:#ff4444;transform:rotate(-12deg)}
 #stamp-hard{bottom:28px;left:50%;color:var(--a);border-color:var(--a);transform:translateX(-50%) rotate(-4deg)}
 /* utils */
+/* ── ONBOARDING TOUR ───────────────────────────────────────────────────────── */
+#tour-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none;transition:opacity .3s}
+#tour-overlay.active{pointer-events:all}
+#tour-spotlight{position:fixed;border-radius:16px;border:2px solid rgba(245,164,76,.6);box-shadow:0 0 0 9999px rgba(5,2,14,.78);z-index:9991;pointer-events:none;transition:all .38s cubic-bezier(.4,0,.2,1)}
+#tour-card{position:fixed;z-index:9992;background:#150e22;border:0.5px solid rgba(245,164,76,.3);border-radius:20px;padding:20px 20px 16px;width:calc(100% - 48px);max-width:360px;box-shadow:0 12px 48px rgba(0,0,0,.7);transition:all .38s cubic-bezier(.4,0,.2,1)}
+#tour-card .t-step{font:700 11px/1 'Plus Jakarta Sans';letter-spacing:.14em;text-transform:uppercase;color:var(--a);opacity:.7;margin-bottom:8px}
+#tour-card .t-title{font:700 18px/1.25 'Space Grotesk';letter-spacing:-.01em;margin-bottom:8px}
+#tour-card .t-body{font-size:13px;color:var(--soft);line-height:1.6;margin-bottom:16px}
+#tour-card .t-btns{display:flex;align-items:center;justify-content:space-between}
+#tour-card .t-next{padding:10px 20px;border-radius:10px;background:var(--a);color:var(--ink);font:700 13px/1 'Plus Jakarta Sans';border:none;cursor:pointer}
+#tour-card .t-skip{font:600 12px/1 'Plus Jakarta Sans';color:var(--dim);background:none;border:none;cursor:pointer;padding:10px 4px}
+#tour-arrow{position:fixed;z-index:9993;width:14px;height:14px;background:#150e22;border:0.5px solid rgba(245,164,76,.3);pointer-events:none;transition:all .38s cubic-bezier(.4,0,.2,1)}
+#tour-dots{display:flex;gap:5px;align-items:center}
+#tour-dots span{width:5px;height:5px;border-radius:50%;background:rgba(245,164,76,.25);transition:background .2s}
+#tour-dots span.on{background:var(--a);width:16px;border-radius:3px}
+
 /* === API KEY BANNER === */
 .api-banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:linear-gradient(135deg,rgba(184,153,255,.12) 0%,rgba(245,164,76,.08) 100%);border:0.5px solid rgba(184,153,255,.25);margin-bottom:20px;cursor:pointer;transition:background .15s}
 .api-banner:active{background:rgba(184,153,255,.16)}
@@ -1098,6 +1114,23 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   <button class="pwa-dismiss" onclick="dismissPwa()" aria-label="Dismiss">✕</button>
 </div>
 
+<!-- ── ONBOARDING TOUR ──────────────────────────────────────────────── -->
+<div id="tour-overlay"></div>
+<div id="tour-spotlight" style="display:none"></div>
+<div id="tour-arrow" style="display:none"></div>
+<div id="tour-card" style="display:none">
+  <div class="t-step" id="t-step-lbl"></div>
+  <div class="t-title" id="t-title"></div>
+  <div class="t-body" id="t-body"></div>
+  <div class="t-btns">
+    <div id="tour-dots"></div>
+    <div style="display:flex;gap:8px">
+      <button class="t-skip" onclick="tourDismiss()">Skip</button>
+      <button class="t-next" id="t-next-btn" onclick="tourNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- #app -->
 
 <script>
@@ -1306,6 +1339,135 @@ function finishOnboarding() {
   localStorage.setItem('sl_setup','1'); S.setupDone=true;
   showScreen('home'); updateBadge(); updateHomeNowPlaying(); updateContinueLearning();
   fetchPopularSpotify();
+  // Start the feature tour after a short delay (first time only)
+  if(!localStorage.getItem('ml_tour_done')) setTimeout(startTour, 700);
+}
+
+// ── ONBOARDING TOUR ──────────────────────────────────────────────────────────
+const TOUR_STEPS = [
+  {
+    targetFn: () => null, // centred welcome card
+    arrow: null,
+    step: 'Welcome to Melozi',
+    title: 'A quick tour 🎵',
+    body: 'Let us show you around the app — it takes 30 seconds.',
+    cta: "Let's go →"
+  },
+  {
+    targetFn: () => document.querySelector('.song-row'),
+    arrow: 'below',
+    step: 'Step 1 of 3',
+    title: 'Tap any song to start',
+    body: 'Melozi loads the lyrics with pinyin and translation in real-time. Works with any song playing on Spotify too.',
+    cta: 'Got it →'
+  },
+  {
+    targetFn: () => document.getElementById('tab-deck'),
+    arrow: 'above',
+    step: 'Step 2 of 3',
+    title: 'Build your vocabulary',
+    body: 'Tap any word in the lyrics to save it. Your personal deck appears here for spaced-repetition flashcard practice.',
+    cta: 'Got it →'
+  },
+  {
+    targetFn: () => document.getElementById('tab-profile'),
+    arrow: 'above',
+    step: 'Step 3 of 3',
+    title: 'Settings & your plan',
+    body: 'Manage your language preferences, Spotify connection, and subscription here.',
+    cta: "Start listening 🎵"
+  }
+];
+let tourStep = 0;
+
+function startTour(){
+  tourStep=0;
+  document.getElementById('tour-overlay').classList.add('active');
+  renderTourStep();
+}
+
+function renderTourStep(){
+  const step=TOUR_STEPS[tourStep];
+  const card=document.getElementById('tour-card');
+  const spotlight=document.getElementById('tour-spotlight');
+  const arrow=document.getElementById('tour-arrow');
+  const overlay=document.getElementById('tour-overlay');
+
+  // Content
+  document.getElementById('t-step-lbl').textContent=step.step;
+  document.getElementById('t-title').textContent=step.title;
+  document.getElementById('t-body').textContent=step.body;
+  document.getElementById('t-next-btn').textContent=step.cta;
+
+  // Dots
+  const dots=document.getElementById('tour-dots');
+  dots.innerHTML=TOUR_STEPS.map((_,i)=>`<span class="${i===tourStep?'on':''}"></span>`).join('');
+
+  const target=step.targetFn?.();
+  card.style.display='block';
+
+  if(!target){
+    // Centred card — no spotlight
+    spotlight.style.display='none';
+    arrow.style.display='none';
+    overlay.style.background='rgba(5,2,14,.82)';
+    // Position card in centre
+    card.style.left='24px';card.style.right='24px';card.style.width='auto';card.style.maxWidth='';
+    card.style.top='50%';card.style.transform='translateY(-50%)';
+    card.style.bottom='auto';
+  } else {
+    overlay.style.background='transparent';
+    const r=target.getBoundingClientRect();
+    const pad=8;
+    // Spotlight
+    spotlight.style.display='block';
+    spotlight.style.left=(r.left-pad)+'px';
+    spotlight.style.top=(r.top-pad)+'px';
+    spotlight.style.width=(r.width+pad*2)+'px';
+    spotlight.style.height=(r.height+pad*2)+'px';
+
+    // Card position
+    card.style.left='24px';card.style.right='24px';card.style.width='auto';card.style.maxWidth='';
+    card.style.transform='none';
+
+    if(step.arrow==='below'){
+      // Card below the target
+      const cardTop=r.bottom+pad+16;
+      card.style.top=cardTop+'px';card.style.bottom='auto';
+      // Arrow above card pointing up at target
+      arrow.style.display='block';
+      arrow.style.left='36px';
+      arrow.style.top=(cardTop-7)+'px';
+      arrow.style.transform='rotate(-135deg)';
+    } else {
+      // Card above the target (for tab bar items)
+      card.style.bottom=(window.innerHeight-r.top+pad+16)+'px';
+      card.style.top='auto';
+      arrow.style.display='block';
+      arrow.style.left='36px';
+      arrow.style.top=(window.innerHeight-r.top+pad+16-7-parseInt(card.offsetHeight||120))+'px';
+      // Simpler: just position arrow at bottom of card area pointing down
+      const cardBottom=window.innerHeight-r.top+pad+16;
+      arrow.style.top='auto';
+      arrow.style.bottom=(cardBottom-7)+'px';
+      arrow.style.transform='rotate(45deg)';
+    }
+  }
+}
+
+function tourNext(){
+  tourStep++;
+  if(tourStep>=TOUR_STEPS.length){tourDismiss();return;}
+  renderTourStep();
+}
+
+function tourDismiss(){
+  ['tour-overlay','tour-spotlight','tour-arrow','tour-card'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.display='none';el.classList.remove('active');}
+  });
+  document.getElementById('tour-overlay').style.background='';
+  localStorage.setItem('ml_tour_done','1');
 }
 function redoSetup() {
   localStorage.removeItem('sl_setup'); S.setupDone = false;
@@ -1578,7 +1740,26 @@ async function fetchPopularSpotify(){
     }
   } catch(e) {}
 
-  // 3. Last resort: no images, just names
+  // 3. Artist-based search — guaranteed to return album art (most reliable)
+  const ARTIST_QUERIES = {
+    zh: ['周杰伦', '邓紫棋 喜欢你', '五月天 突然好想你', '大头针 待我如初', 'Jay Chou mandarin', '周杰伦 稻香'],
+    ko: ['BTS 봄날', 'IU Celebrity', 'BLACKPINK', 'IU Eight', 'BTS Dynamite', 'BLACKPINK Shut Down'],
+    ja: ['YOASOBI 夜に駆ける', 'Ado うっせぇわ', 'LiSA 炎', 'Eve 廻廻奇譚', 'YOASOBI', 'Ado'],
+  };
+  try {
+    const artistTracks = [];
+    const queries = ARTIST_QUERIES[S.sourceLang] || ARTIST_QUERIES.zh;
+    await Promise.all(queries.map(async (q) => {
+      try {
+        const r = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=2&market=${market}`,{headers:{'Authorization':'Bearer '+token}});
+        if(r.ok){const d=await r.json();(d.tracks?.items||[]).filter(t=>t.album?.images?.length).forEach(t=>artistTracks.push(t));}
+      } catch(e){}
+    }));
+    const unique = artistTracks.filter((t,i,a)=>a.findIndex(x=>x.uri===t.uri)===i);
+    if(unique.length >= 2){ renderTracks(unique.slice(0,6)); return; }
+  } catch(e){}
+
+  // 4. Last resort: no images, just names
   fetchPopularFallback();
 }
 
@@ -1726,8 +1907,18 @@ Natural ${tl} translation in "english" field.`,
   };
   const SYSTEM={zh:'You are a Mandarin annotation tool. Output ONLY valid JSON.',ko:'You are a Korean annotation tool. Output ONLY valid JSON.',ja:'You are a Japanese annotation tool. Output ONLY valid JSON.'};
   const prompt=PROMPTS[src]||PROMPTS.zh;const systemMsg=SYSTEM[src]||SYSTEM.zh;
-  const resp=await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
-  const txt=await resp.text();if(!resp.ok){let m=`API error ${resp.status}`;try{m=JSON.parse(txt).error?.message||m;}catch{}throw new Error(m);}
+  let resp, txt;
+  try {
+    resp = await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
+    // If proxy not deployed yet (404), fall back to direct Anthropic call
+    if(resp.status===404||resp.status===503){
+      const dk=localStorage.getItem('ht_key');
+      if(dk){resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':dk,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});}
+      else{throw new Error('Translation service not available — deploy api/annotate.js and set ANTHROPIC_API_KEY in Vercel');}
+    }
+    txt=await resp.text();
+  } catch(e) { throw e; }
+  if(!resp.ok){let m=`API error ${resp.status}`;try{m=JSON.parse(txt).error?.message||m;}catch{}throw new Error(m);}
   const data=JSON.parse(txt);let raw=(data.content?.[0]?.text||'').replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
   try{return JSON.parse(raw);}catch{try{return JSON.parse(raw+']');}catch{throw new Error('Parse error');}}
 }
