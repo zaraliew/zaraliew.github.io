@@ -191,6 +191,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .k-word:active{background:var(--abg)}
 .k-word.is-saved{background:var(--abg) !important;color:var(--a) !important;border-radius:6px}
 .pl-prog{padding:12px 24px 8px;flex-shrink:0}
+.prog-thumb{position:absolute;top:50%;right:-4px;transform:translateY(-50%);width:12px;height:12px;border-radius:50%;background:var(--a);opacity:0;transition:opacity .15s;pointer-events:none}
+.prog-track:active .prog-thumb,.prog-track:hover .prog-thumb{opacity:1}
 .prog-track{height:3px;background:rgba(255,255,255,.08);border-radius:2px;cursor:pointer;position:relative}
 .prog-fill{height:100%;background:var(--a);border-radius:2px;width:0%;position:absolute;top:0;left:0;pointer-events:none}
 .prog-times{display:flex;justify-content:space-between;margin-top:6px;font:400 11px/1 'JetBrains Mono';color:var(--dim)}
@@ -670,9 +672,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div id="k-next" class="k-line"></div>
   </div>
   <div class="pl-prog">
-    <div class="prog-track" id="progress-track-h"><div class="prog-fill" id="progress-fill-h"></div></div>
+    <div class="prog-track" id="progress-track-h" onclick="seekFromClick(event)" style="cursor:pointer"><div class="prog-fill" id="progress-fill-h"></div><div class="prog-thumb" id="progress-thumb-h"></div></div>
     <div class="prog-times">
-      <span id="bar-min">0</span>:<span id="bar-sec">00</span>
+      <span id="pl-currtime">0:00</span>
       <span id="pl-remaining"></span>
     </div>
   </div>
@@ -834,6 +836,26 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </div>
         <div class="prof-row" onclick="openLangSheet()">
+          <div class="prof-row-ic a">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>
+          </div>
+          <div class="prof-row-txt">
+            <div class="prof-row-label" data-i18n="translateTo">Translate to</div>
+            <div class="prof-row-value" id="prof-lang-value">English</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <!-- Developer: API key override (used as fallback when backend not deployed) -->
+        <div class="prof-row" onclick="openApiKeySheet()" id="dev-api-row">
+          <div class="prof-row-ic" style="background:var(--s2)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          </div>
+          <div class="prof-row-txt">
+            <div class="prof-row-label" style="color:var(--muted)">AI Translation Key</div>
+            <div class="prof-row-value" id="prof-key-status" style="color:var(--dim)">Not set</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
           <div class="prof-row-ic p">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a13.5 13.5 0 010 18M12 3a13.5 13.5 0 000 18"/></svg>
           </div>
@@ -1040,6 +1062,18 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 </div>
 
+<!-- API key sheet -->
+<div id="sheet-apikey" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div class="sh-title">AI Translation Key</div>
+  <div class="ob-field" style="margin-bottom:14px">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+    <input id="profile-apikey" type="password" placeholder="sk-ant-api03-…" oninput="saveApiKey(this.value)">
+  </div>
+  <div style="font-size:13px;color:var(--muted);line-height:1.6">Free key from <span style="color:var(--a)">console.anthropic.com</span>. Used as fallback until the Melozi backend is deployed.</div>
+  <button class="btn btn-a" style="width:100%;margin-top:16px;border-radius:14px" onclick="closeAllSheets()">Done</button>
+</div>
+
 <!-- App language sheet -->
 <div id="sheet-app-lang" class="bsheet">
   <div class="sh-handle" onclick="closeAllSheets()"></div>
@@ -1150,6 +1184,7 @@ const S = {
   spotifyClientId: '',
   spotifyToken: localStorage.getItem('spotify_token') || null,
   popularImagesLoaded: false,
+  apiKey: localStorage.getItem('ht_key') || '',
   spotifyRefreshToken: localStorage.getItem('spotify_refresh') || null,
   spotifyTokenExpiry: parseInt(localStorage.getItem('spotify_expiry') || '0'),
   spotifyPollInterval: null, spotifyIsPlaying: false,
@@ -1221,7 +1256,8 @@ window.onload = async () => {
 
   setTargetLanguage(S.targetLanguage, true);
   setSourceLang(S.sourceLang, true);
-  setAppLanguage(S.appLanguage, true); // apply UI translations on load
+  setAppLanguage(S.appLanguage, true);
+  const ki2=document.getElementById('prof-key-status');if(ki2&&S.apiKey)ki2.textContent='Active ✓';
   setInterval(tick, 250);
   document.getElementById('progress-track-h')?.addEventListener('click', e => {
     if (!S.lyrics.length) return;
@@ -1254,6 +1290,7 @@ window.onload = async () => {
   initCardSwipe();
   initPlayerSwipeDown();
   initPwaPrompt();
+  initSeekBar();
   showPopularSkeleton(); // show skeleton before fetch
 };
 
@@ -1647,7 +1684,7 @@ async function pollSpotify(){
     if(resp.status===401){await refreshSpotifyToken();return;}
     if(!resp.ok)return;
     const data=await resp.json();
-    const pos=(data.progress_ms||0)/1000;
+    const pos=(data.progress_ms||0)/1000;S.spotifyDurationMs=data.item?.duration_ms||0;
     S.offset=Math.max(0,pos);
     S.spotifyIsPlaying=data.is_playing;S.running=data.is_playing;
     if(S.running&&!S.syncStart)S.syncStart=Date.now();
@@ -1718,60 +1755,52 @@ async function fetchPopularSongs(){
   const heading=document.getElementById('popular-heading');
   if(heading)heading.textContent=`Popular ${langLabel} Songs`;
   const tiles=['art-a','art-t','art-r','art-i','art-s','art-t'];
-
-  // 1. Render immediately — gradient tiles as placeholders
-  grid.innerHTML=songs.map((s,i)=>`
-    <div class="song-row" id="pr-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
-      <div class="sr-art" id="pa-${i}"><div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div></div>
-      <div class="sr-info"><div class="sr-title cjk">${esc(s.t)}</div><div class="sr-meta">${esc(s.en)}</div></div>
-      <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
-    </div>`).join('');
-
-  // 2. Fetch iTunes artwork — public API, zero auth, <img> src needs no CORS
   const country=S.sourceLang==='zh'?'tw':S.sourceLang==='ko'?'kr':'jp';
-  songs.forEach(async(s,i)=>{
+
+  // Fetch ALL iTunes images in parallel FIRST, then render once with correct URLs
+  const imgResults = await Promise.allSettled(songs.map(async(s)=>{
     try{
       const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(s.q)}&entity=song&limit=5&country=${country}&media=music`);
-      if(!r.ok)return;
+      if(!r.ok)return null;
       const d=await r.json();
       const hit=d.results?.find(x=>x.artworkUrl100);
-      if(!hit)return;
-      // Replace 100x100 with 400x400 for sharper tiles
-      const art=hit.artworkUrl100.replace('100x100bb.jpg','400x400bb.jpg').replace('100x100bb','400x400bb');
-      const artEl=document.getElementById('pa-'+i);
-      if(!artEl)return;
-      // Swap in image directly — <img src> has no CORS restriction
-      const img=document.createElement('img');
-      img.alt='';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:12px;display:block';
-      img.onerror=()=>{}; // keep gradient tile if image fails
-      img.onload=()=>{artEl.innerHTML='';artEl.appendChild(img);};
-      img.src=art;
-    }catch(e){}
-  });
+      if(!hit)return null;
+      return hit.artworkUrl100.replace('100x100bb.jpg','400x400bb.jpg').replace('100x100bb','400x400bb');
+    }catch(e){return null;}
+  }));
 
-  // 3. If Spotify is connected, also upgrade onclick to use URI for instant playback
+  // Render grid once — with real images already known
+  grid.innerHTML=songs.map((s,i)=>{
+    const imgUrl=imgResults[i].status==='fulfilled'?imgResults[i].value:null;
+    const artHtml=imgUrl
+      ?`<img src="${imgUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:block" onerror="this.parentNode.innerHTML='<div class=sr-art-fallback ${tiles[i]} style=width:100%;height:100%;border-radius:12px></div>'">`
+      :`<div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div>`;
+    return `<div class="song-row" id="pr-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
+      <div class="sr-art">${artHtml}</div>
+      <div class="sr-info"><div class="sr-title cjk">${esc(s.t)}</div><div class="sr-meta">${esc(s.en)}</div></div>
+      <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
+    </div>`;
+  }).join('');
+
+  // If Spotify is connected, upgrade onclick to play via URI
   const token=S.spotifyToken||localStorage.getItem('spotify_token');
-  if(!token)return;
-  songs.forEach(async(s,i)=>{
-    try{
-      const r=await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(s.q)}&type=track&limit=1`,{headers:{'Authorization':'Bearer '+token}});
-      if(!r.ok)return;
-      const d=await r.json();
-      const track=d.tracks?.items?.[0];if(!track)return;
-      // Also upgrade image to Spotify quality if available
-      const spImg=track.album?.images?.[1]?.url||track.album?.images?.[0]?.url;
-      const row=document.getElementById('pr-'+i);
-      if(row){
+  if(token){
+    songs.forEach(async(s,i)=>{
+      try{
+        const r=await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(s.q)}&type=track&limit=1`,{headers:{'Authorization':'Bearer '+token}});
+        if(!r.ok)return;
+        const d=await r.json();
+        const track=d.tracks?.items?.[0];if(!track)return;
         const st=track.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         const sa=(track.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        row.setAttribute('onclick',`playSpotifyCard('${track.uri}','${st}','${sa}')`);
-      }
-      if(spImg){
-        const artEl=document.getElementById('pa-'+i);
-        if(artEl){const img=document.createElement('img');img.alt='';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:12px;display:block';img.onload=()=>{artEl.innerHTML='';artEl.appendChild(img);};img.src=spImg;}
-      }
-    }catch(e){}
-  });
+        const row=document.getElementById('pr-'+i);
+        if(row)row.setAttribute('onclick',`playSpotifyCard('${track.uri}','${st}','${sa}')`);
+        // Upgrade to Spotify image if available (better quality)
+        const spImg=track.album?.images?.[1]?.url||track.album?.images?.[0]?.url;
+        if(spImg){const artEl=row?.querySelector('.sr-art');if(artEl){const img=document.createElement('img');img.alt='';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:12px;display:block';img.onload=()=>{artEl.innerHTML='';artEl.appendChild(img);};img.src=spImg;}}
+      }catch(e){}
+    });
+  }
 }
 
 
@@ -1968,9 +1997,9 @@ function disconnectSpotify(){
 function tick(){
   const pos=S.offset;
   const mm=Math.floor(pos/60);const ss=String(Math.floor(pos%60)).padStart(2,'0');
-  const bm=document.getElementById('bar-min');const bs=document.getElementById('bar-sec');
-  if(bm)bm.textContent=mm;if(bs)bs.textContent=ss;
-  if(S.lyrics.length){const last=S.lyrics[S.lyrics.length-1]?.time||1;const pf=document.getElementById('progress-fill-h');if(pf)pf.style.width=Math.min(100,(pos/last)*100)+'%';const rem=document.getElementById('pl-remaining');if(rem){const r=last-pos;const rm=Math.floor(r/60);const rs=String(Math.floor(r%60)).padStart(2,'0');rem.textContent=`-${rm}:${rs}`;}}
+
+  const ct=document.getElementById('pl-currtime');if(ct)ct.textContent=`${mm}:${ss}`;
+  if(S.lyrics.length){const last=S.lyrics[S.lyrics.length-1]?.time||1;const pf=document.getElementById('progress-fill-h');if(pf){const pct=S.spotifyDurationMs?Math.min(100,(pos/(S.spotifyDurationMs/1000))*100):Math.min(100,(pos/last)*100);pf.style.width=pct+'%';const th=document.getElementById('progress-thumb-h');if(th)th.style.left=pct+'%';}const rem=document.getElementById('pl-remaining');if(rem){const r=last-pos;const rm=Math.floor(r/60);const rs=String(Math.floor(r%60)).padStart(2,'0');rem.textContent=`-${rm}:${rs}`;}}
   const cstats=document.getElementById('home-stats');if(cstats){const due=S.saved.length;cstats.innerHTML=`<b>${due} card${due===1?'':'s'} due</b> · <span id="home-streak-display">${S.streak}-day streak 🔥</span>`;}
 }
 
@@ -2266,7 +2295,49 @@ function renderDeckList() {
   container.innerHTML = statusBar + rows;
 }
 
-// ── HAPTIC FEEDBACK ────────────────────────────────────────────────────────
+// ── SEEK ────────────────────────────────────────────────────────────────────
+async function seekFromClick(e){
+  const track=document.getElementById('progress-track-h');if(!track)return;
+  const rect=track.getBoundingClientRect();
+  const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  const last=S.lyrics[S.lyrics.length-1]?.time||0;
+  const durationMs=S.spotifyDurationMs||0;
+  const seekMs=durationMs ? Math.floor(pct*durationMs) : Math.floor(pct*last*1000);
+  // Update local offset immediately for responsive feel
+  S.offset=seekMs/1000;
+  S.running=true;
+  // Update Spotify
+  const token=await getValidToken();
+  if(token){
+    try{await fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${seekMs}`,{method:'PUT',headers:{'Authorization':'Bearer '+token}});}catch(e){}
+  }
+}
+
+// ── SEEK TOUCH SUPPORT ──────────────────────────────────────────────────────
+function initSeekBar(){
+  const track=document.getElementById('progress-track-h');if(!track)return;
+  let seeking=false;
+  track.addEventListener('touchstart',e=>{seeking=true;e.preventDefault();},{passive:false});
+  track.addEventListener('touchmove',e=>{
+    if(!seeking)return;e.preventDefault();
+    const rect=track.getBoundingClientRect();
+    const pct=Math.max(0,Math.min(1,(e.touches[0].clientX-rect.left)/rect.width));
+    const fill=document.getElementById('progress-fill-h');
+    const thumb=document.getElementById('progress-thumb-h');
+    if(fill)fill.style.width=(pct*100)+'%';
+    if(thumb)thumb.style.left=(pct*100)+'%';
+  },{passive:false});
+  track.addEventListener('touchend',e=>{
+    if(!seeking)return;seeking=false;
+    const rect=track.getBoundingClientRect();
+    const pct=Math.max(0,Math.min(1,(e.changedTouches[0].clientX-rect.left)/rect.width));
+    const last=S.lyrics[S.lyrics.length-1]?.time||0;
+    const durationMs=S.spotifyDurationMs||0;
+    const seekMs=durationMs?Math.floor(pct*durationMs):Math.floor(pct*last*1000);
+    S.offset=seekMs/1000;
+    getValidToken().then(tok=>{if(tok)fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${seekMs}`,{method:'PUT',headers:{'Authorization':'Bearer '+tok}}).catch(()=>{});});
+  });
+}
 function haptic(type='light'){
   if(!navigator.vibrate)return;
   if(type==='light')navigator.vibrate(8);
@@ -2524,10 +2595,12 @@ function openSheet(name){
 }
 function closeAllSheets(){
   document.getElementById('sheet-backdrop').classList.remove('open');
-  ['word','display','info','lang','deck-word','app-lang'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
+  ['word','display','info','lang','deck-word','app-lang','apikey'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
   document.body.style.overflow='';
 }
 function openDisplaySheet(){openSheet('display');}
+function saveApiKey(val){S.apiKey=val;localStorage.setItem('ht_key',val);const kv=document.getElementById('prof-key-status');if(kv)kv.textContent=val?'Active ✓':'Not set';}
+function openApiKeySheet(){const ki=document.getElementById('profile-apikey');if(ki)ki.value=localStorage.getItem('ht_key')||'';openSheet('apikey');}
 function openAppLangSheet(){
   const sel=document.getElementById('app-lang-sheet-select');if(sel)sel.value=S.appLanguage;
   openSheet('app-lang');
