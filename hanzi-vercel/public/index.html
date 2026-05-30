@@ -239,9 +239,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
 /* === PROFILE SCREEN === */
 #screen-profile{top:0;left:0;right:0;bottom:var(--tab-h);display:flex;flex-direction:column;overflow:hidden}
-.prof-scroll{flex:1;overflow-y:auto;padding:54px 22px calc(24px);-webkit-overflow-scrolling:touch}
+.prof-scroll{flex:1;overflow-y:auto;padding:54px 22px 40px;-webkit-overflow-scrolling:touch}
 .prof-scroll::-webkit-scrollbar{display:none}
-.prof-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
 .prof-user{display:flex;align-items:center;gap:14px}
 .prof-av{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;font:800 20px/1 'Space Grotesk';color:var(--ink)}
 .prof-hdr{display:flex;align-items:center;gap:14px;padding:20px 22px 16px;border-bottom:0.5px solid var(--b1);margin-bottom:4px}
@@ -644,14 +643,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
         <div class="sec-label" id="popular-heading">Popular right now</div>
         <div class="sec-genre" id="popular-genre"></div>
       </div>
-      <div id="popular-grid">
-        <div class="song-row" onclick="loadSong('告白气球','周杰伦')"><div class="sr-art"><div class="sr-art-fallback art-a"></div></div><div class="sr-info"><div class="sr-title">告白气球</div><div class="sr-meta">周杰伦 · Jay Chou</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
-        <div class="song-row" onclick="loadSong('待我如初','大头针')"><div class="sr-art"><div class="sr-art-fallback art-t"></div></div><div class="sr-info"><div class="sr-title">待我如初</div><div class="sr-meta">大头针</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
-        <div class="song-row" onclick="loadSong('晴天','周杰伦')"><div class="sr-art"><div class="sr-art-fallback art-r"></div></div><div class="sr-info"><div class="sr-title">晴天</div><div class="sr-meta">周杰伦 · Jay Chou</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
-        <div class="song-row" onclick="loadSong('喜欢你','邓紫棋')"><div class="sr-art"><div class="sr-art-fallback art-i"></div></div><div class="sr-info"><div class="sr-title">喜欢你</div><div class="sr-meta">邓紫棋</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
-        <div class="song-row" onclick="loadSong('稻香','周杰伦')"><div class="sr-art"><div class="sr-art-fallback art-s"></div></div><div class="sr-info"><div class="sr-title">稻香</div><div class="sr-meta">周杰伦 · Jay Chou</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
-        <div class="song-row" onclick="loadSong('突然好想你','五月天')"><div class="sr-art"><div class="sr-art-fallback art-a"></div></div><div class="sr-info"><div class="sr-title">突然好想你</div><div class="sr-meta">五月天</div></div><div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div></div>
-      </div>
+      <div id="popular-grid"></div>
     </div>
   </div>
 </div>
@@ -896,10 +888,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <button class="prof-disconnect hidden" id="prof-disconnect" onclick="disconnectSpotify()">Disconnect Spotify</button>
 
     <!-- Subscription Banner -->
-    <div class="pro-banner" style="margin-top:8px">
+    <div class="pro-banner" style="margin-top:4px;margin-bottom:20px">
       <div class="pro-banner-label">✦ YOUR PLAN</div>
-      <div class="pro-banner-title" style="font-size:22px">Free Trial</div>
-      <div class="pro-banner-sub">7 days free, then $5.99/month or $49.99/year. All features included — cancel anytime.</div>
+      <div class="pro-banner-title" style="font-size:22px;color:var(--text)">Free Trial</div>
+      <div class="pro-banner-sub" style="color:var(--soft)">7 days free, then $5.99/month or $49.99/year. All features included — cancel anytime.</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="pro-banner-btn" onclick="alert('Subscription management coming soon — you\'re on the free trial for now! 🎵')">
           Upgrade to Pro →
@@ -1791,15 +1783,24 @@ async function fetchPopularSongs(){
   const country=S.sourceLang==='zh'?'tw':S.sourceLang==='ko'?'kr':'jp';
 
   // Fetch ALL iTunes images in parallel FIRST, then render once with correct URLs
+  // Try multiple countries for best hit rate
+  const countries=S.sourceLang==='zh'?['tw','cn','us']:S.sourceLang==='ko'?['kr','us']:['jp','us'];
   const imgResults = await Promise.allSettled(songs.map(async(s)=>{
-    try{
-      const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(s.q)}&entity=song&limit=5&country=${country}&media=music`);
-      if(!r.ok)return null;
-      const d=await r.json();
-      const hit=d.results?.find(x=>x.artworkUrl100);
-      if(!hit)return null;
-      return hit.artworkUrl100.replace('100x100bb.jpg','400x400bb.jpg').replace('100x100bb','400x400bb');
-    }catch(e){return null;}
+    for(const ctry of countries){
+      try{
+        const ctrl=new AbortController();const tid=setTimeout(()=>ctrl.abort(),8000);
+        const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(s.q)}&entity=song&limit=5&country=${ctry}&media=music`,{signal:ctrl.signal});
+        clearTimeout(tid);
+        if(!r.ok)continue;
+        const d=await r.json();
+        const hit=d.results?.find(x=>x.artworkUrl100);
+        if(!hit)continue;
+        // Use 300x300 - more reliable than 400x400
+        const url=hit.artworkUrl100.replace('100x100bb','300x300bb');
+        return url;
+      }catch(e){continue;}
+    }
+    return null;
   }));
 
   // Render grid once — with real images already known
