@@ -1344,8 +1344,22 @@ function goTab(tab) {
     document.getElementById('tab-'+t)?.classList.toggle('active', t===tab);
   });
   if (tab === 'deck') renderDeck();
-  if (tab === 'profile') renderProfile();
-  if (tab === 'home') { updateHomeNowPlaying(); updateContinueLearning(); showPopularSkeleton(); fetchPopularSpotify(); }
+  if (tab === 'profile') {
+    renderProfile();
+    // Always scroll profile to top when navigating to it
+    requestAnimationFrame(() => {
+      const ps = document.querySelector('.prof-scroll');
+      if (ps) ps.scrollTop = 0;
+    });
+  }
+  if (tab === 'home') {
+    updateHomeNowPlaying(); updateContinueLearning(); showPopularSkeleton(); fetchPopularSpotify();
+    // Reset home scroll to top
+    requestAnimationFrame(() => {
+      const hs = document.querySelector('.home-scroll');
+      if (hs) hs.scrollTop = 0;
+    });
+  }
 }
 function goBack() { showScreen(S.prevView || 'home'); document.getElementById('tab-bar').classList.remove('hidden'); }
 
@@ -1703,7 +1717,7 @@ async function pollSpotify(){
   try{
     const resp=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{'Authorization':'Bearer '+token}});
     if(resp.status===204){
-      if(!S.popularImagesLoaded){S.popularImagesLoaded=true;fetchPopularSpotify();}
+      if(!S.popularImagesLoaded){S.popularImagesLoaded=true;loadPopularImages(token);}
       return;
     }
     if(resp.status===401){await refreshSpotifyToken();return;}
@@ -1721,8 +1735,8 @@ async function pollSpotify(){
     const trackUri=data.item?.uri||null;
     if(albumArt)S.spotifyCurrentAlbumArt=albumArt;
     if(trackUri)S.spotifyCurrentTrackUri=trackUri;
-    // Spotify confirmed working — load popular song images now if not yet loaded
-    if(!S.popularImagesLoaded){S.popularImagesLoaded=true;fetchPopularSpotify();}
+    // Spotify confirmed working — load popular song images using THIS EXACT working token
+    if(!S.popularImagesLoaded){S.popularImagesLoaded=true;loadPopularImages(token);}
     // Update live home card
     const tf=document.getElementById('np-time-footer');
     if(tf){const mm=Math.floor(pos/60);const ss=String(Math.floor(pos%60)).padStart(2,'0');tf.textContent=`${mm}:${ss} · ${S.spotifyIsPlaying?'synced':'paused'}`;}
@@ -1750,6 +1764,53 @@ function addToHistory(title, artist, albumArt) {
 function getHistory() { return JSON.parse(localStorage.getItem('sl_history') || '[]'); }
 
 // ── SPOTIFY: POPULAR ───────────────────────────────────────────────────────
+// Load popular song images using a CONFIRMED WORKING Spotify token
+// Called directly from pollSpotify with the token that just succeeded
+async function loadPopularImages(token){
+  if(!token)return;
+  const QUERIES={
+    zh:['告白气球 周杰伦','晴天 周杰伦','稻香 周杰伦','待我如初 大头针','喜欢你 邓紫棋','突然好想你 五月天'],
+    ko:['봄날 BTS','Love Scenario iKON','Eight IU','Celebrity IU','Dynamite BTS','Lilac IU'],
+    ja:['うっせぇわ Ado','炎 LiSA','紅蓮華 LiSA','廻廻奇譚 Eve','夜に駆ける YOASOBI','ドライフラワー 優里'],
+  };
+  const queries=QUERIES[S.sourceLang]||QUERIES.zh;
+  const market=LANG_CONFIG[S.sourceLang]?.market||'TW';
+
+  queries.forEach(async(q,i)=>{
+    try{
+      const r=await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=1&market=${market}`,
+        {headers:{'Authorization':'Bearer '+token}}
+      );
+      if(!r.ok)return;
+      const d=await r.json();
+      const track=d.tracks?.items?.[0];
+      const imgUrl=track?.album?.images?.[1]?.url||track?.album?.images?.[0]?.url;
+      if(!imgUrl)return;
+
+      // Swap gradient tile → real album art
+      const artEl=document.getElementById('pa-'+i);
+      if(!artEl)return;
+      const img=document.createElement('img');
+      img.alt='';
+      img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:12px;display:block';
+      img.onload=()=>{artEl.innerHTML='';artEl.appendChild(img);};
+      img.onerror=()=>{};
+      img.src=imgUrl;
+
+      // Upgrade onclick to use Spotify URI for instant playback
+      if(track?.uri){
+        const row=document.getElementById('pr-'+i);
+        if(row){
+          const st=track.name.replace(/'/g,"\\'");
+          const sa=(track.artists[0]?.name||'').replace(/'/g,"\\'");
+          row.setAttribute('onclick',`playSpotifyCard('${track.uri}','${st}','${sa}')`);
+        }
+      }
+    }catch(e){}
+  });
+}
+
 function fetchPopularSpotify(){ fetchPopularSongs(); }
 function fetchPopularFallback(){ fetchPopularSongs(); }
 
@@ -2631,6 +2692,9 @@ function resetCard() {
 
 // ── PROFILE ────────────────────────────────────────────────────────────────
 function renderProfile(){
+  // Always start from the top
+  const scroll = document.querySelector('.prof-scroll');
+  if (scroll) scroll.scrollTop = 0;
   renderProfileSpotify();
   const lv=document.getElementById('prof-lang-value');if(lv)lv.textContent=S.targetLanguage||'English';
   const ps=document.getElementById('prof-sub');if(ps){const langNames={zh:'Mandarin',ko:'Korean',ja:'Japanese'};ps.textContent=`你好 · Learning ${langNames[S.sourceLang]||'Mandarin'}`;}
