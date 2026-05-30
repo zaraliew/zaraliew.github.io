@@ -244,7 +244,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .prof-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
 .prof-user{display:flex;align-items:center;gap:14px}
 .prof-av{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;font:800 20px/1 'Space Grotesk';color:var(--ink)}
+.prof-hdr{display:flex;align-items:center;gap:14px;padding:20px 22px 16px;border-bottom:0.5px solid var(--b1);margin-bottom:4px}
+.prof-hdr-info{flex:1;min-width:0}
 .prof-name{font:700 20px/1.2 'Space Grotesk';letter-spacing:-.02em}
+.prof-streak-badge{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;background:var(--s1);border-radius:12px;padding:10px 12px;border:0.5px solid var(--b1)}
 .prof-sub{font-size:12px;color:var(--muted);margin-top:3px}
 .streak-sec{text-align:center;padding:28px 0 24px}
 .streak-flame{font-size:68px;line-height:1;filter:drop-shadow(0 0 20px rgba(245,164,76,.5))}
@@ -523,20 +526,34 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="ob-sub" style="margin-top:4px">Line-by-line translations appear below each lyric.</div>
   </div>
 
-  <!-- Step 4: Spotify -->
+  <!-- Step 5: Spotify + Play a song -->
   <div class="ob-body hidden" id="ob-5">
-    <div class="eyebrow" style="color:var(--g)">AUTO-SYNC</div>
-    <div class="ob-title" style="font-size:30px">Connect<br>Spotify</div>
-    <div class="ob-sp-card" id="ob-sp-card" onclick="handleSpotifyConnect()">
-      <div class="ob-sp-ic">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>
+    <div id="ob5-connect">
+      <div class="eyebrow" style="color:var(--g)">AUTO-SYNC</div>
+      <div class="ob-title" style="font-size:30px">Connect<br>Spotify</div>
+      <div class="ob-sp-card" id="ob-sp-card" onclick="handleSpotifyConnect()">
+        <div class="ob-sp-ic">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>
+        </div>
+        <div class="ob-sp-text">
+          <div class="ob-sp-title" id="ob-sp-title">Connect Spotify</div>
+          <div class="ob-sp-sub" id="ob-sp-sub">Lyrics scroll automatically with your music</div>
+        </div>
       </div>
-      <div class="ob-sp-text">
-        <div class="ob-sp-title" id="ob-sp-title">Connect Spotify</div>
-        <div class="ob-sp-sub" id="ob-sp-sub">Lyrics scroll automatically with your music</div>
-      </div>
+      <div class="ob-sub">Melozi reads what's playing. No need to search or type song names.</div>
     </div>
-    <div class="ob-sub">Melozi reads what's playing. No need to search or type song names.</div>
+    <!-- Shown after Spotify connects -->
+    <div id="ob5-play" style="display:none;text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">🎵</div>
+      <div class="eyebrow" style="color:var(--g);margin-bottom:8px">SPOTIFY CONNECTED ✓</div>
+      <div class="ob-title" style="font-size:28px">Now play any<br>song on Spotify</div>
+      <div class="ob-sub">Open Spotify, play a song you love, then come back here — Melozi will have the lyrics ready.</div>
+      <a href="spotify://" class="btn btn-a" style="display:block;margin-top:16px;border-radius:16px;text-decoration:none;text-align:center;padding:16px;font:700 15px/1 'Plus Jakarta Sans'" onclick="setTimeout(()=>document.getElementById('t-next-btn')||null,500)">
+        <svg style="vertical-align:-2px;margin-right:6px" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>
+        Open Spotify
+      </a>
+      <div style="font-size:11px;color:var(--dim);margin-top:12px">Then tap Continue when you're back</div>
+    </div>
   </div>
 
   <!-- Step 6: All set -->
@@ -791,19 +808,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 <div id="screen-profile" class="screen tab-screen hidden">
   <div class="prof-scroll">
     <div class="prof-hdr">
-      <div class="prof-user">
-        <div class="prof-av" id="prof-av">SL</div>
-        <div>
-          <div class="prof-name" id="prof-name">Listener</div>
-          <div class="prof-sub" id="prof-sub">你好 · Learning Mandarin</div>
-        </div>
+      <div class="prof-av" id="prof-av">SL</div>
+      <div class="prof-hdr-info">
+        <div class="prof-name" id="prof-name">Listener</div>
+        <div class="prof-sub" id="prof-sub">Learning Mandarin</div>
       </div>
-    </div>
-
-    <div class="streak-sec">
-      <div class="streak-flame">🔥</div>
-      <div class="streak-num" id="streak-num">0</div>
-      <div class="streak-lbl">Day Streak</div>
+      <div class="prof-streak-badge">
+        <span style="font-size:18px">🔥</span>
+        <span class="streak-num" id="streak-num" style="font:700 18px/1 'Space Grotesk';color:var(--a)">0</span>
+        <span style="font:500 11px/1 'Plus Jakarta Sans';color:var(--muted)">day streak</span>
+      </div>
     </div>
 
     <div class="prof-section">
@@ -1272,7 +1286,14 @@ window.onload = async () => {
   if (params.get('code')) {
     await handleSpotifyCallback(params.get('code'));
     if (S.setupDone) { showScreen('home'); }
-    else { showScreen('onboarding'); obGoto(5); }
+    else { showScreen('onboarding'); obGoto(5);
+      setTimeout(()=>{
+        const connect=document.getElementById('ob5-connect');
+        const play=document.getElementById('ob5-play');
+        if(connect)connect.style.display='none';
+        if(play)play.style.display='block';
+      },400);
+    }
     return;
   }
   if (S.spotifyToken) {
@@ -1350,6 +1371,18 @@ function obGoto(step) {
     document.querySelectorAll('#ob-2 .ob-opt').forEach(el => {
       el.classList.toggle('sel', el.dataset.lang === S.sourceLang);
     });
+  }
+  if (step === 5) {
+    // If Spotify already connected, show play-a-song prompt
+    const connect = document.getElementById('ob5-connect');
+    const play = document.getElementById('ob5-play');
+    if (S.spotifyToken) {
+      if (connect) connect.style.display = 'none';
+      if (play) play.style.display = 'block';
+    } else {
+      if (connect) connect.style.display = 'block';
+      if (play) play.style.display = 'none';
+    }
   }
   if (step === 3) {
     const sel = document.getElementById('ob-app-lang');
@@ -1886,8 +1919,17 @@ async function annotateInChunks(arr){
       const result=await annotateChunk(arr.slice(i,i+SIZE).map(l=>l.text||l.characters));
       result.forEach((item,j)=>{const idx=i+j;if(arr[idx]){arr[idx].characters=item.characters||arr[idx].characters;arr[idx].pinyin=item.pinyin||arr[idx].pinyin;arr[idx].english=item.english||arr[idx].english;arr[idx].words=item.words?.length?item.words:arr[idx].words;}});
       rerender();
-    }catch(e){return;}
+    }catch(e){
+      const prog=document.getElementById('pl-translate-progress');
+      if(prog){
+        prog.textContent='⚠ Add API key in Profile → AI Translation Key';
+        prog.style.color='#ff8866';
+      }
+      return;
+    }
   }
+  const prog2=document.getElementById('pl-translate-progress');
+  if(prog2){prog2.classList.add('hidden');}
 }
 
 async function annotateChunk(lines){
