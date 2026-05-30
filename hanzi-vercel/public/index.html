@@ -1779,62 +1779,79 @@ async function fetchPopularSongs(){
   const langLabel={zh:'Chinese',ko:'Korean',ja:'Japanese'}[S.sourceLang]||'Chinese';
   const heading=document.getElementById('popular-heading');
   if(heading)heading.textContent=`Popular ${langLabel} Songs`;
-  const tiles=['art-a','art-t','art-r','art-i','art-s','art-t'];
-  const country=S.sourceLang==='zh'?'tw':S.sourceLang==='ko'?'kr':'jp';
 
-  // Fetch ALL iTunes images in parallel FIRST, then render once with correct URLs
-  // Try multiple countries for best hit rate
-  const countries=S.sourceLang==='zh'?['tw','cn','us']:S.sourceLang==='ko'?['kr','us']:['jp','us'];
-  const imgResults = await Promise.allSettled(songs.map(async(s)=>{
-    for(const ctry of countries){
-      try{
-        const ctrl=new AbortController();const tid=setTimeout(()=>ctrl.abort(),8000);
-        const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(s.q)}&entity=song&limit=5&country=${ctry}&media=music`,{signal:ctrl.signal});
-        clearTimeout(tid);
-        if(!r.ok)continue;
-        const d=await r.json();
-        const hit=d.results?.find(x=>x.artworkUrl100);
-        if(!hit)continue;
-        // Use 300x300 - more reliable than 400x400
-        const url=hit.artworkUrl100.replace('100x100bb','300x300bb');
-        return url;
-      }catch(e){continue;}
-    }
-    return null;
-  }));
-
-  // Render grid once — with real images already known
-  grid.innerHTML=songs.map((s,i)=>{
-    const imgUrl=imgResults[i].status==='fulfilled'?imgResults[i].value:null;
-    const artHtml=imgUrl
-      ?`<img src="${imgUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:block" onerror="this.parentNode.innerHTML='<div class=sr-art-fallback ${tiles[i]} style=width:100%;height:100%;border-radius:12px></div>'">`
-      :`<div class="sr-art-fallback ${tiles[i]}" style="width:100%;height:100%;border-radius:12px"></div>`;
-    return `<div class="song-row" id="pr-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
-      <div class="sr-art">${artHtml}</div>
+  // STEP 1: Render immediately with nice gradient tiles + music note icons
+  const GRADS=[
+    'linear-gradient(135deg,#e8902a,#c44)',
+    'linear-gradient(135deg,#1db95a,#0a7a3c)',
+    'linear-gradient(135deg,#c44f72,#7a2040)',
+    'linear-gradient(135deg,#5b4ccc,#2e246e)',
+    'linear-gradient(135deg,#3a8c45,#1a4c20)',
+    'linear-gradient(135deg,#1a9c8a,#0d5c52)',
+  ];
+  grid.innerHTML=songs.map((s,i)=>`
+    <div class="song-row" id="pr-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
+      <div class="sr-art" id="pa-${i}" style="position:relative;overflow:hidden">
+        <div style="width:100%;height:100%;border-radius:12px;background:${GRADS[i]};display:flex;align-items:center;justify-content:center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M9 17V7l9-2v10"/><circle cx="7" cy="17" r="2.5"/><circle cx="16" cy="15" r="2.5"/></svg>
+        </div>
+      </div>
       <div class="sr-info"><div class="sr-title cjk">${esc(s.t)}</div><div class="sr-meta">${esc(s.en)}</div></div>
       <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 
-  // If Spotify is connected, upgrade onclick to play via URI
-  const token=S.spotifyToken||localStorage.getItem('spotify_token');
-  if(token){
-    songs.forEach(async(s,i)=>{
+  // STEP 2: Try to swap in real images (async, non-blocking)
+  // Try Spotify first (if connected), then iTunes as fallback
+  const token = S.spotifyToken || localStorage.getItem('spotify_token');
+  const country = S.sourceLang==='zh'?'tw':S.sourceLang==='ko'?'kr':'jp';
+
+  songs.forEach(async(s,i)=>{
+    let imgUrl=null;
+
+    // Try Spotify search (most reliable when connected)
+    if(token&&!imgUrl){
       try{
         const r=await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(s.q)}&type=track&limit=1`,{headers:{'Authorization':'Bearer '+token}});
-        if(!r.ok)return;
-        const d=await r.json();
-        const track=d.tracks?.items?.[0];if(!track)return;
-        const st=track.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        const sa=(track.artists[0]?.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        const row=document.getElementById('pr-'+i);
-        if(row)row.setAttribute('onclick',`playSpotifyCard('${track.uri}','${st}','${sa}')`);
-        // Upgrade to Spotify image if available (better quality)
-        const spImg=track.album?.images?.[1]?.url||track.album?.images?.[0]?.url;
-        if(spImg){const artEl=row?.querySelector('.sr-art');if(artEl){const img=document.createElement('img');img.alt='';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:12px;display:block';img.onload=()=>{artEl.innerHTML='';artEl.appendChild(img);};img.src=spImg;}}
+        if(r.ok){
+          const d=await r.json();
+          const track=d.tracks?.items?.[0];
+          if(track?.album?.images?.length){
+            imgUrl=track.album.images[1]?.url||track.album.images[0]?.url;
+            // Also upgrade onclick to Spotify URI
+            const st=track.name.replace(/'/g,"\\'");
+            const sa=(track.artists[0]?.name||'').replace(/'/g,"\\'");
+            const row=document.getElementById('pr-'+i);
+            if(row)row.setAttribute('onclick',`playSpotifyCard('${track.uri}','${st}','${sa}')`);
+          }
+        }
       }catch(e){}
-    });
-  }
+    }
+
+    // Fallback: iTunes
+    if(!imgUrl){
+      try{
+        const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(s.q)}&entity=song&limit=3&country=${country}&media=music`);
+        if(r.ok){
+          const d=await r.json();
+          const hit=d.results?.find(x=>x.artworkUrl100);
+          if(hit)imgUrl=hit.artworkUrl100.replace('100x100bb','300x300bb');
+        }
+      }catch(e){}
+    }
+
+    // Swap gradient → real image when ready
+    if(imgUrl){
+      const artEl=document.getElementById('pa-'+i);
+      if(artEl){
+        const img=document.createElement('img');
+        img.alt='';
+        img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px';
+        img.onload=()=>{artEl.appendChild(img);};  // overlay on top of gradient
+        img.onerror=()=>{};  // keep gradient if image fails
+        img.src=imgUrl;
+      }
+    }
+  });
 }
 
 
