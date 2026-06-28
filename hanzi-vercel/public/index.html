@@ -1187,6 +1187,7 @@ const S = {
   spotifyPollInterval: null, spotifyIsPlaying: false,
   spotifyCurrentTrackId: null, spotifyAutoLoading: false,
   spotifyCurrentAlbumArt: null, spotifyCurrentTrackUri: null,
+  lastPollAt: 0, spotifyPollBusy: false,
   targetLanguage: localStorage.getItem('sl_lang') || 'English',
   sourceLang: localStorage.getItem('sl_source') || 'zh',
   tooltipWord: null, tooltipLineIdx: -1,
@@ -1296,6 +1297,7 @@ window.onload = async () => {
   initPlayerSwipeDown();
   initPwaPrompt();
   initSeekBar();
+  initLyricWordTaps();
 };
 
 // ── STREAK ─────────────────────────────────────────────────────────────────
@@ -1700,11 +1702,13 @@ function updateObSpotifyCard(connected) {
 }
 
 // ── SPOTIFY POLLING ────────────────────────────────────────────────────────
-function startSpotifyPolling(){if(S.spotifyPollInterval)clearInterval(S.spotifyPollInterval);pollSpotify();S.spotifyPollInterval=setInterval(pollSpotify,2000);}
+function startSpotifyPolling(){if(S.spotifyPollInterval)clearInterval(S.spotifyPollInterval);pollSpotify();S.spotifyPollInterval=setInterval(pollSpotify,1500);}
 function stopSpotifyPolling(){if(S.spotifyPollInterval){clearInterval(S.spotifyPollInterval);S.spotifyPollInterval=null;}}
 
 async function pollSpotify(){
-  const token=await getValidToken();if(!token)return;
+  if(S.spotifyPollBusy)return;
+  S.spotifyPollBusy=true;
+  const token=await getValidToken();if(!token){S.spotifyPollBusy=false;return;}
   try{
     const resp=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{'Authorization':'Bearer '+token}});
     if(resp.status===204){
@@ -1715,7 +1719,7 @@ async function pollSpotify(){
     if(!resp.ok)return;
     const data=await resp.json();
     const pos=(data.progress_ms||0)/1000;S.spotifyDurationMs=data.item?.duration_ms||0;
-    S.offset=Math.max(0,pos);
+    S.offset=Math.max(0,pos);S.lastPollAt=Date.now();
     S.spotifyIsPlaying=data.is_playing;S.running=data.is_playing;
     if(S.running&&!S.syncStart)S.syncStart=Date.now();
     updatePlayButtons();
@@ -1976,7 +1980,7 @@ async function autoLoadSpotifyTrack(title,artist){
 async function loadAndTranslate(title,artist,lrcLines){
   S.title=title;S.artist=artist;
   addToHistory(title, artist, S.spotifyCurrentAlbumArt); // track history
-  S.lyrics=lrcLines.map(l=>({...l,characters:l.text,pinyin:null,english:null,words:null}));
+  S.lyrics=lrcLines.map(l=>{const txt=S.sourceLang==='zh'?toSimplified(l.text):l.text;return {...l,text:txt,characters:txt,pinyin:null,english:null,words:null};});
   S.activeIdx=0;S.offset=0;
   const pt=document.getElementById('np-title');if(pt)pt.textContent=title;
   const pa=document.getElementById('np-artist');if(pa)pa.textContent=artist;
@@ -2005,8 +2009,8 @@ async function annotateInChunks(arr){
     const prog=document.getElementById('pl-translate-progress');
     if(prog)prog.textContent=`Translating ${Math.min(i+SIZE,arr.length)}/${arr.length}…`;
     try{
-      const result=await annotateChunk(arr.slice(i,i+SIZE).map(l=>l.text||l.characters));
-      result.forEach((item,j)=>{const idx=i+j;if(arr[idx]){arr[idx].characters=item.characters||arr[idx].characters;arr[idx].pinyin=item.pinyin||arr[idx].pinyin;arr[idx].english=item.english||arr[idx].english;arr[idx].words=item.words?.length?item.words:arr[idx].words;}});
+      const result=await annotateChunk(arr.slice(i,i+SIZE).map(l=>S.sourceLang==='zh'?toSimplified(l.text||l.characters):(l.text||l.characters)));
+      result.forEach((item,j)=>{const idx=i+j;item=simplifyAnnotationItem(item);if(arr[idx]){arr[idx].characters=item.characters||arr[idx].characters;arr[idx].pinyin=item.pinyin||arr[idx].pinyin;arr[idx].english=item.english||arr[idx].english;arr[idx].words=item.words?.length?item.words:arr[idx].words;}});
       rerender();
     }catch(e){
       const prog=document.getElementById('pl-translate-progress');
@@ -2079,24 +2083,50 @@ Natural ${tl} translation in "english" field.`,
 
 function parseLrc(lrc){const lines=[];for(const line of lrc.split('\n')){const m=line.match(/\[(\d+):(\d+(?:\.\d+)?)\](.*)/);if(m){const time=parseInt(m[1])*60+parseFloat(m[2]);const text=m[3].trim();if(text)lines.push({time,text});}}return lines;}
 
+// Convert common Traditional Chinese lyric text to Simplified before display.
+// This keeps Melozi's Mandarin mode Simplified by default even when the LRC source is TW/HK indexed.
+const TRAD_TO_SIMP = {
+  '妳':'你','祢':'你','麼':'么','麽':'么','麼':'么','為':'为','爲':'为','國':'国','過':'过','時':'时','間':'间','會':'会','來':'来','說':'说','讓':'让','聽':'听','見':'见','看':'看','還':'还','對':'对','愛':'爱','夢':'梦','風':'风','裡':'里','裏':'里','著':'着','點':'点','開':'开','關':'关','問':'问','無':'无','後':'后','從':'从','這':'这','那':'那','個':'个','們':'们','樣':'样','當':'当','隻':'只','種':'种','歲':'岁','聲':'声','長':'长','遠':'远','邊':'边','變':'变','難':'难','歡':'欢','氣':'气','淚':'泪','麗':'丽','樂':'乐','實':'实','寫':'写','頭':'头','發':'发','髮':'发','現':'现','經':'经','輕':'轻','轉':'转','連':'连','進':'进','離':'离','別':'别','應':'应','該':'该','誰':'谁','總':'总','與':'与','給':'给','覺':'觉','願':'愿','幾':'几','滿':'满','帶':'带','將':'将','處':'处','備':'备','單':'单','雙':'双','舊':'旧','熱':'热','萬':'万','節':'节','葉':'叶','樹':'树','橋':'桥','樓':'楼','車':'车','馬':'马','鳥':'鸟','魚':'鱼','雲':'云','電':'电','燈':'灯','陰':'阴','陽':'阳','陽':'阳','鄉':'乡','錯':'错','壞':'坏','請':'请','話':'话','語':'语','認':'认','識':'识','記':'记','訴':'诉','許':'许','讀':'读','書':'书','買':'买','賣':'卖','貝':'贝','費':'费','貴':'贵','賤':'贱','贈':'赠','賽':'赛','贏':'赢','輸':'输','選':'选','邁':'迈','遙':'遥','達':'达','遲':'迟','邏':'逻','遺':'遗','郵':'邮','鄧':'邓','鄭':'郑','陳':'陈','張':'张','劉':'刘','楊':'杨','趙':'赵','吳':'吴','黃':'黄','孫':'孙','羅':'罗','週':'周','傑':'杰','倫':'伦','體':'体','聲':'声','號':'号','嗎':'吗','嘆':'叹','唄':'呗','喚':'唤','嚮':'向','嚇':'吓','嘗':'尝','噓':'嘘','噴':'喷','嚴':'严','圓':'圆','圖':'图','團':'团','園':'园','壓':'压','壘':'垒','報':'报','場':'场','壞':'坏','塊':'块','墜':'坠','壯':'壮','壽':'寿','奮':'奋','奧':'奥','媽':'妈','姍':'姗','嬰':'婴','學':'学','寶':'宝','寫':'写','寬':'宽','尋':'寻','導':'导','將':'将','專':'专','層':'层','屬':'属','峽':'峡','島':'岛','歲':'岁','嶺':'岭','巖':'岩','幣':'币','幫':'帮','幹':'干','庫':'库','廟':'庙','廠':'厂','廣':'广','廳':'厅','彈':'弹','強':'强','彎':'弯','彙':'汇','彥':'彦','徑':'径','復':'复','恆':'恒','惡':'恶','惱':'恼','悅':'悦','懷':'怀','戀':'恋','恥':'耻','悶':'闷','驚':'惊','慣':'惯','慶':'庆','憂':'忧','憶':'忆','懶':'懒','懸':'悬','戰':'战','戲':'戏','戶':'户','撲':'扑','掃':'扫','揚':'扬','擁':'拥','擔':'担','據':'据','擠':'挤','擬':'拟','擺':'摆','搖':'摇','攝':'摄','攜':'携','敗':'败','數':'数','斷':'断','於':'于','暈':'晕','曉':'晓','暫':'暂','曬':'晒','書':'书','會':'会','朧':'胧','東':'东','極':'极','構':'构','槍':'枪','標':'标','樑':'梁','機':'机','檢':'检','櫻':'樱','權':'权','條':'条','來':'来','楓':'枫','歡':'欢','歐':'欧','歲':'岁','殘':'残','殺':'杀','殼':'壳','氣':'气','沒':'没','沖':'冲','況':'况','淨':'净','淺':'浅','淚':'泪','淵':'渊','渾':'浑','溫':'温','滅':'灭','滾':'滚','滿':'满','漁':'渔','漢':'汉','潔':'洁','潛':'潜','濃':'浓','濕':'湿','濟':'济','濤':'涛','瀏':'浏','瀟':'潇','灣':'湾','灑':'洒','灘':'滩','為':'为','烏':'乌','無':'无','煩':'烦','燒':'烧','燙':'烫','燦':'灿','爭':'争','牆':'墙','獨':'独','獲':'获','獻':'献','環':'环','現':'现','瑪':'玛','畫':'画','當':'当','疊':'叠','癡':'痴','癢':'痒','發':'发','皺':'皱','盜':'盗','盞':'盏','監':'监','盤':'盘','盧':'卢','眾':'众','睜':'睁','矚':'瞩','礙':'碍','禮':'礼','禪':'禅','離':'离','種':'种','稱':'称','穩':'稳','窩':'窝','窮':'穷','竄':'窜','競':'竞','筆':'笔','等':'等','簡':'简','籤':'签','籠':'笼','類':'类','糾':'纠','紀':'纪','約':'约','紅':'红','紋':'纹','納':'纳','純':'纯','紙':'纸','級':'级','紛':'纷','細':'细','終':'终','組':'组','結':'结','絕':'绝','絡':'络','給':'给','統':'统','絲':'丝','綁':'绑','經':'经','綠':'绿','維':'维','練':'练','縣':'县','總':'总','繞':'绕','繼':'继','續':'续','纏':'缠','缺':'缺','罵':'骂','聖':'圣','聞':'闻','聯':'联','聰':'聪','肅':'肃','脫':'脱','腦':'脑','腳':'脚','臉':'脸','與':'与','興':'兴','舉':'举','舊':'旧','艱':'艰','艷':'艳','藝':'艺','節':'节','蘇':'苏','藍':'蓝','藏':'藏','虛':'虚','號':'号','萬':'万','處':'处','蟲':'虫','螢':'萤','衛':'卫','衝':'冲','衣':'衣','裊':'袅','補':'补','裝':'装','製':'制','複':'复','見':'见','規':'规','視':'视','覺':'觉','親':'亲','觀':'观','觸':'触','計':'计','訂':'订','訓':'训','記':'记','許':'许','設':'设','訪':'访','訣':'诀','詞':'词','詩':'诗','試':'试','該':'该','詳':'详','誇':'夸','誌':'志','認':'认','誕':'诞','語':'语','誠':'诚','誤':'误','說':'说','誰':'谁','課':'课','調':'调','談':'谈','請':'请','諾':'诺','謊':'谎','謝':'谢','謠':'谣','謹':'谨','證':'证','識':'识','譜':'谱','讓':'让','豔':'艳','豬':'猪','貓':'猫','貫':'贯','責':'责','貢':'贡','貧':'贫','貨':'货','販':'贩','貪':'贪','貫':'贯','貼':'贴','貴':'贵','買':'买','貸':'贷','費':'费','賀':'贺','賊':'贼','賴':'赖','贊':'赞','贏':'赢','趕':'赶','趙':'赵','趨':'趋','跡':'迹','踐':'践','蹤':'踪','車':'车','軌':'轨','軍':'军','軟':'软','載':'载','輕':'轻','輝':'辉','輪':'轮','輯':'辑','輸':'输','轟':'轰','辦':'办','辭':'辞','邊':'边','遙':'遥','遞':'递','選':'选','遺':'遗','還':'还','郵':'邮','鄰':'邻','醫':'医','釋':'释','鐘':'钟','鐵':'铁','錄':'录','長':'长','門':'门','閃':'闪','閉':'闭','開':'开','間':'间','閒':'闲','關':'关','隊':'队','階':'阶','際':'际','陸':'陆','陽':'阳','險':'险','隱':'隐','雜':'杂','雞':'鸡','離':'离','難':'难','雲':'云','電':'电','靈':'灵','靜':'静','面':'面','韻':'韵','響':'响','頁':'页','頂':'顶','項':'项','順':'顺','須':'须','頑':'顽','顧':'顾','風':'风','飛':'飞','飄':'飘','餘':'余','館':'馆','馬':'马','駐':'驻','騎':'骑','騙':'骗','驕':'骄','驚':'惊','體':'体','髒':'脏','鬆':'松','鬥':'斗','鬧':'闹','魯':'鲁','鮮':'鲜','魚':'鱼','鳥':'鸟','麗':'丽','麥':'麦','黃':'黄','齊':'齐','龍':'龙','龜':'龟'
+};
+function toSimplified(text){
+  if(!text||S.sourceLang!=='zh')return text||'';
+  return String(text).split('').map(ch=>TRAD_TO_SIMP[ch]||ch).join('');
+}
+function simplifyAnnotationItem(item){
+  if(S.sourceLang!=='zh'||!item)return item;
+  item.characters=toSimplified(item.characters||'');
+  if(Array.isArray(item.words)) item.words=item.words.map(w=>({...w,char:toSimplified(w.char||'')}));
+  return item;
+}
+
 // ── PLAYBACK ───────────────────────────────────────────────────────────────
+async function spotifyResume(token){
+  let resp=await fetch('https://api.spotify.com/v1/me/player/play',{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:'{}'});
+  if(resp.status===204||resp.status===200)return true;
+  if(resp.status===403){alert('Playback control requires Spotify Premium.');return false;}
+  return spotifyPlay(token,{});
+}
+
 async function handlePlayPause(){
   const token=await getValidToken();if(!token){alert('Connect Spotify to control playback.');return;}
   try{
-    // Get fresh playback state before toggling
+    // Get fresh playback state before toggling.
     const stateResp=await fetch('https://api.spotify.com/v1/me/player',{headers:{'Authorization':'Bearer '+token}});
     if(stateResp.status===200){
       const state=await stateResp.json();
-      S.spotifyIsPlaying=state.is_playing;
+      S.spotifyIsPlaying=!!state.is_playing;
+      if(typeof state.progress_ms==='number'){S.offset=state.progress_ms/1000;S.lastPollAt=Date.now();}
     }
     if (S.spotifyIsPlaying) {
       await fetch('https://api.spotify.com/v1/me/player/pause',{method:'PUT',headers:{'Authorization':'Bearer '+token}});
+      S.spotifyIsPlaying=false;S.running=false;S.lastPollAt=0;
     } else {
-      const ok = await spotifyPlay(token, {});
+      const ok = await spotifyResume(token);
       if (!ok) return;
+      S.spotifyIsPlaying=true;S.running=true;S.lastPollAt=Date.now();
     }
-    S.spotifyIsPlaying=!S.spotifyIsPlaying;S.running=S.spotifyIsPlaying;
     updatePlayButtons();
+    pollSpotify();
   }catch(e){}
 }
 
@@ -2125,29 +2155,38 @@ function disconnectSpotify(){
 }
 
 // ── TICK ───────────────────────────────────────────────────────────────────
+function currentPlaybackPosition(){
+  if(S.running&&S.lastPollAt){return S.offset+((Date.now()-S.lastPollAt)/1000)*S.speed;}
+  return S.offset;
+}
+
 function tick(){
-  const pos=S.offset;
+  const pos=currentPlaybackPosition();
   const mm=Math.floor(pos/60);const ss=String(Math.floor(pos%60)).padStart(2,'0');
 
   const ct=document.getElementById('pl-currtime');if(ct)ct.textContent=`${mm}:${ss}`;
-  if(S.lyrics.length){const last=S.lyrics[S.lyrics.length-1]?.time||1;const pf=document.getElementById('progress-fill-h');if(pf){const pct=S.spotifyDurationMs?Math.min(100,(pos/(S.spotifyDurationMs/1000))*100):Math.min(100,(pos/last)*100);pf.style.width=pct+'%';const th=document.getElementById('progress-thumb-h');if(th)th.style.left=pct+'%';}const rem=document.getElementById('pl-remaining');if(rem){const r=last-pos;const rm=Math.floor(r/60);const rs=String(Math.floor(r%60)).padStart(2,'0');rem.textContent=`-${rm}:${rs}`;}}
+  if(S.lyrics.length){
+    let idx=0;for(let i=0;i<S.lyrics.length;i++){if(S.lyrics[i].time<=pos)idx=i;else break;}
+    if(idx!==S.activeIdx&&S.running){S.activeIdx=idx;rerender();}
+    const last=S.lyrics[S.lyrics.length-1]?.time||1;const pf=document.getElementById('progress-fill-h');if(pf){const pct=S.spotifyDurationMs?Math.min(100,(pos/(S.spotifyDurationMs/1000))*100):Math.min(100,(pos/last)*100);pf.style.width=pct+'%';const th=document.getElementById('progress-thumb-h');if(th)th.style.left=pct+'%';}const rem=document.getElementById('pl-remaining');if(rem){const r=Math.max(0,last-pos);const rm=Math.floor(r/60);const rs=String(Math.floor(r%60)).padStart(2,'0');rem.textContent=`-${rm}:${rs}`;}}
   const cstats=document.getElementById('home-stats');if(cstats){const due=S.saved.length;cstats.innerHTML=`<b>${due} card${due===1?'':'s'} due</b> · <span id="home-streak-display">${S.streak}-day streak 🔥</span>`;}
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
-function rerender(){renderLine('k-prev',S.lyrics[S.activeIdx-1],false);renderLine('k-curr',S.lyrics[S.activeIdx],true);renderLine('k-next',S.lyrics[S.activeIdx+1],false);}
+function rerender(){renderLine('k-prev',S.activeIdx-1,false);renderLine('k-curr',S.activeIdx,true);renderLine('k-next',S.activeIdx+1,false);}
 
-function renderLine(id,line,isActive){
+function renderLine(id,lineIdx,isActive){
   const el=document.getElementById(id);if(!el)return;
+  const line=S.lyrics[lineIdx];
   if(!line){el.innerHTML='';return;}
   const showC=document.getElementById('tog-chars')?.classList.contains('on')??true;
   const showP=document.getElementById('tog-pin')?.classList.contains('on')??true;
   const showE=document.getElementById('tog-eng')?.classList.contains('on')??true;
-  const text=line.characters||line.text||'';
+  const text=S.sourceLang==='zh'?toSimplified(line.characters||line.text||''):(line.characters||line.text||'');
   let html='';
   if(line.words?.length){
     if(showP){html+=`<div class="pin">${esc(line.words.map(w=>w.pinyin).join(' '))}</div>`;}
-    if(showC){html+='<div class="chars">';line.words.forEach((w,wi)=>{const sv=S.saved.some(s=>s.char===w.char);html+=`<span class="k-word${sv?' is-saved':''}" onclick="openWordSheet(event,${S.activeIdx},${wi})">${esc(w.char)}</span>`;});html+='</div>';}
+    if(showC){html+='<div class="chars">';line.words.forEach((w,wi)=>{const ch=S.sourceLang==='zh'?toSimplified(w.char):w.char;const sv=S.saved.some(s=>s.char===ch);html+=`<span class="k-word${sv?' is-saved':''}" data-line-idx="${lineIdx}" data-word-idx="${wi}" onclick="openWordSheet(event,${lineIdx},${wi})">${esc(ch)}</span>`;});html+='</div>';}
     if(showE&&line.english)html+=`<div class="eng">${esc(line.english)}</div>`;
   }else if(line.pinyin||line.english){
     if(showP&&line.pinyin)html+=`<div class="pin">${esc(line.pinyin)}</div>`;
@@ -2161,12 +2200,28 @@ function manualScroll(dir){S.activeIdx=Math.max(0,Math.min(S.lyrics.length-1,S.a
 document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();manualScroll(-1);}if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();manualScroll(1);}});
 let wt=null;document.addEventListener('wheel',e=>{const pl=document.getElementById('screen-player');if(!pl||pl.classList.contains('hidden'))return;if(wt)return;if(e.deltaY>0){manualScroll(1);wt=setTimeout(()=>{wt=null;},350);}else if(e.deltaY<0){manualScroll(-1);wt=setTimeout(()=>{wt=null;},350);}},{passive:true});
 
+// Direct inline onclick can be flaky on mobile Safari after lyric re-renders.
+// Use one delegated listener on the lyric area so taps always open the word sheet.
+function initLyricWordTaps(){
+  const wrap=document.querySelector('.pl-lyrics');
+  if(!wrap||wrap.dataset.wordTapInit)return;
+  wrap.dataset.wordTapInit='1';
+  wrap.addEventListener('click',e=>{
+    const word=e.target.closest('.k-word');
+    if(!word||!wrap.contains(word))return;
+    e.preventDefault();
+    e.stopPropagation();
+    openWordSheet(e,parseInt(word.dataset.lineIdx,10),parseInt(word.dataset.wordIdx,10));
+  },true);
+}
+
 // ── WORD SHEET ─────────────────────────────────────────────────────────────
 function openWordSheet(e,lineIdx,wordIdx){
   e.stopPropagation();
   const line=S.lyrics[lineIdx];const w=line?.words?.[wordIdx];if(!w)return;
-  S.tooltipWord={char:w.char,pinyin:w.pinyin,english:w.english};S.tooltipLineIdx=lineIdx;
-  document.getElementById('tt-char').textContent=w.char;
+  const wordChar=S.sourceLang==='zh'?toSimplified(w.char):w.char;
+  S.tooltipWord={char:wordChar,pinyin:w.pinyin,english:w.english};S.tooltipLineIdx=lineIdx;
+  document.getElementById('tt-char').textContent=wordChar;
   document.getElementById('tt-pin').textContent=w.pinyin||'';
   document.getElementById('tt-eng').textContent=w.english||'';
   const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
@@ -2174,10 +2229,10 @@ function openWordSheet(e,lineIdx,wordIdx){
   document.getElementById('w-lang-label').textContent=`${labelMap[S.sourceLang]||'MANDARIN'} → ${(S.targetLanguage||'ENGLISH').toUpperCase()}`;
   // Context
   document.getElementById('w-ctx-pin').textContent=line.pinyin||(line.words?.map(x=>x.pinyin).join(' '))||'';
-  const charHtml=line.words?line.words.map(x=>`<span${x.char===w.char?' style="color:var(--a);font-weight:700"':''}>${esc(x.char)}</span>`).join(''): esc(line.characters||'');
+  const charHtml=line.words?line.words.map(x=>{const ch=S.sourceLang==='zh'?toSimplified(x.char):x.char;return `<span${ch===wordChar?' style="color:var(--a);font-weight:700"':''}>${esc(ch)}</span>`;}).join(''): esc(S.sourceLang==='zh'?toSimplified(line.characters||''):(line.characters||''));
   document.getElementById('w-ctx-chars').innerHTML=charHtml;
   document.getElementById('w-ctx-eng').textContent=line.english||'';
-  const saved=S.saved.some(s=>s.char===w.char);
+  const saved=S.saved.some(s=>s.char===wordChar);
   const addBtn=document.getElementById('tt-add');
   if(addBtn){addBtn.textContent=saved?'✓ In Deck':'+ Save to deck';addBtn.style.background=saved?'rgba(30,215,96,0.3)':'';}
   openSheet('word');
