@@ -1176,6 +1176,7 @@ const S = {
   title: '', artist: '', lyrics: [],
   saved: JSON.parse(localStorage.getItem('ht_deck') || '[]'),
   syncStart: null, offset: 0, running: false, speed: 1,
+  lyricStatus: 'idle', lyricStatusText: '', lyricStatusSub: '',
   activeIdx: -1, cardIdx: 0, cardFlipped: false,
   view: 'onboarding', prevView: 'home', tab: 'home',
   spotifyClientId: '',
@@ -1632,7 +1633,18 @@ function updateContinueLearning() {
     ${rows}`;
 }
 
-function openPlayer() { S.prevView = S.tab; showScreen('player'); }
+function openPlayer() {
+  S.prevView = S.tab;
+  showScreen('player');
+  if (!S.lyrics.length) {
+    const title = S.title && S.title !== '—' ? S.title : 'Listening to Spotify…';
+    const sub = S.spotifyToken ? 'Looking for the current song and synced lyrics.' : 'Connect Spotify or choose a song to load lyrics.';
+    showLyricStatus('loading', title, sub);
+    if (S.spotifyToken) pollSpotify();
+  } else {
+    rerender();
+  }
+}
 
 // ── LOAD SONG (from home/popular) ──────────────────────────────────────────
 async function loadSong(title, artist) {
@@ -1713,15 +1725,20 @@ function stopSpotifyPolling(){if(S.spotifyPollInterval){clearInterval(S.spotifyP
 async function pollSpotify(){
   if(S.spotifyPollBusy)return;
   S.spotifyPollBusy=true;
-  const token=await getValidToken();if(!token){S.spotifyPollBusy=false;return;}
+  const token=await getValidToken();
+  if(!token){S.spotifyPollBusy=false;return;}
   try{
     const resp=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{'Authorization':'Bearer '+token}});
     if(resp.status===204){
       if(!S.popularImagesLoaded){S.popularImagesLoaded=true;loadPopularImages(token);}
+      if(S.view==='player'&&!S.lyrics.length&&!S.spotifyAutoLoading){showLyricStatus('idle','Play a song on Spotify','Melozi will detect it here and load synced lyrics automatically.');}
       return;
     }
     if(resp.status===401){await refreshSpotifyToken();return;}
-    if(!resp.ok)return;
+    if(!resp.ok){
+      if(S.view==='player'&&!S.lyrics.length&&!S.spotifyAutoLoading){showLyricStatus('error','Could not read Spotify','Open Spotify, start a song, then come back to Melozi.');}
+      return;
+    }
     const data=await resp.json();
     const pos=(data.progress_ms||0)/1000;S.spotifyDurationMs=data.item?.duration_ms||0;
     S.offset=Math.max(0,pos);S.lastPollAt=Date.now();
@@ -1735,22 +1752,24 @@ async function pollSpotify(){
     const trackUri=data.item?.uri||null;
     if(albumArt)S.spotifyCurrentAlbumArt=albumArt;
     if(trackUri)S.spotifyCurrentTrackUri=trackUri;
-    // Spotify confirmed working — load popular song images using THIS EXACT working token
     if(!S.popularImagesLoaded){S.popularImagesLoaded=true;loadPopularImages(token);}
-    // Update live home card
     const tf=document.getElementById('np-time-footer');
     if(tf){const mm=Math.floor(pos/60);const ss=String(Math.floor(pos%60)).padStart(2,'0');tf.textContent=`${mm}:${ss} · ${S.spotifyIsPlaying?'synced':'paused'}`;}
+    const pt=document.getElementById('np-title');if(pt)pt.textContent=trackName;
+    const pa=document.getElementById('np-artist');if(pa)pa.textContent=artistName;
     if(trackId&&trackId!==S.spotifyCurrentTrackId&&!S.spotifyAutoLoading){
       S.spotifyCurrentTrackId=trackId;
-      // Update home card
-      if(S.title!==trackName){S.title=trackName;S.artist=artistName;}
+      S.title=trackName;S.artist=artistName;
+      updateHomeNowPlaying();
+      if(S.view==='player'&&!S.lyrics.length){showLyricStatus('loading',`Loading lyrics for ${trackName}`,artistName||'Fetching synced lyrics…');}
       autoLoadSpotifyTrack(trackName,artistName);
     }
     if(S.lyrics.length){let idx=0;for(let i=0;i<S.lyrics.length;i++){if(S.lyrics[i].time<=S.offset)idx=i;else break;}if(idx!==S.activeIdx){S.activeIdx=idx;rerender();}}
-    // Update player UI
-    const pt=document.getElementById('np-title');if(pt)pt.textContent=trackName;
-    const pa=document.getElementById('np-artist');if(pa)pa.textContent=artistName;
-  }catch(e){}
+  }catch(e){
+    if(S.view==='player'&&!S.lyrics.length&&!S.spotifyAutoLoading){showLyricStatus('error','Connection hiccup','Still listening — Melozi will retry automatically.');}
+  }finally{
+    S.spotifyPollBusy=false;
+  }
 }
 
 // ── HISTORY TRACKING ──────────────────────────────────────────────────────
@@ -1969,17 +1988,34 @@ async function playSpotifyCard(uri,title,artist){
 async function autoLoadSpotifyTrack(title,artist){
   if(!title||title==='—')return;
   S.spotifyAutoLoading=true;
+  S.title=title;S.artist=artist||'';
+  const playerVisible=S.view==='player';
+  if(playerVisible){
+    const pt=document.getElementById('np-title');if(pt)pt.textContent=title;
+    const pa=document.getElementById('np-artist');if(pa)pa.textContent=artist||'';
+    showLyricStatus('loading',`Finding synced lyrics for ${title}`,artist||'This usually takes a few seconds.');
+  }
   try{
     const r=await fetch(`/api/lyrics?${new URLSearchParams({title,artist})}`);
+    if(!r.ok)throw new Error('lyrics api failed');
     const data=await r.json();
-    if(data.error||!data.lrc){S.spotifyAutoLoading=false;return;}
+    if(data.error||!data.lrc){
+      if(playerVisible)showLyricStatus('empty','No synced lyrics found','Try another song, or open the menu and retry after Spotify updates the current track.');
+      return;
+    }
     const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
     const filterFn=cfg.filter?(l=>cfg.filter.test(l.text)):(l=>l.text.trim().length>2);
     const lrcLines=parseLrc(data.lrc).filter(filterFn);
-    if(!lrcLines.length){S.spotifyAutoLoading=false;return;}
+    if(!lrcLines.length){
+      if(playerVisible)showLyricStatus('empty','Lyrics found, but no matching lines','Check your source language in Profile, then try again.');
+      return;
+    }
     await loadAndTranslate(data.title||title,data.artist||artist,lrcLines);
-  }catch(e){}
-  S.spotifyAutoLoading=false;
+  }catch(e){
+    if(playerVisible)showLyricStatus('error','Lyrics could not load','Check your connection, then tap the song again or restart Spotify playback.');
+  }finally{
+    S.spotifyAutoLoading=false;
+  }
 }
 
 async function loadAndTranslate(title,artist,lrcLines){
@@ -1993,6 +2029,7 @@ async function loadAndTranslate(title,artist,lrcLines){
   const tran=document.getElementById('pl-translating');if(tran)tran.classList.remove('hidden');
   const prog=document.getElementById('pl-translate-progress');if(prog){prog.classList.remove('hidden');prog.style.color='';prog.textContent=`Translating ${lrcLines.length} lines…`;}
   showScreen('player');
+  S.lyricStatus='ready';S.lyricStatusText='';S.lyricStatusSub='';
   rerender();
   updateHomeNowPlaying();
   await annotateInChunks(S.lyrics);
@@ -2186,7 +2223,18 @@ function tick(){
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
-function rerender(){renderLine('k-prev',S.activeIdx-1,false);renderLine('k-curr',S.activeIdx,true);renderLine('k-next',S.activeIdx+1,false);}
+function showLyricStatus(kind='loading', title='Loading lyrics…', sub='Fetching synced lyrics and translation.'){
+  S.lyricStatus=kind;S.lyricStatusText=title;S.lyricStatusSub=sub;
+  const prev=document.getElementById('k-prev');const curr=document.getElementById('k-curr');const next=document.getElementById('k-next');
+  if(prev)prev.innerHTML='';if(next)next.innerHTML='';
+  if(curr){
+    const spin=kind==='loading'?'<span class="spinner" style="margin:0 auto 14px;width:22px;height:22px;color:var(--a)"></span>':'';
+    const color=kind==='error'?'#ff8866':kind==='empty'?'var(--muted)':'var(--text)';
+    curr.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:210px;text-align:center;padding:0 8px">${spin}<div style="font:800 21px/1.25 'Space Grotesk';letter-spacing:-.02em;color:${color}">${esc(title)}</div><div style="max-width:280px;font-size:13px;line-height:1.55;color:var(--muted)">${esc(sub)}</div></div>`;
+  }
+}
+
+function rerender(){if(!S.lyrics.length){showLyricStatus(S.lyricStatus||'idle',S.lyricStatusText||'Play a song on Spotify',S.lyricStatusSub||'Melozi will load synced lyrics here.');return;}renderLine('k-prev',S.activeIdx-1,false);renderLine('k-curr',S.activeIdx,true);renderLine('k-next',S.activeIdx+1,false);}
 
 function getRenderableWords(line){
   if(!line)return [];
