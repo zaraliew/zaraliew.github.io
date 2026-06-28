@@ -1543,8 +1543,13 @@ function tourDismiss(){
   localStorage.setItem('ml_tour_done','1');
 }
 function redoSetup() {
-  localStorage.removeItem('sl_setup'); S.setupDone = false;
-  showScreen('onboarding'); obGoto(1);
+  // Re-running setup should also re-run the app walkthrough after setup finishes.
+  localStorage.removeItem('sl_setup');
+  localStorage.removeItem('ml_tour_done');
+  S.setupDone = false;
+  S.obStep = 1;
+  showScreen('onboarding');
+  obGoto(1);
 }
 
 // ── HOME SCREEN RENDERING ──────────────────────────────────────────────────
@@ -1986,7 +1991,7 @@ async function loadAndTranslate(title,artist,lrcLines){
   const pa=document.getElementById('np-artist');if(pa)pa.textContent=artist;
   const spt=document.getElementById('pl-synced-pill');if(spt)spt.classList.toggle('hidden',!S.spotifyToken);
   const tran=document.getElementById('pl-translating');if(tran)tran.classList.remove('hidden');
-  const prog=document.getElementById('pl-translate-progress');if(prog)prog.textContent=`Translating ${lrcLines.length} lines…`;
+  const prog=document.getElementById('pl-translate-progress');if(prog){prog.classList.remove('hidden');prog.style.color='';prog.textContent=`Translating ${lrcLines.length} lines…`;}
   showScreen('player');
   rerender();
   updateHomeNowPlaying();
@@ -2013,9 +2018,17 @@ async function annotateInChunks(arr){
       result.forEach((item,j)=>{const idx=i+j;item=simplifyAnnotationItem(item);if(arr[idx]){arr[idx].characters=item.characters||arr[idx].characters;arr[idx].pinyin=item.pinyin||arr[idx].pinyin;arr[idx].english=item.english||arr[idx].english;arr[idx].words=item.words?.length?item.words:arr[idx].words;}});
       rerender();
     }catch(e){
+      // Keep lyrics usable even if the annotation API fails: characters remain tappable,
+      // and any existing line-level pinyin/translation still renders.
+      for(let k=i;k<arr.length;k++){
+        if(!arr[k].characters)arr[k].characters=S.sourceLang==='zh'?toSimplified(arr[k].text||''):(arr[k].text||'');
+        if(!arr[k].words)arr[k].words=getRenderableWords(arr[k]);
+      }
+      rerender();
       const prog=document.getElementById('pl-translate-progress');
       if(prog){
-        prog.textContent='⚠ Add API key in Profile → AI Translation Key';
+        prog.classList.remove('hidden');
+        prog.textContent='⚠ Translation unavailable — add/check API key in Profile → AI Translation Key';
         prog.style.color='#ff8866';
       }
       return;
@@ -2067,11 +2080,11 @@ Natural ${tl} translation in "english" field.`,
   const prompt=PROMPTS[src]||PROMPTS.zh;const systemMsg=SYSTEM[src]||SYSTEM.zh;
   let resp, txt;
   try {
-    resp = await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
+    resp = await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
     // If proxy not deployed yet (404), fall back to direct Anthropic call
     if(resp.status===404||resp.status===503){
       const dk=localStorage.getItem('ht_key');
-      if(dk){resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':dk,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});}
+      if(dk){resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':dk,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});}
       else{throw new Error('Translation service not available — deploy api/annotate.js and set ANTHROPIC_API_KEY in Vercel');}
     }
     txt=await resp.text();
@@ -2175,6 +2188,26 @@ function tick(){
 // ── RENDER ─────────────────────────────────────────────────────────────────
 function rerender(){renderLine('k-prev',S.activeIdx-1,false);renderLine('k-curr',S.activeIdx,true);renderLine('k-next',S.activeIdx+1,false);}
 
+function getRenderableWords(line){
+  if(!line)return [];
+  if(line.words?.length){
+    return line.words.map(w=>({
+      char:S.sourceLang==='zh'?toSimplified(w.char||''):w.char||'',
+      pinyin:w.pinyin||'',
+      english:w.english||line.english||''
+    })).filter(w=>w.char);
+  }
+  const text=S.sourceLang==='zh'?toSimplified(line.characters||line.text||''):(line.characters||line.text||'');
+  if(!text)return [];
+  const pins=(line.pinyin||'').trim().split(/\s+/).filter(Boolean);
+  if(S.sourceLang==='zh'){
+    return Array.from(text).filter(ch=>/[\u4e00-\u9fff]/.test(ch)).map((ch,i)=>({char:ch,pinyin:pins[i]||'',english:line.english||''}));
+  }
+  // For Japanese/Korean fallback, split on spaces when possible; otherwise keep the full lyric tappable.
+  const parts=text.includes(' ')?text.split(/\s+/).filter(Boolean):[text];
+  return parts.map((part,i)=>({char:part,pinyin:pins[i]||line.pinyin||'',english:line.english||''}));
+}
+
 function renderLine(id,lineIdx,isActive){
   const el=document.getElementById(id);if(!el)return;
   const line=S.lyrics[lineIdx];
@@ -2183,16 +2216,25 @@ function renderLine(id,lineIdx,isActive){
   const showP=document.getElementById('tog-pin')?.classList.contains('on')??true;
   const showE=document.getElementById('tog-eng')?.classList.contains('on')??true;
   const text=S.sourceLang==='zh'?toSimplified(line.characters||line.text||''):(line.characters||line.text||'');
+  const words=getRenderableWords(line);
   let html='';
-  if(line.words?.length){
-    if(showP){html+=`<div class="pin">${esc(line.words.map(w=>w.pinyin).join(' '))}</div>`;}
-    if(showC){html+='<div class="chars">';line.words.forEach((w,wi)=>{const ch=S.sourceLang==='zh'?toSimplified(w.char):w.char;const sv=S.saved.some(s=>s.char===ch);html+=`<span class="k-word${sv?' is-saved':''}" data-line-idx="${lineIdx}" data-word-idx="${wi}" onclick="openWordSheet(event,${lineIdx},${wi})">${esc(ch)}</span>`;});html+='</div>';}
+  if(words.length){
+    const pinText=(line.pinyin||words.map(w=>w.pinyin).filter(Boolean).join(' ')).trim();
+    if(showP&&pinText)html+=`<div class="pin">${esc(pinText)}</div>`;
+    if(showC){
+      html+='<div class="chars">';
+      words.forEach((w,wi)=>{
+        const sv=S.saved.some(s=>s.char===w.char);
+        html+=`<span class="k-word${sv?' is-saved':''}" data-line-idx="${lineIdx}" data-word-idx="${wi}" role="button" tabindex="0">${esc(w.char)}</span>`;
+      });
+      html+='</div>';
+    }
     if(showE&&line.english)html+=`<div class="eng">${esc(line.english)}</div>`;
-  }else if(line.pinyin||line.english){
+  } else {
     if(showP&&line.pinyin)html+=`<div class="pin">${esc(line.pinyin)}</div>`;
-    if(showC)html+=`<div class="chars">${esc(text)}</div>`;
+    if(showC)html+=`<div class="chars" style="opacity:.4">${esc(text)}</div>`;
     if(showE&&line.english)html+=`<div class="eng">${esc(line.english)}</div>`;
-  }else{html=`<div class="chars" style="opacity:.4">${esc(text)}</div>`;}
+  }
   el.innerHTML=html;
 }
 
@@ -2206,30 +2248,35 @@ function initLyricWordTaps(){
   const wrap=document.querySelector('.pl-lyrics');
   if(!wrap||wrap.dataset.wordTapInit)return;
   wrap.dataset.wordTapInit='1';
-  wrap.addEventListener('click',e=>{
+  const handler=e=>{
     const word=e.target.closest('.k-word');
     if(!word||!wrap.contains(word))return;
+    if(e.type==='keydown'&&e.key!=='Enter'&&e.key!==' ')return;
     e.preventDefault();
     e.stopPropagation();
     openWordSheet(e,parseInt(word.dataset.lineIdx,10),parseInt(word.dataset.wordIdx,10));
-  },true);
+  };
+  wrap.addEventListener('click',handler,true);
+  wrap.addEventListener('touchend',handler,{capture:true,passive:false});
+  wrap.addEventListener('keydown',handler,true);
 }
 
 // ── WORD SHEET ─────────────────────────────────────────────────────────────
 function openWordSheet(e,lineIdx,wordIdx){
-  e.stopPropagation();
-  const line=S.lyrics[lineIdx];const w=line?.words?.[wordIdx];if(!w)return;
+  if(e){e.preventDefault?.();e.stopPropagation?.();}
+  const line=S.lyrics[lineIdx];const w=getRenderableWords(line)[wordIdx];if(!w)return;
   const wordChar=S.sourceLang==='zh'?toSimplified(w.char):w.char;
-  S.tooltipWord={char:wordChar,pinyin:w.pinyin,english:w.english};S.tooltipLineIdx=lineIdx;
+  S.tooltipWord={char:wordChar,pinyin:w.pinyin||'',english:w.english||line?.english||''};S.tooltipLineIdx=lineIdx;
   document.getElementById('tt-char').textContent=wordChar;
   document.getElementById('tt-pin').textContent=w.pinyin||'';
-  document.getElementById('tt-eng').textContent=w.english||'';
+  document.getElementById('tt-eng').textContent=w.english||line?.english||'';
   const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
   const labelMap={zh:'MANDARIN',ko:'KOREAN',ja:'JAPANESE'};
   document.getElementById('w-lang-label').textContent=`${labelMap[S.sourceLang]||'MANDARIN'} → ${(S.targetLanguage||'ENGLISH').toUpperCase()}`;
   // Context
   document.getElementById('w-ctx-pin').textContent=line.pinyin||(line.words?.map(x=>x.pinyin).join(' '))||'';
-  const charHtml=line.words?line.words.map(x=>{const ch=S.sourceLang==='zh'?toSimplified(x.char):x.char;return `<span${ch===wordChar?' style="color:var(--a);font-weight:700"':''}>${esc(ch)}</span>`;}).join(''): esc(S.sourceLang==='zh'?toSimplified(line.characters||''):(line.characters||''));
+  const ctxWords=getRenderableWords(line);
+  const charHtml=ctxWords.length?ctxWords.map(x=>{const ch=S.sourceLang==='zh'?toSimplified(x.char):x.char;return `<span${ch===wordChar?' style="color:var(--a);font-weight:700"':''}>${esc(ch)}</span>`;}).join(''): esc(S.sourceLang==='zh'?toSimplified(line.characters||''):(line.characters||''));
   document.getElementById('w-ctx-chars').innerHTML=charHtml;
   document.getElementById('w-ctx-eng').textContent=line.english||'';
   const saved=S.saved.some(s=>s.char===wordChar);
