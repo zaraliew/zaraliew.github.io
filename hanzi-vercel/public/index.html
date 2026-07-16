@@ -2117,11 +2117,11 @@ Natural ${tl} translation in "english" field.`,
   const prompt=PROMPTS[src]||PROMPTS.zh;const systemMsg=SYSTEM[src]||SYSTEM.zh;
   let resp, txt;
   try {
-    resp = await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
+    resp = await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
     // If proxy not deployed yet (404), fall back to direct Anthropic call
     if(resp.status===404||resp.status===503){
       const dk=localStorage.getItem('ht_key');
-      if(dk){resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':dk,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});}
+      if(dk){resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':dk,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});}
       else{throw new Error('Translation service not available — deploy api/annotate.js and set ANTHROPIC_API_KEY in Vercel');}
     }
     txt=await resp.text();
