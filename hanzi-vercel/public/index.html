@@ -2079,13 +2079,14 @@ function uniqueLyricCandidates(title,artist){
   const noParens=stripParenText(title);
   const base=titleBeforeVersionSuffix(title);
   const cjk=firstCjkPhrase(base)||firstCjkPhrase(noParens)||firstCjkPhrase(title);
+  // Fastest first: LRCLIB usually matches the clean CJK/base title better than Spotify's full title.
   const candidates=[
-    {title:String(title||'').trim(),artist:String(artist||'').trim()},
-    {title:noParens,artist:cleanArtist},
-    {title:base,artist:cleanArtist},
     {title:cjk,artist:cleanArtist},
+    {title:base,artist:cleanArtist},
+    {title:cjk,artist:''},
     {title:base,artist:''},
-    {title:cjk,artist:''}
+    {title:noParens,artist:cleanArtist},
+    {title:String(title||'').trim(),artist:String(artist||'').trim()}
   ];
   const seen=new Set();
   return candidates.filter(c=>{
@@ -2099,7 +2100,7 @@ function uniqueLyricCandidates(title,artist){
   });
 }
 
-async function fetchWithTimeout(url,opts={},ms=9000){
+async function fetchWithTimeout(url,opts={},ms=4500){
   const ctrl=new AbortController();
   const timer=setTimeout(()=>ctrl.abort(),ms);
   try{return await fetch(url,{...opts,signal:ctrl.signal});}
@@ -2108,7 +2109,7 @@ async function fetchWithTimeout(url,opts={},ms=9000){
 
 async function fetchLyricsViaAppApi(title,artist){
   const url=`/api/lyrics?${new URLSearchParams({title,artist})}`;
-  const r=await fetchWithTimeout(url,{},9000);
+  const r=await fetchWithTimeout(url,{},4500);
   if(!r.ok)return null;
   const data=await r.json();
   if(data && !data.error && data.lrc)return data;
@@ -2120,7 +2121,7 @@ async function fetchLyricsViaLrclib(title,artist){
   // LRCLIB search is more forgiving, then we keep only synced lyrics.
   const params=new URLSearchParams({track_name:title});
   if(artist)params.set('artist_name',artist);
-  const r=await fetchWithTimeout(`https://lrclib.net/api/search?${params}`,{},9000);
+  const r=await fetchWithTimeout(`https://lrclib.net/api/search?${params}`,{},4500);
   if(!r.ok)return null;
   const results=await r.json();
   if(!Array.isArray(results)||!results.length)return null;
@@ -2135,18 +2136,21 @@ async function fetchLyricsViaLrclib(title,artist){
 
 async function findSyncedLyrics(title,artist,onAttempt){
   const candidates=uniqueLyricCandidates(title,artist);
-  for(const c of candidates){
-    if(onAttempt)onAttempt(c);
-    try{
-      const data=await fetchLyricsViaAppApi(c.title,c.artist);
-      if(data)return data;
-    }catch(e){}
-    try{
-      const data=await fetchLyricsViaLrclib(c.title,c.artist);
-      if(data)return data;
-    }catch(e){}
-  }
-  return null;
+  // Try the cleanest candidates in parallel. This avoids waiting 9s+ on a bad exact Spotify title.
+  const tryBatch = async(batch)=>{
+    if(onAttempt&&batch[0])onAttempt(batch[0]);
+    const jobs=[];
+    for(const c of batch){
+      jobs.push(fetchLyricsViaAppApi(c.title,c.artist).catch(()=>null));
+      jobs.push(fetchLyricsViaLrclib(c.title,c.artist).catch(()=>null));
+    }
+    const results=await Promise.all(jobs);
+    return results.find(Boolean)||null;
+  };
+  let hit=await tryBatch(candidates.slice(0,3));
+  if(hit)return hit;
+  hit=await tryBatch(candidates.slice(3));
+  return hit;
 }
 
 async function autoLoadSpotifyTrack(title,artist){
@@ -2211,22 +2215,100 @@ async function loadAndTranslate(title,artist,lrcLines){
   const sdur=document.getElementById('si-duration');if(sdur&&lrcLines.length){const last=lrcLines[lrcLines.length-1].time;const m=Math.floor(last/60);const s=String(Math.floor(last%60)).padStart(2,'0');sdur.textContent=`${m}:${s}`;}
 }
 
+
+// ── LOCAL WORD + PINYIN FALLBACK ───────────────────────────────────────────
+// Lyrics should be usable instantly even while AI translation is still running.
+// For Mandarin, segment by words first (时间, 朋友, 不由衷) instead of single characters,
+// then fill pinyin locally via pinyin-pro when available.
+let PINYIN_MOD_PROMISE=null;
+const ZH_WORD_FALLBACK = ['不由衷','时间','时候','朋友','情绪','用功','不是','再是','你在乎','在乎','连言','卖弄','我不','不猜','不说','不问','不笨','不想','不愿','不便','没空','月光','城市','回声','慢慢','喜欢','知道','因为','所以','如果','没有','什么','怎么','我们','你们','他们','自己','现在','以后','以前','一直','一起','已经','还是','只是','但是','然后','真的','可以','不能','不会','不要','心里','眼泪','世界','天空','爱情','温柔','孤单','寂寞','快乐','难过'];
+async function ensurePinyinModule(){
+  if(S.sourceLang!=='zh')return null;
+  if(window.pinyinPro?.pinyin)return window.pinyinPro;
+  if(!PINYIN_MOD_PROMISE){
+    PINYIN_MOD_PROMISE=import('https://cdn.jsdelivr.net/npm/pinyin-pro@3.26.0/+esm').catch(()=>null);
+  }
+  return await PINYIN_MOD_PROMISE;
+}
+function zhSegment(text){
+  text=toSimplified(String(text||'')).replace(/\s+/g,'').trim();
+  if(!text)return [];
+  try{
+    if(Intl.Segmenter){
+      const seg=new Intl.Segmenter('zh',{granularity:'word'});
+      const parts=Array.from(seg.segment(text)).map(x=>x.segment).filter(x=>/[\u4e00-\u9fff]/.test(x));
+      if(parts.length)return parts;
+    }
+  }catch(e){}
+  const out=[];let i=0;
+  const dict=[...ZH_WORD_FALLBACK].sort((a,b)=>b.length-a.length);
+  while(i<text.length){
+    const rest=text.slice(i);
+    const hit=dict.find(w=>rest.startsWith(w));
+    if(hit){out.push(hit);i+=hit.length;continue;}
+    const ch=text[i++];
+    if(/[\u4e00-\u9fff]/.test(ch))out.push(ch);
+  }
+  return out;
+}
+function pinyinForTextSync(text){return '';}
+async function hydrateLocalPinyin(lines){
+  if(S.sourceLang!=='zh'||!lines?.length)return;
+  const mod=await ensurePinyinModule();
+  const py=mod?.pinyin||window.pinyinPro?.pinyin;
+  if(!py)return;
+  let changed=false;
+  for(const line of lines){
+    const text=toSimplified(line.characters||line.text||'');
+    if(!line.words?.length){
+      const parts=zhSegment(text);
+      line.words=parts.map(part=>({
+        char:part,
+        pinyin:py(part,{toneType:'symbol',type:'array'}).join(' '),
+        english:''
+      }));
+      changed=true;
+    }else{
+      for(const w of line.words){
+        if(w.char)w.char=toSimplified(w.char);
+        if(!w.pinyin&&w.char){w.pinyin=py(w.char,{toneType:'symbol',type:'array'}).join(' ');changed=true;}
+      }
+    }
+    if(!line.pinyin){
+      line.pinyin=line.words.map(w=>w.pinyin).filter(Boolean).join(' ');
+      changed=true;
+    }
+  }
+  if(changed)rerender();
+}
+function localWordsForLine(line){
+  if(!line)return [];
+  const text=S.sourceLang==='zh'?toSimplified(line.characters||line.text||''):(line.characters||line.text||'');
+  if(!text)return [];
+  if(S.sourceLang==='zh')return zhSegment(text).map(part=>({char:part,pinyin:'',english:line.english||''}));
+  const parts=text.includes(' ')?text.split(/\s+/).filter(Boolean):[text];
+  return parts.map(part=>({char:part,pinyin:line.pinyin||'',english:line.english||''}));
+}
+
 async function annotateInChunks(arr){
   if(!arr||arr.length===0)return;
-  const SIZE=8;
+  // Show word-level Mandarin pinyin immediately; AI translation can finish after.
+  hydrateLocalPinyin(arr);
+  const SIZE=6;
   for(let i=0;i<arr.length;i+=SIZE){
     const prog=document.getElementById('pl-translate-progress');
     if(prog)prog.textContent=`Translating ${Math.min(i+SIZE,arr.length)}/${arr.length}…`;
     try{
       const result=await annotateChunk(arr.slice(i,i+SIZE).map(l=>S.sourceLang==='zh'?toSimplified(l.text||l.characters):(l.text||l.characters)));
       result.forEach((item,j)=>{const idx=i+j;item=simplifyAnnotationItem(item);if(arr[idx]){arr[idx].characters=item.characters||arr[idx].characters;arr[idx].pinyin=item.pinyin||arr[idx].pinyin;arr[idx].english=item.english||arr[idx].english;arr[idx].words=item.words?.length?item.words:arr[idx].words;}});
+      await hydrateLocalPinyin(arr.slice(i,i+SIZE));
       rerender();
     }catch(e){
       // Keep lyrics usable even if the annotation API fails: characters remain tappable,
       // and any existing line-level pinyin/translation still renders.
       for(let k=i;k<arr.length;k++){
         if(!arr[k].characters)arr[k].characters=S.sourceLang==='zh'?toSimplified(arr[k].text||''):(arr[k].text||'');
-        if(!arr[k].words)arr[k].words=getRenderableWords(arr[k]);
+        if(!arr[k].words)arr[k].words=localWordsForLine(arr[k]);
       }
       rerender();
       const prog=document.getElementById('pl-translate-progress');
@@ -2284,11 +2366,11 @@ Natural ${tl} translation in "english" field.`,
   const prompt=PROMPTS[src]||PROMPTS.zh;const systemMsg=SYSTEM[src]||SYSTEM.zh;
   let resp, txt;
   try {
-    resp = await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
+    resp = await fetch('/api/annotate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:(localStorage.getItem('ht_model')||'claude-3-5-sonnet-20241022'),max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});
     // If proxy not deployed yet (404), fall back to direct Anthropic call
     if(resp.status===404||resp.status===503){
       const dk=localStorage.getItem('ht_key');
-      if(dk){resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':dk,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});}
+      if(dk){resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':dk,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:(localStorage.getItem('ht_model')||'claude-3-5-sonnet-20241022'),max_tokens:8000,system:systemMsg,messages:[{role:'user',content:prompt}]})});}
       else{throw new Error('Translation service not available — deploy api/annotate.js and set ANTHROPIC_API_KEY in Vercel');}
     }
     txt=await resp.text();
