@@ -2285,9 +2285,9 @@ function localWordsForLine(line){
   if(!line)return [];
   const text=S.sourceLang==='zh'?toSimplified(line.characters||line.text||''):(line.characters||line.text||'');
   if(!text)return [];
-  if(S.sourceLang==='zh')return zhSegment(text).map(part=>({char:part,pinyin:'',english:line.english||''}));
+  if(S.sourceLang==='zh')return zhSegment(text).map(part=>({char:part,pinyin:'',english:''}));
   const parts=text.includes(' ')?text.split(/\s+/).filter(Boolean):[text];
-  return parts.map(part=>({char:part,pinyin:line.pinyin||'',english:line.english||''}));
+  return parts.map(part=>({char:part,pinyin:line.pinyin||'',english:''}));
 }
 
 const ZH_TRIVIAL_WORDS = new Set(['的','了','着','过','吗','呢','啊','吧','呀','哦','喔','啦','嘛','么','也','都','就','和','与','及','或','而','但','却','并','又','再','很','更','最','不','没','有','在','是','我','你','他','她','它','们']);
@@ -2344,8 +2344,60 @@ async function ensureEnglishForLines(lines){
   const translated=await translateLinesFallback(missing);
   missing.forEach((line,i)=>{if(translated[i]) line.english=translated[i];});
 }
+const ZH_WORD_ENGLISH = {
+  '在乎':'care about', '时间':'time', '朋友':'friend', '爱情':'love', '喜欢':'like', '想念':'miss', '回忆':'memory', '梦想':'dream',
+  '情绪':'emotion', '无用功':'wasted effort', '不再':'no longer', '人':'person', '心':'heart', '爱':'love', '梦':'dream',
+  '说':'say', '问':'ask', '听':'listen', '看':'look', '等':'wait', '走':'walk / leave', '来':'come', '去':'go',
+  '知道':'know', '明白':'understand', '相信':'believe', '忘记':'forget', '记得':'remember', '离开':'leave', '回来':'come back',
+  '世界':'world', '城市':'city', '夜晚':'night', '月光':'moonlight', '阳光':'sunlight', '声音':'voice / sound', '眼泪':'tears',
+  '快乐':'happy', '难过':'sad', '孤单':'lonely', '温柔':'gentle', '自由':'freedom', '未来':'future', '过去':'past'
+};
 function getBestWordEnglish(word,line){
-  return (word?.english||'').trim() || '';
+  const raw=(word?.english||'').trim();
+  const lineEng=(line?.english||'').trim();
+  // Never use the whole sentence as the word meaning.
+  if(raw && raw !== lineEng) return raw;
+  const ch=S.sourceLang==='zh'?toSimplified(word?.char||''):(word?.char||'');
+  if(S.sourceLang==='zh' && ZH_WORD_ENGLISH[ch]) return ZH_WORD_ENGLISH[ch];
+  return '';
+}
+function getWordCacheKey(ch){return 'ht_word_en_'+(S.sourceLang||'zh')+'_'+(S.targetLanguage||'English')+'_'+ch;}
+async function translateWordFallback(ch){
+  ch=(S.sourceLang==='zh'?toSimplified(ch):ch||'').trim();
+  if(!ch) return '';
+  if(S.sourceLang==='zh' && ZH_WORD_ENGLISH[ch]) return ZH_WORD_ENGLISH[ch];
+  const key=getWordCacheKey(ch);
+  const cached=localStorage.getItem(key);
+  if(cached) return cached;
+  try{
+    const sl={zh:'zh-CN',ko:'ko',ja:'ja'}[S.sourceLang]||'auto';
+    const tl=(S.targetLanguage||'English').toLowerCase().startsWith('english')?'en':'en';
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),3500);
+    const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl='+encodeURIComponent(sl)+'&tl='+encodeURIComponent(tl)+'&dt=t&q='+encodeURIComponent(ch),{signal:ctrl.signal});
+    clearTimeout(timer);
+    if(!r.ok) throw new Error('word translate failed');
+    const d=await r.json();
+    const out=((d?.[0]||[]).map(x=>x?.[0]||'').join('').trim());
+    if(out && out !== ch){localStorage.setItem(key,out);return out;}
+  }catch(e){}
+  return '';
+}
+async function ensureWordEnglishForSheet(ch,lineIdx,wordIdx){
+  const line=S.lyrics[lineIdx];
+  const words=getRenderableWords(line);
+  const w=words[wordIdx];
+  if(!w) return;
+  let eng=getBestWordEnglish(w,line);
+  if(!eng) eng=await translateWordFallback(ch);
+  if(!eng) return;
+  // Write it back into the real lyric word object too, so Deck cards get the word meaning.
+  if(line?.words?.[wordIdx]) line.words[wordIdx].english=eng;
+  if(S.tooltipWord && S.tooltipWord.char===ch){
+    S.tooltipWord.english=eng;
+    const tt=document.getElementById('tt-eng');
+    if(tt) tt.textContent=eng;
+  }
 }
 
 async function annotateInChunks(arr){
@@ -2571,7 +2623,7 @@ function getRenderableWords(line){
     return line.words.map(w=>({
       char:S.sourceLang==='zh'?toSimplified(w.char||''):w.char||'',
       pinyin:w.pinyin||'',
-      english:w.english||line.english||''
+      english:w.english||''
     })).filter(w=>w.char);
   }
   const text=S.sourceLang==='zh'?toSimplified(line.characters||line.text||''):(line.characters||line.text||'');
@@ -2643,10 +2695,12 @@ function openWordSheet(e,lineIdx,wordIdx){
   if(e){e.preventDefault?.();e.stopPropagation?.();}
   const line=S.lyrics[lineIdx];const w=getRenderableWords(line)[wordIdx];if(!w)return;
   const wordChar=S.sourceLang==='zh'?toSimplified(w.char):w.char;
-  S.tooltipWord={char:wordChar,pinyin:w.pinyin||'',english:w.english||line?.english||''};S.tooltipLineIdx=lineIdx;
+  const wordEnglish=getBestWordEnglish(w,line);
+  S.tooltipWord={char:wordChar,pinyin:w.pinyin||'',english:wordEnglish};S.tooltipLineIdx=lineIdx;S.tooltipWordIdx=wordIdx;
   document.getElementById('tt-char').textContent=wordChar;
   document.getElementById('tt-pin').textContent=w.pinyin||'';
-  document.getElementById('tt-eng').textContent=w.english||line?.english||'';
+  document.getElementById('tt-eng').textContent=wordEnglish||'Translating word…';
+  ensureWordEnglishForSheet(wordChar,lineIdx,wordIdx);
   const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
   const labelMap={zh:'MANDARIN',ko:'KOREAN',ja:'JAPANESE'};
   document.getElementById('w-lang-label').textContent=`${labelMap[S.sourceLang]||'MANDARIN'} → ${(S.targetLanguage||'ENGLISH').toUpperCase()}`;
@@ -2685,13 +2739,21 @@ function tooltipAddToDeck(){
   if(idx>=0)S.saved.splice(idx,1);
   else {
     const line=S.lyrics[S.tooltipLineIdx];
-    if(!english && line?.english) english=line.english;
+    english=getBestWordEnglish({char,pinyin,english}, line) || english || '';
     S.saved.push({
       char,pinyin,english,song:S.title,artist:S.artist,
       lyricPin: line?.words?.map(w=>w.pinyin).join(' ')||line?.pinyin||'',
       lyricChars: line?.words?.map(w=>w.char).join('')||line?.characters||'',
       lyricEng: line?.english||''
     });
+    if(!english){
+      translateWordFallback(char).then(en=>{
+        if(!en)return;
+        const savedWord=S.saved.find(x=>x.char===char);
+        if(savedWord&&!savedWord.english){savedWord.english=en;localStorage.setItem('ht_deck',JSON.stringify(S.saved));renderDeck?.();}
+        if(line?.words?.[S.tooltipWordIdx])line.words[S.tooltipWordIdx].english=en;
+      });
+    }
   }
   localStorage.setItem('ht_deck',JSON.stringify(S.saved));
   updateBadge();rerender();
