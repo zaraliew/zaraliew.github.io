@@ -2290,36 +2290,116 @@ function localWordsForLine(line){
   return parts.map(part=>({char:part,pinyin:line.pinyin||'',english:line.english||''}));
 }
 
+const ZH_TRIVIAL_WORDS = new Set(['的','了','着','过','吗','呢','啊','吧','呀','哦','喔','啦','嘛','么','也','都','就','和','与','及','或','而','但','却','并','又','再','很','更','最','不','没','有','在','是','我','你','他','她','它','们']);
+function isTrivialChineseWord(ch){
+  return S.sourceLang==='zh' && ZH_TRIVIAL_WORDS.has(String(ch||'').trim());
+}
+function isWordSavedForHighlight(ch){
+  ch = S.sourceLang==='zh' ? toSimplified(ch||'') : (ch||'');
+  return !!ch && !isTrivialChineseWord(ch) && S.saved.some(s=>s.char===ch);
+}
+function normalizeAnnotationArray(data){
+  // Accept several possible /api/annotate shapes:
+  // 1) Anthropic: { content:[{ text:"[...]" }] }
+  // 2) OpenAI-like: { choices:[{ message:{ content:"[...]" }}] }
+  // 3) Direct: [ ... ] or { annotations:[ ... ] } or { result:[ ... ] }
+  if(Array.isArray(data)) return data;
+  if(Array.isArray(data?.annotations)) return data.annotations;
+  if(Array.isArray(data?.result)) return data.result;
+  if(Array.isArray(data?.items)) return data.items;
+  let raw = data?.content?.[0]?.text || data?.choices?.[0]?.message?.content || data?.text || data?.message || '';
+  if(Array.isArray(raw)) return raw;
+  raw = String(raw||'').replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
+  const first = raw.indexOf('['), last = raw.lastIndexOf(']');
+  if(first>=0 && last>first) raw = raw.slice(first,last+1);
+  if(!raw) throw new Error('Empty annotation response');
+  try{return JSON.parse(raw);}catch(e){
+    // Sometimes the model gets cut off at the last item; try closing the array.
+    try{return JSON.parse(raw.replace(/,\s*$/,'') + ']');}catch(e2){throw e;}
+  }
+}
+async function translateLinesFallback(lines){
+  // Last-resort client translation so English never disappears if the AI annotation endpoint fails.
+  const tl=(S.targetLanguage||'English').toLowerCase().startsWith('english')?'en':'en';
+  const sl={zh:'zh-CN',ko:'ko',ja:'ja'}[S.sourceLang]||'auto';
+  const out=[];
+  for(const line of lines){
+    const q=S.sourceLang==='zh'?toSimplified(line.characters||line.text||''):(line.characters||line.text||'');
+    if(!q){out.push('');continue;}
+    try{
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),4500);
+      const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl='+encodeURIComponent(sl)+'&tl='+encodeURIComponent(tl)+'&dt=t&q='+encodeURIComponent(q),{signal:ctrl.signal});
+      clearTimeout(timer);
+      if(!r.ok)throw new Error('translate failed');
+      const d=await r.json();
+      out.push((d?.[0]||[]).map(x=>x?.[0]||'').join('').trim());
+    }catch(e){out.push('');}
+  }
+  return out;
+}
+async function ensureEnglishForLines(lines){
+  const missing=(lines||[]).filter(l=>!(l.english||'').trim());
+  if(!missing.length)return;
+  const translated=await translateLinesFallback(missing);
+  missing.forEach((line,i)=>{if(translated[i]) line.english=translated[i];});
+}
+function getBestWordEnglish(word,line){
+  return (word?.english||'').trim() || '';
+}
+
 async function annotateInChunks(arr){
   if(!arr||arr.length===0)return;
   // Show word-level Mandarin pinyin immediately; AI translation can finish after.
   hydrateLocalPinyin(arr);
   const SIZE=6;
   for(let i=0;i<arr.length;i+=SIZE){
+    const chunk=arr.slice(i,i+SIZE);
     const prog=document.getElementById('pl-translate-progress');
     if(prog)prog.textContent=`Translating ${Math.min(i+SIZE,arr.length)}/${arr.length}…`;
     try{
-      const result=await annotateChunk(arr.slice(i,i+SIZE).map(l=>S.sourceLang==='zh'?toSimplified(l.text||l.characters):(l.text||l.characters)));
-      result.forEach((item,j)=>{const idx=i+j;item=simplifyAnnotationItem(item);if(arr[idx]){arr[idx].characters=item.characters||arr[idx].characters;arr[idx].pinyin=item.pinyin||arr[idx].pinyin;arr[idx].english=item.english||arr[idx].english;arr[idx].words=item.words?.length?item.words:arr[idx].words;}});
-      await hydrateLocalPinyin(arr.slice(i,i+SIZE));
+      const result=await annotateChunk(chunk.map(l=>S.sourceLang==='zh'?toSimplified(l.text||l.characters):(l.text||l.characters)));
+      result.forEach((item,j)=>{
+        const idx=i+j;
+        item=simplifyAnnotationItem(item);
+        if(arr[idx]){
+          arr[idx].characters=item.characters||arr[idx].characters;
+          arr[idx].pinyin=item.pinyin||arr[idx].pinyin;
+          arr[idx].english=item.english||arr[idx].english;
+          arr[idx].words=item.words?.length?item.words:arr[idx].words;
+        }
+      });
+      await hydrateLocalPinyin(chunk);
+      await ensureEnglishForLines(chunk);
       rerender();
     }catch(e){
-      // Keep lyrics usable even if the annotation API fails: characters remain tappable,
-      // and any existing line-level pinyin/translation still renders.
-      for(let k=i;k<arr.length;k++){
-        if(!arr[k].characters)arr[k].characters=S.sourceLang==='zh'?toSimplified(arr[k].text||''):(arr[k].text||'');
-        if(!arr[k].words)arr[k].words=localWordsForLine(arr[k]);
+      // Keep lyrics usable even if the annotation API fails.
+      for(const line of chunk){
+        if(!line.characters)line.characters=S.sourceLang==='zh'?toSimplified(line.text||''):(line.text||'');
+        if(!line.words)line.words=localWordsForLine(line);
       }
+      await hydrateLocalPinyin(chunk);
+      await ensureEnglishForLines(chunk);
       rerender();
       const prog=document.getElementById('pl-translate-progress');
       if(prog){
-        prog.classList.remove('hidden');
-        prog.textContent='⚠ Translation unavailable — add/check API key in Profile → AI Translation Key';
-        prog.style.color='#ff8866';
+        const hasAnyEnglish=arr.some(l=>(l.english||'').trim());
+        if(hasAnyEnglish){
+          prog.classList.remove('hidden');
+          prog.textContent='Basic English added. Word meanings improve when AI Translation Key is active.';
+          prog.style.color='var(--muted)';
+          setTimeout(()=>{prog.classList.add('hidden');},2200);
+        }else{
+          prog.classList.remove('hidden');
+          prog.textContent='⚠ Translation unavailable — add/check API key in Profile → AI Translation Key';
+          prog.style.color='#ff8866';
+        }
       }
-      return;
     }
   }
+  // One final pass so all lines have English if any chunk was skipped.
+  await ensureEnglishForLines(arr);
+  rerender();
   const prog2=document.getElementById('pl-translate-progress');
   if(prog2){prog2.classList.add('hidden');}
 }
@@ -2376,8 +2456,8 @@ Natural ${tl} translation in "english" field.`,
     txt=await resp.text();
   } catch(e) { throw e; }
   if(!resp.ok){let m=`API error ${resp.status}`;try{m=JSON.parse(txt).error?.message||m;}catch{}throw new Error(m);}
-  const data=JSON.parse(txt);let raw=(data.content?.[0]?.text||'').replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
-  try{return JSON.parse(raw);}catch{try{return JSON.parse(raw+']');}catch{throw new Error('Parse error');}}
+  const data=JSON.parse(txt);
+  return normalizeAnnotationArray(data);
 }
 
 function parseLrc(lrc){const lines=[];for(const line of lrc.split('\n')){const m=line.match(/\[(\d+):(\d+(?:\.\d+)?)\](.*)/);if(m){const time=parseInt(m[1])*60+parseFloat(m[2]);const text=m[3].trim();if(text)lines.push({time,text});}}return lines;}
@@ -2521,7 +2601,7 @@ function renderLine(id,lineIdx,isActive){
     if(showC){
       html+='<div class="chars">';
       words.forEach((w,wi)=>{
-        const sv=S.saved.some(s=>s.char===w.char);
+        const sv=isWordSavedForHighlight(w.char);
         html+=`<span class="k-word${sv?' is-saved':''}" data-line-idx="${lineIdx}" data-word-idx="${wi}" role="button" tabindex="0">${esc(w.char)}</span>`;
       });
       html+='</div>';
@@ -2573,7 +2653,7 @@ function openWordSheet(e,lineIdx,wordIdx){
   // Context
   document.getElementById('w-ctx-pin').textContent=line.pinyin||(line.words?.map(x=>x.pinyin).join(' '))||'';
   const ctxWords=getRenderableWords(line);
-  const charHtml=ctxWords.length?ctxWords.map(x=>{const ch=S.sourceLang==='zh'?toSimplified(x.char):x.char;return `<span${ch===wordChar?' style="color:var(--a);font-weight:700"':''}>${esc(ch)}</span>`;}).join(''): esc(S.sourceLang==='zh'?toSimplified(line.characters||''):(line.characters||''));
+  const charHtml=ctxWords.length?ctxWords.map(x=>{const ch=S.sourceLang==='zh'?toSimplified(x.char):x.char;const saved=isWordSavedForHighlight(ch);return `<span${saved?' style="color:var(--a);font-weight:700"':''}>${esc(ch)}</span>`;}).join(''): esc(S.sourceLang==='zh'?toSimplified(line.characters||''):(line.characters||''));
   document.getElementById('w-ctx-chars').innerHTML=charHtml;
   document.getElementById('w-ctx-eng').textContent=line.english||'';
   const saved=S.saved.some(s=>s.char===wordChar);
@@ -2600,11 +2680,12 @@ function hearCurrentCard(){
 
 function tooltipAddToDeck(){
   if(!S.tooltipWord)return;
-  const{char,pinyin,english}=S.tooltipWord;
+  let{char,pinyin,english}=S.tooltipWord;
   const idx=S.saved.findIndex(s=>s.char===char);
   if(idx>=0)S.saved.splice(idx,1);
   else {
     const line=S.lyrics[S.tooltipLineIdx];
+    if(!english && line?.english) english=line.english;
     S.saved.push({
       char,pinyin,english,song:S.title,artist:S.artist,
       lyricPin: line?.words?.map(w=>w.pinyin).join(' ')||line?.pinyin||'',
@@ -2646,8 +2727,8 @@ function saveAllWords(){
     const lyricChars=l.words.map(w=>w.char).join('');
     const lyricEng=l.english||'';
     l.words.forEach(w=>{
-      if(!S.saved.some(s=>s.char===w.char))
-        S.saved.push({char:w.char,pinyin:w.pinyin,english:w.english,song:S.title,artist:S.artist,lyricPin,lyricChars,lyricEng});
+      if(!isTrivialChineseWord(w.char) && !S.saved.some(s=>s.char===w.char))
+        S.saved.push({char:w.char,pinyin:w.pinyin,english:w.english||lyricEng,song:S.title,artist:S.artist,lyricPin,lyricChars,lyricEng});
     });
   });
   localStorage.setItem('ht_deck',JSON.stringify(S.saved));
@@ -2739,7 +2820,7 @@ function renderDeck(){
   const frontLyric=document.getElementById('card-front-lyric');
   if(frontLyric){
     const lc=w.lyricChars||S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.char).join('')||'';
-    if(lc){frontLyric.innerHTML=esc(lc).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a);font-weight:700">${esc(w.char)}</span>`);}
+    if(lc&&isWordSavedForHighlight(w.char)){frontLyric.innerHTML=esc(lc).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a);font-weight:700">${esc(w.char)}</span>`);} else if(lc){frontLyric.innerHTML=esc(lc);}
     else{frontLyric.innerHTML='';}
   }
   document.getElementById('card-back-pin').textContent=w.pinyin||'';
@@ -2756,7 +2837,7 @@ function renderDeck(){
       if(ctxLabel)ctxLabel.textContent='FROM THIS LINE';
       document.getElementById('card-ctx-pin').textContent=lyricPin;
       const ce=document.getElementById('card-ctx-chars');
-      if(ce){const hi=esc(lyricChars).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a)">${esc(w.char)}</span>`);ce.innerHTML=hi;}
+      if(ce){const hi=isWordSavedForHighlight(w.char)?esc(lyricChars).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a)">${esc(w.char)}</span>`):esc(lyricChars);ce.innerHTML=hi;}
       document.getElementById('card-ctx-eng').textContent=lyricEng;
     } else {
       if(ctxLabel)ctxLabel.textContent='FROM THE SONG';
