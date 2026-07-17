@@ -2044,6 +2044,111 @@ async function playSpotifyCard(uri,title,artist){
 }
 
 // ── AUTO-LOAD LYRICS ───────────────────────────────────────────────────────
+function cleanArtistForLyrics(artist=''){
+  return String(artist||'')
+    .replace(/\b(official|vevo|topic)\b/ig,'')
+    .replace(/官方|频道|頻道/g,'')
+    .replace(/[-–—|｜]+\s*$/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function stripParenText(s=''){
+  return String(s||'')
+    .replace(/[（(][^）)]*[）)]/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function titleBeforeVersionSuffix(title=''){
+  const t=stripParenText(title);
+  // Spotify often returns titles like "Song (English name) - Artist版".
+  // LRCLIB usually stores the base title only, so remove trailing version/remix/live suffixes.
+  const parts=t.split(/\s*[-–—|｜]\s*/).map(x=>x.trim()).filter(Boolean);
+  if(parts.length>1)return parts[0];
+  return t;
+}
+
+function firstCjkPhrase(s=''){
+  const m=String(s||'').match(/[\u3400-\u9fff\uf900-\ufaffぁ-ゟ゠-ヿ가-힣][\u3400-\u9fff\uf900-\ufaffぁ-ゟ゠-ヿ가-힣\s]{1,}/);
+  return m ? m[0].trim() : '';
+}
+
+function uniqueLyricCandidates(title,artist){
+  const cleanArtist=cleanArtistForLyrics(artist);
+  const noParens=stripParenText(title);
+  const base=titleBeforeVersionSuffix(title);
+  const cjk=firstCjkPhrase(base)||firstCjkPhrase(noParens)||firstCjkPhrase(title);
+  const candidates=[
+    {title:String(title||'').trim(),artist:String(artist||'').trim()},
+    {title:noParens,artist:cleanArtist},
+    {title:base,artist:cleanArtist},
+    {title:cjk,artist:cleanArtist},
+    {title:base,artist:''},
+    {title:cjk,artist:''}
+  ];
+  const seen=new Set();
+  return candidates.filter(c=>{
+    c.title=String(c.title||'').trim();
+    c.artist=String(c.artist||'').trim();
+    if(!c.title)return false;
+    const key=(c.title+'|'+c.artist).toLowerCase();
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+async function fetchWithTimeout(url,opts={},ms=9000){
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),ms);
+  try{return await fetch(url,{...opts,signal:ctrl.signal});}
+  finally{clearTimeout(timer);}
+}
+
+async function fetchLyricsViaAppApi(title,artist){
+  const url=`/api/lyrics?${new URLSearchParams({title,artist})}`;
+  const r=await fetchWithTimeout(url,{},9000);
+  if(!r.ok)return null;
+  const data=await r.json();
+  if(data && !data.error && data.lrc)return data;
+  return null;
+}
+
+async function fetchLyricsViaLrclib(title,artist){
+  // Client-side fallback for when our /api/lyrics route cannot find Spotify's exact title.
+  // LRCLIB search is more forgiving, then we keep only synced lyrics.
+  const params=new URLSearchParams({track_name:title});
+  if(artist)params.set('artist_name',artist);
+  const r=await fetchWithTimeout(`https://lrclib.net/api/search?${params}`,{},9000);
+  if(!r.ok)return null;
+  const results=await r.json();
+  if(!Array.isArray(results)||!results.length)return null;
+  const hit=results.find(x=>x.syncedLyrics)||null;
+  if(!hit)return null;
+  return {
+    title:hit.trackName||title,
+    artist:hit.artistName||artist,
+    lrc:hit.syncedLyrics
+  };
+}
+
+async function findSyncedLyrics(title,artist,onAttempt){
+  const candidates=uniqueLyricCandidates(title,artist);
+  for(const c of candidates){
+    if(onAttempt)onAttempt(c);
+    try{
+      const data=await fetchLyricsViaAppApi(c.title,c.artist);
+      if(data)return data;
+    }catch(e){}
+    try{
+      const data=await fetchLyricsViaLrclib(c.title,c.artist);
+      if(data)return data;
+    }catch(e){}
+  }
+  return null;
+}
+
 async function autoLoadSpotifyTrack(title,artist){
   if(!title||title==='—')return;
   S.spotifyAutoLoading=true;
@@ -2055,11 +2160,14 @@ async function autoLoadSpotifyTrack(title,artist){
     showLyricStatus('loading',`Finding synced lyrics for ${title}`,artist||'This usually takes a few seconds.');
   }
   try{
-    const r=await fetch(`/api/lyrics?${new URLSearchParams({title,artist})}`);
-    if(!r.ok)throw new Error('lyrics api failed');
-    const data=await r.json();
-    if(data.error||!data.lrc){
-      if(playerVisible)showLyricStatus('empty','No synced lyrics found','Try another song, or open the menu and retry after Spotify updates the current track.');
+    const data=await findSyncedLyrics(title,artist,(c)=>{
+      if(playerVisible){
+        const shownArtist=c.artist?` · ${c.artist}`:'';
+        showLyricStatus('loading',`Finding synced lyrics for ${c.title}`,`Trying lyric match${shownArtist}`);
+      }
+    });
+    if(!data||!data.lrc){
+      if(playerVisible)showLyricStatus('empty','No synced lyrics found','Try the base song title, for example without “Official”, “版”, remix, live, or English subtitle text.');
       return;
     }
     const cfg=LANG_CONFIG[S.sourceLang]||LANG_CONFIG.zh;
