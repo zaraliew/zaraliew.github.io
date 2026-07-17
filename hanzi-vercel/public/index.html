@@ -1706,11 +1706,61 @@ async function handleSpotifyCallback(code) {
   }catch(e){}
 }
 
-async function refreshSpotifyToken(){
-  if(!S.spotifyRefreshToken||!S.spotifyClientId)return false;
-  try{const resp=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:S.spotifyClientId,grant_type:'refresh_token',refresh_token:S.spotifyRefreshToken})});const d=await resp.json();if(d.access_token){S.spotifyToken=d.access_token;S.spotifyTokenExpiry=Date.now()+(d.expires_in*1000);if(d.refresh_token){S.spotifyRefreshToken=d.refresh_token;localStorage.setItem('spotify_refresh',S.spotifyRefreshToken);}localStorage.setItem('spotify_token',S.spotifyToken);localStorage.setItem('spotify_expiry',String(S.spotifyTokenExpiry));return true;}}catch(e){}return false;
+async function ensureSpotifyClientId(){
+  if(S.spotifyClientId)return true;
+  try{
+    const r=await fetch('/api/spotify-config');
+    const d=await r.json();
+    S.spotifyClientId=d.clientId||'';
+  }catch(e){}
+  return !!S.spotifyClientId;
 }
-async function getValidToken(){if(!S.spotifyToken)return null;if(Date.now()>S.spotifyTokenExpiry-60000){await refreshSpotifyToken();}return S.spotifyToken||null;}
+
+function clearSpotifyAuth(){
+  S.spotifyToken=null;
+  S.spotifyRefreshToken=null;
+  S.spotifyTokenExpiry=0;
+  localStorage.removeItem('spotify_token');
+  localStorage.removeItem('spotify_refresh');
+  localStorage.removeItem('spotify_expiry');
+}
+
+async function refreshSpotifyToken(){
+  if(!S.spotifyRefreshToken)return false;
+  const hasClientId=await ensureSpotifyClientId();
+  if(!hasClientId)return false;
+  try{
+    const resp=await fetch('https://accounts.spotify.com/api/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:new URLSearchParams({
+        client_id:S.spotifyClientId,
+        grant_type:'refresh_token',
+        refresh_token:S.spotifyRefreshToken
+      })
+    });
+    const d=await resp.json();
+    if(!resp.ok||!d.access_token){clearSpotifyAuth();return false;}
+    S.spotifyToken=d.access_token;
+    S.spotifyTokenExpiry=Date.now()+(d.expires_in*1000);
+    if(d.refresh_token){
+      S.spotifyRefreshToken=d.refresh_token;
+      localStorage.setItem('spotify_refresh',S.spotifyRefreshToken);
+    }
+    localStorage.setItem('spotify_token',S.spotifyToken);
+    localStorage.setItem('spotify_expiry',String(S.spotifyTokenExpiry));
+    return true;
+  }catch(e){return false;}
+}
+
+async function getValidToken(){
+  if(!S.spotifyToken)return null;
+  if(Date.now()>S.spotifyTokenExpiry-60000){
+    const ok=await refreshSpotifyToken();
+    if(!ok)return null;
+  }
+  return S.spotifyToken||null;
+}
 
 function updateObSpotifyCard(connected) {
   const card=document.getElementById('ob-sp-card');const title=document.getElementById('ob-sp-title');const sub=document.getElementById('ob-sp-sub');
@@ -1730,11 +1780,16 @@ async function pollSpotify(){
   try{
     const resp=await fetch('https://api.spotify.com/v1/me/player/currently-playing',{headers:{'Authorization':'Bearer '+token}});
     if(resp.status===204){
-      if(!S.popularImagesLoaded){S.popularImagesLoaded=true;loadPopularImages(token);}
+      if(!S.popularImagesLoaded&&document.getElementById('popular-grid')){S.popularImagesLoaded=true;loadPopularImages(token);}
       if(S.view==='player'&&!S.lyrics.length&&!S.spotifyAutoLoading){showLyricStatus('idle','Play a song on Spotify','Melozi will detect it here and load synced lyrics automatically.');}
       return;
     }
-    if(resp.status===401){await refreshSpotifyToken();return;}
+    if(resp.status===401){
+      const refreshed=await refreshSpotifyToken();
+      if(refreshed){S.spotifyPollBusy=false;return pollSpotify();}
+      if(S.view==='player'&&!S.lyrics.length){showLyricStatus('error','Spotify session expired','Reconnect Spotify from Profile.');}
+      return;
+    }
     if(!resp.ok){
       if(S.view==='player'&&!S.lyrics.length&&!S.spotifyAutoLoading){showLyricStatus('error','Could not read Spotify','Open Spotify, start a song, then come back to Melozi.');}
       return;
@@ -1750,14 +1805,18 @@ async function pollSpotify(){
     const trackId=data.item?.id||null;
     const albumArt=data.item?.album?.images?.[1]?.url||data.item?.album?.images?.[0]?.url||null;
     const trackUri=data.item?.uri||null;
-    if(albumArt)S.spotifyCurrentAlbumArt=albumArt;
+    if(albumArt&&albumArt!==S.spotifyCurrentAlbumArt){
+      S.spotifyCurrentAlbumArt=albumArt;
+      updateHomeNowPlaying();
+    }
     if(trackUri)S.spotifyCurrentTrackUri=trackUri;
-    if(!S.popularImagesLoaded){S.popularImagesLoaded=true;loadPopularImages(token);}
+    if(!S.popularImagesLoaded&&document.getElementById('popular-grid')){S.popularImagesLoaded=true;loadPopularImages(token);}
     const tf=document.getElementById('np-time-footer');
     if(tf){const mm=Math.floor(pos/60);const ss=String(Math.floor(pos%60)).padStart(2,'0');tf.textContent=`${mm}:${ss} · ${S.spotifyIsPlaying?'synced':'paused'}`;}
     const pt=document.getElementById('np-title');if(pt)pt.textContent=trackName;
     const pa=document.getElementById('np-artist');if(pa)pa.textContent=artistName;
-    if(trackId&&trackId!==S.spotifyCurrentTrackId&&!S.spotifyAutoLoading){
+    const needsLyricsForCurrentTrack=trackId&&!S.spotifyAutoLoading&&(trackId!==S.spotifyCurrentTrackId||!S.lyrics.length);
+    if(needsLyricsForCurrentTrack){
       S.spotifyCurrentTrackId=trackId;
       S.title=trackName;S.artist=artistName;
       updateHomeNowPlaying();
