@@ -1648,27 +1648,7 @@ function openPlayer() {
 
 // ── LOAD SONG (from home/popular) ──────────────────────────────────────────
 async function loadSong(title, artist) {
-  S.prevView = S.tab;
-  // Search Spotify and play the track automatically
-  const token = await getValidToken();
-  if (token) {
-    try {
-      const q = encodeURIComponent((title + ' ' + artist).trim());
-      const market = LANG_CONFIG[S.sourceLang]?.market || 'TW';
-      const r = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=1&market=${market}`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (r.ok) {
-        const data = await r.json();
-        const track = data.tracks?.items?.[0];
-        if (track?.uri) {
-          await spotifyPlay(token, { uris: [track.uri] });
-          S.spotifyCurrentTrackId = null;
-        }
-      }
-    } catch(e) {}
-  }
-  await autoLoadSpotifyTrack(title, artist || '');
+  return playSuggestedSong(title, artist);
 }
 // ── SPOTIFY: PKCE AUTH ─────────────────────────────────────────────────────
 function generateCodeVerifier(len=128){const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';const arr=new Uint8Array(len);crypto.getRandomValues(arr);return Array.from(arr).map(b=>chars[b%chars.length]).join('');}
@@ -1929,7 +1909,7 @@ async function fetchPopularSongs(){
     'linear-gradient(135deg,#1a9c8a,#0d5c52)',
   ];
   grid.innerHTML=songs.map((s,i)=>`
-    <div class="song-row" id="pr-${i}" onclick="loadSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
+    <div class="song-row" id="pr-${i}" onclick="playSuggestedSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
       <div class="sr-art" id="pa-${i}" style="position:relative;overflow:hidden">
         <div style="width:100%;height:100%;border-radius:12px;background:${GRADS[i]};display:flex;align-items:center;justify-content:center">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M9 17V7l9-2v10"/><circle cx="7" cy="17" r="2.5"/><circle cx="16" cy="15" r="2.5"/></svg>
@@ -2013,34 +1993,171 @@ async function fetchPopularSongs(){
 }
 
 
-async function spotifyPlay(token, body) {
-  const tryPlay = async (extraParam='') => fetch(
-    `https://api.spotify.com/v1/me/player/play${extraParam}`,
-    { method:'PUT', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify(body) }
-  );
-  let resp = await tryPlay();
-  if (resp.status === 204 || resp.status === 200) return true; // success
-  if (resp.status === 403) { alert('Playback control requires Spotify Premium.'); return false; }
-  // 404/202 = no active device — find one and retry
+
+async function getSpotifyActiveDevice(token) {
   try {
-    const devResp = await fetch('https://api.spotify.com/v1/me/player/devices', { headers:{'Authorization':'Bearer '+token} });
-    if (!devResp.ok) return false;
-    const { devices } = await devResp.json();
-    const device = devices?.find(d => !d.is_restricted) || devices?.[0];
-    if (!device) { return false; }
-    // Transfer playback to device then play
-    await fetch('https://api.spotify.com/v1/me/player', { method:'PUT', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({ device_ids:[device.id], play:false }) });
-    await new Promise(r => setTimeout(r, 400)); // brief wait for transfer
-    await tryPlay(`?device_id=${device.id}`);
-    return true;
-  } catch(e) { return false; }
+    const r = await fetch('https://api.spotify.com/v1/me/player/devices', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const devices = d.devices || [];
+    return devices.find(x => x.is_active && !x.is_restricted) || devices.find(x => !x.is_restricted) || devices[0] || null;
+  } catch (e) {
+    return null;
+  }
 }
 
-async function playSpotifyCard(uri,title,artist){
-  const token=await getValidToken();
-  if(token) await spotifyPlay(token, {uris:[uri]});
-  S.spotifyCurrentTrackId=null;
-  autoLoadSpotifyTrack(title,artist);
+async function spotifyPlayTrackUri(token, uri) {
+  if (!token || !uri) return false;
+
+  const device = await getSpotifyActiveDevice(token);
+  if (!device) {
+    alert('Open Spotify on your phone or computer first, play anything once, then tap the song again.');
+    return false;
+  }
+
+  // Make sure playback is attached to that device before starting the requested song.
+  try {
+    await fetch('https://api.spotify.com/v1/me/player', {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ device_ids: [device.id], play: false })
+    });
+    await new Promise(r => setTimeout(r, 300));
+  } catch (e) {}
+
+  const r = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(device.id)}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ uris: [uri] })
+  });
+
+  if (r.status === 204 || r.status === 202 || r.status === 200) return true;
+
+  if (r.status === 403) {
+    alert('Spotify playback control requires Spotify Premium. You can still use Melozi with songs already playing in Spotify.');
+    return false;
+  }
+
+  if (r.status === 404) {
+    alert('No active Spotify device found. Open Spotify, play any song once, then come back and tap this song again.');
+    return false;
+  }
+
+  return false;
+}
+
+async function spotifyPlay(token, body) {
+  if (body?.uris?.[0]) return spotifyPlayTrackUri(token, body.uris[0]);
+  return false;
+}
+
+async function playSuggestedSong(title, artist) {
+  S.prevView = S.tab;
+  showScreen('player');
+  showLyricStatus('loading', `Opening ${title} on Spotify…`, artist || 'Starting playback and syncing lyrics.');
+
+  const token = await getValidToken();
+  if (!token) {
+    showLyricStatus('idle', 'Connect Spotify', 'Connect Spotify first, then tap the song again.');
+    handleSpotifyConnect();
+    return;
+  }
+
+  try {
+    const market = LANG_CONFIG[S.sourceLang]?.market || 'TW';
+    const q = encodeURIComponent(`${title} ${artist || ''}`.trim());
+    const r = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=1&market=${market}`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    if (!r.ok) throw new Error('Spotify search failed');
+    const data = await r.json();
+    const track = data.tracks?.items?.[0];
+
+    if (!track?.uri) {
+      showLyricStatus('error', 'Song not found on Spotify', 'Try another suggested song.');
+      return;
+    }
+
+    const trackTitle = track.name || title;
+    const trackArtist = track.artists?.[0]?.name || artist || '';
+    const albumArt = track.album?.images?.[1]?.url || track.album?.images?.[0]?.url || null;
+
+    S.spotifyCurrentTrackId = track.id || null;
+    S.spotifyCurrentTrackUri = track.uri;
+    if (albumArt) S.spotifyCurrentAlbumArt = albumArt;
+    S.title = trackTitle;
+    S.artist = trackArtist;
+    S.lyrics = [];
+    S.activeIdx = 0;
+    S.offset = 0;
+    S.running = true;
+    S.syncStart = Date.now();
+    updatePlayButtons();
+    updateHomeNowPlaying();
+
+    const played = await spotifyPlayTrackUri(token, track.uri);
+    if (!played) {
+      showLyricStatus('loading', `Found ${trackTitle}`, 'Open Spotify, start playback, then Melozi can sync it.');
+      return;
+    }
+
+    showLyricStatus('loading', `Finding synced lyrics for ${trackTitle}`, trackArtist || 'Fetching synced lyrics…');
+    await autoLoadSpotifyTrack(trackTitle, trackArtist);
+
+    setTimeout(() => { pollSpotify(); }, 600);
+  } catch (e) {
+    showLyricStatus('error', 'Could not play this song', 'Open Spotify, then try again.');
+  }
+}
+
+async function playSuggestedSpotifyUri(uri, title, artist, albumArt) {
+  S.prevView = S.tab;
+  showScreen('player');
+  showLyricStatus('loading', `Opening ${title} on Spotify…`, artist || 'Starting playback and syncing lyrics.');
+
+  const token = await getValidToken();
+  if (!token) {
+    showLyricStatus('idle', 'Connect Spotify', 'Connect Spotify first, then tap the song again.');
+    handleSpotifyConnect();
+    return;
+  }
+
+  S.spotifyCurrentTrackUri = uri;
+  if (albumArt) S.spotifyCurrentAlbumArt = albumArt;
+  S.spotifyCurrentTrackId = null;
+  S.title = title;
+  S.artist = artist || '';
+  S.lyrics = [];
+  S.activeIdx = 0;
+  S.offset = 0;
+  S.running = true;
+  S.syncStart = Date.now();
+  updatePlayButtons();
+  updateHomeNowPlaying();
+
+  const played = await spotifyPlayTrackUri(token, uri);
+  if (!played) {
+    showLyricStatus('loading', `Found ${title}`, 'Open Spotify, start playback, then Melozi can sync it.');
+    return;
+  }
+
+  showLyricStatus('loading', `Finding synced lyrics for ${title}`, artist || 'Fetching synced lyrics…');
+  await autoLoadSpotifyTrack(title, artist || '');
+
+  setTimeout(() => { pollSpotify(); }, 600);
+}
+
+async function playSpotifyCard(uri, title, artist) {
+  return playSuggestedSpotifyUri(uri, title, artist, S.spotifyCurrentAlbumArt || '');
 }
 
 // ── AUTO-LOAD LYRICS ───────────────────────────────────────────────────────
