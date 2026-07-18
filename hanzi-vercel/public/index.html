@@ -1936,10 +1936,15 @@ async function fetchPopularSongs(){
           if(track?.album?.images?.length){
             imgUrl=track.album.images[1]?.url||track.album.images[0]?.url;
             // Also upgrade onclick to Spotify URI
-            const st=track.name.replace(/'/g,"\\'");
-            const sa=(track.artists[0]?.name||'').replace(/'/g,"\\'");
             const row=document.getElementById('pr-'+i);
-            if(row)row.setAttribute('onclick',`playSpotifyCard('${track.uri}','${st}','${sa}')`);
+            if(row){
+              row.onclick=()=>playSpotifyCard(
+                track.uri,
+                track.name,
+                track.artists?.[0]?.name||'',
+                imgUrl||''
+              );
+            }
           }
         }
       }catch(e){}
@@ -1994,75 +1999,219 @@ async function fetchPopularSongs(){
 
 
 
-async function getSpotifyActiveDevice(token) {
+function spotifyUriToWebUrl(uri) {
+  const trackId = String(uri || '').split(':').pop();
+  return trackId ? `https://open.spotify.com/track/${encodeURIComponent(trackId)}` : '';
+}
+
+async function getSpotifyDevices(token) {
   try {
     const r = await fetch('https://api.spotify.com/v1/me/player/devices', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
-    if (!r.ok) return null;
+    if (!r.ok) return [];
     const d = await r.json();
-    const devices = d.devices || [];
-    return devices.find(x => x.is_active && !x.is_restricted) || devices.find(x => !x.is_restricted) || devices[0] || null;
+    return (d.devices || []).filter(x => x?.id && !x.is_restricted);
   } catch (e) {
-    return null;
+    return [];
   }
 }
 
 async function spotifyPlayTrackUri(token, uri) {
-  if (!token || !uri) return false;
+  if (!token || !uri) return { ok:false, reason:'missing' };
 
-  const device = await getSpotifyActiveDevice(token);
-  if (!device) {
-    alert('Open Spotify on your phone or computer first, play anything once, then tap the song again.');
-    return false;
-  }
+  const devices = await getSpotifyDevices(token);
+  const device =
+    devices.find(x => x.is_active) ||
+    devices.find(x => x.type === 'Smartphone') ||
+    devices[0];
 
-  // Make sure playback is attached to that device before starting the requested song.
+  if (!device) return { ok:false, reason:'no_device' };
+
   try {
+    // Transfer playback first, because Spotify may list a device without
+    // considering it the active playback target yet.
     await fetch('https://api.spotify.com/v1/me/player', {
       method: 'PUT',
       headers: {
         'Authorization': 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ device_ids: [device.id], play: false })
+      body: JSON.stringify({ device_ids:[device.id], play:false })
     });
-    await new Promise(r => setTimeout(r, 300));
-  } catch (e) {}
 
-  const r = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(device.id)}`, {
-    method: 'PUT',
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ uris: [uri] })
-  });
+    await new Promise(r => setTimeout(r, 450));
 
-  if (r.status === 204 || r.status === 202 || r.status === 200) return true;
+    const r = await fetch(
+      `https://api.spotify.com/v1/me/player/play?device_id=${encodeURIComponent(device.id)}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ uris:[uri], position_ms:0 })
+      }
+    );
 
-  if (r.status === 403) {
-    alert('Spotify playback control requires Spotify Premium. You can still use Melozi with songs already playing in Spotify.');
-    return false;
+    if (r.status === 204 || r.status === 202 || r.status === 200) {
+      return { ok:true, device };
+    }
+    if (r.status === 403) return { ok:false, reason:'premium' };
+    if (r.status === 404) return { ok:false, reason:'no_device' };
+    return { ok:false, reason:`spotify_${r.status}` };
+  } catch (e) {
+    return { ok:false, reason:'network' };
   }
-
-  if (r.status === 404) {
-    alert('No active Spotify device found. Open Spotify, play any song once, then come back and tap this song again.');
-    return false;
-  }
-
-  return false;
 }
 
 async function spotifyPlay(token, body) {
-  if (body?.uris?.[0]) return spotifyPlayTrackUri(token, body.uris[0]);
+  if (body?.uris?.[0]) {
+    const result = await spotifyPlayTrackUri(token, body.uris[0]);
+    return !!result.ok;
+  }
   return false;
+}
+
+async function waitForSpotifyTrack(expectedUri, title, artist, timeoutMs=45000) {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const token = await getValidToken();
+    if (!token) return false;
+
+    try {
+      const r = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+        headers: { 'Authorization':'Bearer ' + token }
+      });
+
+      if (r.status === 200) {
+        const data = await r.json();
+        const currentUri = data.item?.uri || '';
+
+        if (currentUri === expectedUri) {
+          const trackTitle = data.item?.name || title;
+          const trackArtist = data.item?.artists?.[0]?.name || artist || '';
+
+          S.spotifyCurrentTrackId = data.item?.id || null;
+          S.spotifyCurrentTrackUri = currentUri;
+          S.spotifyCurrentAlbumArt =
+            data.item?.album?.images?.[1]?.url ||
+            data.item?.album?.images?.[0]?.url ||
+            S.spotifyCurrentAlbumArt;
+          S.title = trackTitle;
+          S.artist = trackArtist;
+          S.spotifyIsPlaying = !!data.is_playing;
+          S.running = !!data.is_playing;
+          S.offset = (data.progress_ms || 0) / 1000;
+          S.lastPollAt = Date.now();
+          if (S.running) S.syncStart = Date.now();
+
+          updatePlayButtons();
+          updateHomeNowPlaying();
+
+          if (!S.lyrics.length && !S.spotifyAutoLoading) {
+            await autoLoadSpotifyTrack(trackTitle, trackArtist);
+          } else {
+            rerender();
+          }
+          return true;
+        }
+      }
+    } catch (e) {}
+
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  return false;
+}
+
+function openSelectedTrackInSpotify(uri) {
+  const webUrl = spotifyUriToWebUrl(uri);
+  if (!webUrl) return;
+
+  // The universal Spotify URL opens the installed Spotify app on iOS when
+  // available, otherwise it falls back to Spotify's web page.
+  window.location.href = webUrl;
+}
+
+async function finishSuggestedSongLaunch(uri, title, artist, albumArt) {
+  const token = await getValidToken();
+  if (!token) {
+    showLyricStatus('idle', 'Connect Spotify', 'Connect Spotify first, then tap the song again.');
+    handleSpotifyConnect();
+    return;
+  }
+
+  S.spotifyCurrentTrackUri = uri;
+  if (albumArt) S.spotifyCurrentAlbumArt = albumArt;
+  S.title = title;
+  S.artist = artist || '';
+  S.lyrics = [];
+  S.activeIdx = 0;
+  S.offset = 0;
+  S.running = false;
+  updatePlayButtons();
+  updateHomeNowPlaying();
+
+  const result = await spotifyPlayTrackUri(token, uri);
+
+  if (result.ok) {
+    S.running = true;
+    S.spotifyIsPlaying = true;
+    S.syncStart = Date.now();
+    updatePlayButtons();
+
+    showLyricStatus(
+      'loading',
+      `Finding synced lyrics for ${title}`,
+      artist || 'Spotify playback started.'
+    );
+
+    // Load lyrics immediately rather than waiting for the next Spotify poll.
+    await autoLoadSpotifyTrack(title, artist || '');
+    setTimeout(() => pollSpotify(), 700);
+    return;
+  }
+
+  if (result.reason === 'premium') {
+    showLyricStatus(
+      'error',
+      'Spotify Premium is required',
+      'Spotify only permits remote playback control for Premium accounts. You can still open the song in Spotify and return to sync it.'
+    );
+    return;
+  }
+
+  // Spotify often does not expose the iPhone app as an available Connect
+  // device while Safari is in front. Open the exact track in Spotify and
+  // keep watching for it when the user returns.
+  showLyricStatus(
+    'loading',
+    `Opening ${title} in Spotify`,
+    'Start the song, then return to Melozi. Lyrics will sync automatically.'
+  );
+
+  // Fetch lyrics in parallel so they are ready by the time the user returns.
+  autoLoadSpotifyTrack(title, artist || '').catch(() => {});
+
+  waitForSpotifyTrack(uri, title, artist || '').then(found => {
+    if (!found && S.view === 'player' && !S.lyrics.length) {
+      showLyricStatus(
+        'idle',
+        'Waiting for Spotify',
+        'Play the selected song in Spotify, then return here.'
+      );
+    }
+  });
+
+  // Give the status screen a moment to render before leaving Safari.
+  setTimeout(() => openSelectedTrackInSpotify(uri), 180);
 }
 
 async function playSuggestedSong(title, artist) {
   S.prevView = S.tab;
   showScreen('player');
-  showLyricStatus('loading', `Opening ${title} on Spotify…`, artist || 'Starting playback and syncing lyrics.');
+  showLyricStatus('loading', `Finding ${title} on Spotify…`, artist || 'Preparing playback and lyrics.');
 
   const token = await getValidToken();
   if (!token) {
@@ -2074,9 +2223,10 @@ async function playSuggestedSong(title, artist) {
   try {
     const market = LANG_CONFIG[S.sourceLang]?.market || 'TW';
     const q = encodeURIComponent(`${title} ${artist || ''}`.trim());
-    const r = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=1&market=${market}`, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    const r = await fetch(
+      `https://api.spotify.com/v1/search?q=${q}&type=track&limit=1&market=${market}`,
+      { headers: { 'Authorization':'Bearer ' + token } }
+    );
 
     if (!r.ok) throw new Error('Spotify search failed');
     const data = await r.json();
@@ -2089,75 +2239,27 @@ async function playSuggestedSong(title, artist) {
 
     const trackTitle = track.name || title;
     const trackArtist = track.artists?.[0]?.name || artist || '';
-    const albumArt = track.album?.images?.[1]?.url || track.album?.images?.[0]?.url || null;
+    const albumArt =
+      track.album?.images?.[1]?.url ||
+      track.album?.images?.[0]?.url ||
+      '';
 
     S.spotifyCurrentTrackId = track.id || null;
-    S.spotifyCurrentTrackUri = track.uri;
-    if (albumArt) S.spotifyCurrentAlbumArt = albumArt;
-    S.title = trackTitle;
-    S.artist = trackArtist;
-    S.lyrics = [];
-    S.activeIdx = 0;
-    S.offset = 0;
-    S.running = true;
-    S.syncStart = Date.now();
-    updatePlayButtons();
-    updateHomeNowPlaying();
-
-    const played = await spotifyPlayTrackUri(token, track.uri);
-    if (!played) {
-      showLyricStatus('loading', `Found ${trackTitle}`, 'Open Spotify, start playback, then Melozi can sync it.');
-      return;
-    }
-
-    showLyricStatus('loading', `Finding synced lyrics for ${trackTitle}`, trackArtist || 'Fetching synced lyrics…');
-    await autoLoadSpotifyTrack(trackTitle, trackArtist);
-
-    setTimeout(() => { pollSpotify(); }, 600);
+    await finishSuggestedSongLaunch(track.uri, trackTitle, trackArtist, albumArt);
   } catch (e) {
-    showLyricStatus('error', 'Could not play this song', 'Open Spotify, then try again.');
+    showLyricStatus('error', 'Could not open this song', 'Check your connection and try again.');
   }
 }
 
 async function playSuggestedSpotifyUri(uri, title, artist, albumArt) {
   S.prevView = S.tab;
   showScreen('player');
-  showLyricStatus('loading', `Opening ${title} on Spotify…`, artist || 'Starting playback and syncing lyrics.');
-
-  const token = await getValidToken();
-  if (!token) {
-    showLyricStatus('idle', 'Connect Spotify', 'Connect Spotify first, then tap the song again.');
-    handleSpotifyConnect();
-    return;
-  }
-
-  S.spotifyCurrentTrackUri = uri;
-  if (albumArt) S.spotifyCurrentAlbumArt = albumArt;
-  S.spotifyCurrentTrackId = null;
-  S.title = title;
-  S.artist = artist || '';
-  S.lyrics = [];
-  S.activeIdx = 0;
-  S.offset = 0;
-  S.running = true;
-  S.syncStart = Date.now();
-  updatePlayButtons();
-  updateHomeNowPlaying();
-
-  const played = await spotifyPlayTrackUri(token, uri);
-  if (!played) {
-    showLyricStatus('loading', `Found ${title}`, 'Open Spotify, start playback, then Melozi can sync it.');
-    return;
-  }
-
-  showLyricStatus('loading', `Finding synced lyrics for ${title}`, artist || 'Fetching synced lyrics…');
-  await autoLoadSpotifyTrack(title, artist || '');
-
-  setTimeout(() => { pollSpotify(); }, 600);
+  showLyricStatus('loading', `Opening ${title} on Spotify…`, artist || 'Preparing playback and lyrics.');
+  await finishSuggestedSongLaunch(uri, title, artist || '', albumArt || '');
 }
 
-async function playSpotifyCard(uri, title, artist) {
-  return playSuggestedSpotifyUri(uri, title, artist, S.spotifyCurrentAlbumArt || '');
+async function playSpotifyCard(uri, title, artist, albumArt='') {
+  return playSuggestedSpotifyUri(uri, title, artist, albumArt);
 }
 
 // ── AUTO-LOAD LYRICS ───────────────────────────────────────────────────────
