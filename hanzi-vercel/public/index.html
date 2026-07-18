@@ -236,6 +236,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .dk-empty-ic{width:72px;height:72px;border-radius:22px;background:var(--abg);display:flex;align-items:center;justify-content:center;color:var(--a);margin-bottom:6px}
 .dk-empty h3{font:700 22px/1.2 'Space Grotesk';letter-spacing:-.02em}
 .dk-empty p{font-size:14px;color:var(--soft);line-height:1.6;max-width:260px}
+.dk-review-complete{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 20px;gap:12px}
+.dk-review-complete-ic{width:70px;height:70px;border-radius:22px;background:var(--abg);display:flex;align-items:center;justify-content:center;color:var(--a);margin-bottom:4px}
+.dk-review-complete h3{font:700 24px/1.2 'Space Grotesk';letter-spacing:-.02em}
+.dk-review-complete p{font-size:14px;color:var(--soft);line-height:1.6;max-width:290px}
+.dk-review-complete-actions{display:flex;gap:10px;width:100%;max-width:320px;margin-top:8px}
+.dk-review-complete-actions .btn{flex:1;padding-left:12px;padding-right:12px}
 
 /* === PROFILE SCREEN === */
 #screen-profile{top:0;left:0;right:0;bottom:var(--tab-h);display:flex;flex-direction:column;overflow:hidden}
@@ -523,6 +529,18 @@ body.dev-mode .dev-only{display:flex!important}
 #card-inner.is-phrase #card-front-lyric{display:none}
 #card-inner.is-phrase #card-front-song{margin-top:18px}
 #card-inner.is-phrase #card-back-eng{margin-top:2px}
+.card-front-sound{display:none}
+/* Full lyric-line cards use a dedicated, uncluttered layout. */
+#card-inner.is-line-card .card-face.front{justify-content:center;gap:16px;padding:28px 24px}
+#card-inner.is-line-card #card-front-char{flex:0 1 auto;width:100%;line-height:1.28;letter-spacing:.01em}
+#card-inner.is-line-card #card-front-lyric,#card-inner.is-line-card #card-front-song{display:none!important}
+#card-inner.is-line-card .card-front-sound{display:inline-flex;margin:0}
+#card-inner.is-line-card .card-tap{display:none}
+#card-inner.is-line-card .card-face.back{justify-content:center;gap:14px;padding:30px 26px}
+#card-inner.is-line-card #card-back-pin{width:100%;margin:0;text-align:center;line-height:1.55;overflow-wrap:anywhere}
+#card-inner.is-line-card #card-back-eng{width:100%;margin:0;text-align:center;line-height:1.25;overflow-wrap:anywhere}
+#card-inner.is-line-card #card-back-char,#card-inner.is-line-card #card-ctx{display:none!important}
+#card-inner.is-line-card .card-sound-btn{margin:6px 0 0}
 #card-drag-wrap{touch-action:none!important;overscroll-behavior:none}
 
 /* Profile product hierarchy */
@@ -897,8 +915,8 @@ body.dev-mode .dev-only{display:flex!important}
 
   <!-- CARD MODE -->
   <div id="dk-cards-mode">
-    <div class="dk-prog-wrap"><div class="dk-prog"><div class="dk-prog-fill" id="dk-prog-fill" style="width:0%"></div></div></div>
-    <div class="dk-hint">← AGAIN  ·  ↓ HARD  ·  TAP TO FLIP  ·  GOT IT →</div>
+    <div class="dk-prog-wrap" id="dk-prog-wrap"><div class="dk-prog"><div class="dk-prog-fill" id="dk-prog-fill" style="width:0%"></div></div></div>
+    <div class="dk-hint" id="dk-hint">← AGAIN  ·  ↓ HARD  ·  TAP TO FLIP  ·  GOT IT →</div>
 
     <div class="dk-card-area" id="dk-card-area">
       <!-- Next card peek -->
@@ -914,6 +932,10 @@ body.dev-mode .dev-only{display:flex!important}
         <div id="card-inner" onclick="flipCard()">
           <div class="card-face front">
             <div id="card-front-char" class="cjk">字</div>
+            <button class="card-sound-btn card-front-sound" onclick="event.stopPropagation();hearCurrentCard()" aria-label="Hear this saved line">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>
+              Hear it
+            </button>
             <div id="card-front-lyric" class="card-front-lyric cjk"></div>
             <div id="card-front-song"></div>
             <div class="card-tap" id="card-tap-hint" data-i18n="tapToReveal">TAP TO REVEAL</div>
@@ -941,6 +963,18 @@ body.dev-mode .dev-only{display:flex!important}
       <button class="dk-btn" onclick="cardAction('again')" data-i18n="again">Again</button>
       <button class="dk-btn" onclick="cardAction('hard')" data-i18n="hard">Hard</button>
       <button class="dk-btn got" onclick="cardAction('got')" data-i18n="gotIt">Got it</button>
+    </div>
+
+    <div id="dk-review-complete" class="dk-review-complete hidden">
+      <div class="dk-review-complete-ic">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <h3>Review complete</h3>
+      <p>Cards marked <strong>Again</strong> return sooner, <strong>Hard</strong> cards return regularly, and <strong>Got it</strong> cards wait longer before the next review.</p>
+      <div class="dk-review-complete-actions">
+        <button class="btn btn-g" onclick="goTab('home')">Back to Listen</button>
+        <button class="btn btn-a" onclick="practiceAllCards()">Practice all</button>
+      </div>
     </div>
   </div>
 
@@ -1226,12 +1260,7 @@ body.dev-mode .dev-only{display:flex!important}
     <span class="dt-state" id="dt-eng-state">On</span>
     <button class="tog on" id="tog-eng" onclick="toggleSwitch('eng')"></button>
   </div>
-  <div class="dt-row">
-    <span class="dt-label">Deck swipe sound</span>
-    <span class="dt-state" id="dt-swipe-sound-state">On</span>
-    <button class="tog on" id="tog-swipe-sound" role="switch" aria-checked="true" onclick="toggleSwipeSound()"></button>
-  </div>
-  <div class="dt-tip">Tip: use Learn mode to inspect and save words. Deck swipe sounds can be turned off here anytime.</div>
+  <div class="dt-tip">Tip: use Learn mode to inspect words, phrases, and complete lyric lines before saving them to your deck.</div>
 </div>
 
 <!-- Song info sheet -->
@@ -1509,7 +1538,8 @@ const S = {
   trialStart: parseInt(localStorage.getItem('ml_trial_start') || '0'),
   aiConsent: localStorage.getItem('ml_ai_consent') === '1',
   analyticsConsent: localStorage.getItem('ml_analytics_consent') === '1',
-  swipeSound: localStorage.getItem('ml_swipe_sound') !== 'off',
+  reviewQueue: null, reviewSessionTotal: 0, reviewCompleted: 0,
+  reviewSessionComplete: false, reviewSessionVersion: 0, reviewCompletedAt: 0,
 };
 const LANG_CODE={'English':'en','Malay':'ms','Indonesian':'id','Thai':'th','Spanish':'es','French':'fr','German':'de','Arabic':'ar'};
 const TRANSLATIONS={
@@ -1593,7 +1623,6 @@ window.onload = async () => {
   initPwaPrompt();
   initSeekBar();
   initLyricWordTaps();
-  syncSwipeSoundToggle();
   if (params.get('code')) {
     await handleSpotifyCallback(params.get('code'));
     if (S.setupDone) { showScreen('home'); }
@@ -1864,7 +1893,7 @@ const TOUR_STEPS = [
     placement:'above',
     step:'6 of 6',
     title:'Review with cards',
-    body:'Tap to reveal. Swipe right for Got it, left for Again, or down for Hard. A soft swipe sound confirms each action.',
+    body:'Tap to reveal. Swipe right for Got it, left for Again, or down for Hard. Cards you miss return sooner in the review flow.',
     cta:'Start listening 🎵'
   }
 ];
@@ -3430,6 +3459,7 @@ function tooltipAddToDeck(){
     }
   }
   localStorage.setItem('ht_deck',JSON.stringify(S.saved));
+  invalidateReviewSession();
   updateBadge();rerender();
   const saved=S.saved.some(s=>s.char===char);
   const addBtn=document.getElementById('tt-add');
@@ -3468,6 +3498,7 @@ function saveAllWords(){
     });
   });
   localStorage.setItem('ht_deck',JSON.stringify(S.saved));
+  invalidateReviewSession();
   updateBadge();rerender();
 }
 
@@ -3529,12 +3560,67 @@ function updateBadge(){
   updateDailyPlan();
 }
 
+function invalidateReviewSession(){
+  S.reviewQueue=null;
+  S.reviewSessionTotal=0;
+  S.reviewCompleted=0;
+  S.reviewSessionComplete=false;
+  S.reviewSessionVersion=S.saved.length;
+  S.reviewCompletedAt=0;
+}
+
+function sortReviewIndices(indices){
+  const statusPriority={again:0,new:1,hard:2,got:3};
+  return [...indices].sort((a,b)=>{
+    const wa=S.saved[a]||{},wb=S.saved[b]||{};
+    const da=Number(wa.dueAt||0),db=Number(wb.dueAt||0);
+    if(da!==db)return da-db;
+    return (statusPriority[wa.status||'new']??1)-(statusPriority[wb.status||'new']??1);
+  });
+}
+
+function startReviewSession({practiceAll=false,preferredIndex=null}={}){
+  const due=getDueCards().map(({index})=>index);
+  let indices=practiceAll||!due.length?S.saved.map((_,i)=>i):due;
+  indices=sortReviewIndices(indices);
+  if(Number.isInteger(preferredIndex)&&indices.includes(preferredIndex)){
+    indices=[preferredIndex,...indices.filter(i=>i!==preferredIndex)];
+  }
+  S.reviewQueue=indices;
+  S.reviewSessionTotal=indices.length;
+  S.reviewCompleted=0;
+  S.reviewSessionComplete=!indices.length;
+  S.reviewSessionVersion=S.saved.length;
+  S.reviewCompletedAt=0;
+  if(indices.length)S.cardIdx=indices[0];
+}
+
+function ensureReviewSession(){
+  if(S.reviewSessionVersion!==S.saved.length){invalidateReviewSession();}
+  if(S.reviewQueue===null){startReviewSession();return;}
+  if(S.reviewSessionComplete&&getDueCards().length){startReviewSession();}
+}
+
+function setReviewCompleteView(show){
+  document.getElementById('dk-prog-wrap')?.classList.toggle('hidden',show);
+  document.getElementById('dk-hint')?.classList.toggle('hidden',show);
+  document.getElementById('dk-card-area')?.classList.toggle('hidden',show);
+  document.getElementById('card-btns')?.classList.toggle('hidden',show);
+  document.getElementById('dk-review-complete')?.classList.toggle('hidden',!show);
+}
+
+function practiceAllCards(){
+  startReviewSession({practiceAll:true});
+  renderDeck();
+}
+
 function renderDeck(){
   const words=S.saved;
   const empty=document.getElementById('dk-empty');
   const cardsMode=document.getElementById('dk-cards-mode');
   const listMode=document.getElementById('dk-list-mode');
   if(!words.length){
+    invalidateReviewSession();
     if(empty)empty.classList.remove('hidden');
     if(cardsMode)cardsMode.classList.add('hidden');
     if(listMode)listMode.classList.add('hidden');
@@ -3543,24 +3629,43 @@ function renderDeck(){
   if(empty)empty.classList.add('hidden');
   if(deckMode==='list'){if(cardsMode)cardsMode.classList.add('hidden');if(listMode)listMode.classList.remove('hidden');renderDeckList();return;}
   if(cardsMode)cardsMode.classList.remove('hidden');if(listMode)listMode.classList.add('hidden');
-  if(S.cardIdx>=words.length)S.cardIdx=0;
-  const w=words[S.cardIdx];S.cardFlipped=false;
-  // Update background next-card peek
-  const nextW = words[(S.cardIdx+1) % words.length];
-  const bgChar = document.getElementById('card-bg-char');
-  if (bgChar) bgChar.textContent = S.cardIdx+1 < words.length ? nextW.char : '';
+
+  ensureReviewSession();
+  if(S.reviewSessionComplete||!S.reviewQueue?.length){
+    setReviewCompleteView(true);
+    document.getElementById('dk-count').textContent='Done';
+    document.getElementById('dk-prog-fill').style.width='100%';
+    return;
+  }
+  setReviewCompleteView(false);
+
+  let currentIndex=S.reviewQueue[0];
+  if(!Number.isInteger(currentIndex)||!words[currentIndex]){
+    startReviewSession({practiceAll:true});
+    currentIndex=S.reviewQueue?.[0];
+    if(!Number.isInteger(currentIndex)){setReviewCompleteView(true);return;}
+  }
+  S.cardIdx=currentIndex;
+  const w=words[currentIndex];S.cardFlipped=false;
+  const nextIndex=S.reviewQueue[1];
+  const nextW=Number.isInteger(nextIndex)?words[nextIndex]:null;
+  const bgChar=document.getElementById('card-bg-char');
+  if(bgChar)bgChar.textContent=nextW?.char||'';
   const cardInner=document.getElementById('card-inner');
+  const lineCard=isSavedLineCard(w);
   cardInner.classList.remove('is-flipped');
   cardInner.classList.toggle('is-phrase',!!w.isPhrase||deckTextLength(w.char)>6);
+  cardInner.classList.toggle('is-line-card',lineCard);
   snapBack(true);
   document.getElementById('card-front-char').textContent=w.char;
-  document.getElementById('card-front-song').textContent=w.song?'— '+w.song:'';
-  // Source sentence on front with word highlighted
+  document.getElementById('card-front-song').textContent=lineCard?'':(w.song?'— '+w.song:'');
   const frontLyric=document.getElementById('card-front-lyric');
   if(frontLyric){
-    const lc=w.lyricChars||S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.char).join('')||'';
-    if(lc&&isWordSavedForHighlight(w.char)){frontLyric.innerHTML=esc(lc).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a);font-weight:700">${esc(w.char)}</span>`);} else if(lc){frontLyric.innerHTML=esc(lc);}
-    else{frontLyric.innerHTML='';}
+    if(lineCard){frontLyric.innerHTML='';}
+    else{
+      const lc=w.lyricChars||S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.char).join('')||'';
+      if(lc&&isWordSavedForHighlight(w.char)){frontLyric.innerHTML=esc(lc).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a);font-weight:700">${esc(w.char)}</span>`);} else if(lc){frontLyric.innerHTML=esc(lc);} else{frontLyric.innerHTML='';}
+    }
   }
   document.getElementById('card-back-pin').textContent=w.pinyin||'';
   const cardEng=getBestWordEnglish(w,{english:w.lyricEng||''});
@@ -3570,33 +3675,44 @@ function renderDeck(){
   const ctxLabel=document.getElementById('card-ctx-label');
   const ctx=document.getElementById('card-ctx');
   if(ctx){
-    const lyricPin = w.lyricPin || S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.pinyin).join(' ') || '';
-    const lyricChars = w.lyricChars || S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.char).join('') || '';
-    const lyricEng = w.lyricEng || S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.english || '';
-    ctx.style.display='block';
-    if(lyricChars||lyricPin){
-      if(ctxLabel)ctxLabel.textContent='FROM THIS LINE';
-      document.getElementById('card-ctx-pin').textContent=lyricPin;
-      const ce=document.getElementById('card-ctx-chars');
-      if(ce){const hi=isWordSavedForHighlight(w.char)?esc(lyricChars).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a)">${esc(w.char)}</span>`):esc(lyricChars);ce.innerHTML=hi;}
-      document.getElementById('card-ctx-eng').textContent=lyricEng;
-    } else {
-      if(ctxLabel)ctxLabel.textContent='FROM THE SONG';
-      document.getElementById('card-ctx-pin').textContent='';
-      const ce=document.getElementById('card-ctx-chars');
-      if(ce)ce.innerHTML=w.song?`<span style="color:var(--text);font-size:15px">${esc(w.song)}</span>`:'';
-      document.getElementById('card-ctx-eng').textContent=w.artist||'';
+    if(lineCard){ctx.style.display='none';}
+    else{
+      const lyricPin=w.lyricPin||S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.pinyin).join(' ')||'';
+      const lyricChars=w.lyricChars||S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.words?.map(x=>x.char).join('')||'';
+      const lyricEng=w.lyricEng||S.lyrics.find(l=>l.words?.some(x=>x.char===w.char))?.english||'';
+      ctx.style.display='block';
+      if(lyricChars||lyricPin){
+        if(ctxLabel)ctxLabel.textContent='FROM THIS LINE';
+        document.getElementById('card-ctx-pin').textContent=lyricPin;
+        const ce=document.getElementById('card-ctx-chars');
+        if(ce){const hi=isWordSavedForHighlight(w.char)?esc(lyricChars).replace(new RegExp(esc(w.char),'g'),`<span style="color:var(--a)">${esc(w.char)}</span>`):esc(lyricChars);ce.innerHTML=hi;}
+        document.getElementById('card-ctx-eng').textContent=lyricEng;
+      }else{
+        if(ctxLabel)ctxLabel.textContent='FROM THE SONG';
+        document.getElementById('card-ctx-pin').textContent='';
+        const ce=document.getElementById('card-ctx-chars');
+        if(ce)ce.innerHTML=w.song?`<span style="color:var(--text);font-size:15px">${esc(w.song)}</span>`:'';
+        document.getElementById('card-ctx-eng').textContent=w.artist||'';
+      }
     }
   }
-  const total=words.length;
-  document.getElementById('dk-count').textContent=`${S.cardIdx+1} / ${total}`;
-  document.getElementById('dk-prog-fill').style.width=(((S.cardIdx+1)/total)*100)+'%';
+  const total=Math.max(1,S.reviewSessionTotal);
+  const current=Math.min(total,S.reviewCompleted+1);
+  document.getElementById('dk-count').textContent=`${current} / ${total}`;
+  document.getElementById('dk-prog-fill').style.width=((current/total)*100)+'%';
   requestAnimationFrame(()=>{fitDeckCardContent(w);initCardSwipe();});
 }
 
 
 function deckTextLength(value){
   return Array.from(String(value||'').replace(/\s+/g,'')).length;
+}
+function isSavedLineCard(word){
+  if(!word)return false;
+  if(word.isLine)return true;
+  const compact=value=>String(value||'').replace(/\s+/g,'').trim();
+  // Backward-compatible detection for lyric lines saved before isLine existed.
+  return !!word.isPhrase&&compact(word.char)!==''&&compact(word.char)===compact(word.lyricChars);
 }
 function fitTextInside(el,maxPx,minPx,maxHeight){
   if(!el)return;
@@ -3617,14 +3733,31 @@ function fitDeckCardContent(word){
   if(!inner||!frontFace||!backFace||!word)return;
   const len=deckTextLength(word.char);
   const phrase=!!word.isPhrase||len>6;
+  const lineCard=isSavedLineCard(word);
   inner.classList.toggle('is-phrase',phrase);
+  inner.classList.toggle('is-line-card',lineCard);
   const front=document.getElementById('card-front-char');
+  const backPin=document.getElementById('card-back-pin');
+  const backEng=document.getElementById('card-back-eng');
+  const backChar=document.getElementById('card-back-char');
+
+  if(lineCard){
+    // The question side is only the saved lyric and audio. Leave generous room
+    // so even long CJK lines remain fully visible instead of being clipped.
+    const frontMax=len>32?30:len>24?34:len>17?40:48;
+    fitTextInside(front,frontMax,22,Math.max(240,frontFace.clientHeight*.68));
+
+    const pinLen=deckTextLength(backPin?.textContent||'');
+    const engLen=deckTextLength(backEng?.textContent||'');
+    fitTextInside(backPin,pinLen>95?14:pinLen>68?16:18,12,Math.max(84,backFace.clientHeight*.22));
+    fitTextInside(backEng,engLen>105?19:engLen>72?22:engLen>45?25:29,16,Math.max(150,backFace.clientHeight*.42));
+    return;
+  }
+
   const frontMax=phrase?(len>26?28:len>18?34:len>12?42:52):(len>4?66:96);
   fitTextInside(front,frontMax,phrase?20:36,phrase?Math.max(150,frontFace.clientHeight*.58):Math.max(150,frontFace.clientHeight*.48));
-  const backEng=document.getElementById('card-back-eng');
   const engLen=deckTextLength(backEng?.textContent||'');
   fitTextInside(backEng,engLen>65?22:engLen>38?26:32,16,Math.max(90,backFace.clientHeight*.30));
-  const backChar=document.getElementById('card-back-char');
   fitTextInside(backChar,phrase?(len>20?20:26):36,16,Math.max(58,backFace.clientHeight*.18));
 }
 
@@ -3811,7 +3944,6 @@ function initCardSwipe() {
     if(!S.saved.length)return false;
     activeId=id;moved=false;drag.on=true;
     drag.sx=drag.cx=x;drag.sy=drag.cy=y;
-    primeSwipeAudio();
     return true;
   };
   const move=(x,y,id,event)=>{
@@ -3876,63 +4008,6 @@ function initCardSwipe() {
 }
 
 
-let swipeAudioContext=null;
-function getSwipeAudioContext(){
-  if(!swipeAudioContext){
-    const AC=window.AudioContext||window.webkitAudioContext;
-    if(!AC)return null;
-    swipeAudioContext=new AC();
-  }
-  return swipeAudioContext;
-}
-function primeSwipeAudio(){
-  if(!S.swipeSound)return;
-  const ctx=getSwipeAudioContext();
-  if(ctx?.state==='suspended')ctx.resume().catch(()=>{});
-}
-function playSwipeSound(action='got'){
-  if(!S.swipeSound)return;
-  const ctx=getSwipeAudioContext();
-  if(!ctx)return;
-  if(ctx.state==='suspended')ctx.resume().catch(()=>{});
-  const now=ctx.currentTime;
-  const duration=.17;
-  const frames=Math.max(1,Math.floor(ctx.sampleRate*duration));
-  const buffer=ctx.createBuffer(1,frames,ctx.sampleRate);
-  const data=buffer.getChannelData(0);
-  for(let i=0;i<frames;i++){
-    const p=i/frames;
-    const envelope=Math.sin(Math.PI*p)*(1-p);
-    data[i]=(Math.random()*2-1)*envelope;
-  }
-  const source=ctx.createBufferSource();source.buffer=buffer;
-  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.Q.value=.7;
-  const startFreq=action==='got'?1050:action==='again'?760:620;
-  const endFreq=action==='got'?520:action==='again'?420:300;
-  filter.frequency.setValueAtTime(startFreq,now);
-  filter.frequency.exponentialRampToValueAtTime(endFreq,now+duration);
-  const gain=ctx.createGain();
-  gain.gain.setValueAtTime(.0001,now);
-  gain.gain.exponentialRampToValueAtTime(.032,now+.018);
-  gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
-  source.connect(filter).connect(gain).connect(ctx.destination);
-  source.start(now);source.stop(now+duration+.02);
-}
-function syncSwipeSoundToggle(){
-  const btn=document.getElementById('tog-swipe-sound');
-  const state=document.getElementById('dt-swipe-sound-state');
-  btn?.classList.toggle('on',S.swipeSound);
-  btn?.setAttribute('aria-checked',String(S.swipeSound));
-  if(state)state.textContent=S.swipeSound?'On':'Off';
-}
-function toggleSwipeSound(){
-  S.swipeSound=!S.swipeSound;
-  localStorage.setItem('ml_swipe_sound',S.swipeSound?'on':'off');
-  syncSwipeSoundToggle();
-  if(S.swipeSound){primeSwipeAudio();playSwipeSound('got');}
-}
-
-
 function commitSwipe() {
   const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
   const adx = Math.abs(dx), ady = Math.abs(dy);
@@ -3940,11 +4015,9 @@ function commitSwipe() {
   if (adx > SWIPE_THRESH && adx > ady) {
     const action=dx > 0 ? 'got' : 'again';
     haptic(dx > 0 ? 'success' : 'medium');
-    playSwipeSound(action);
     flyOff(dx > 0 ? 'right' : 'left', action);
   } else if (dy > SWIPE_THRESH && ady > adx) {
     haptic('light');
-    playSwipeSound('hard');
     flyOff('down', 'hard');
   } else {
     snapBack();
@@ -4010,27 +4083,57 @@ function flipCard() {
 }
 
 function cardAction(a) {
-  const word=S.saved[S.cardIdx];
-  if (word) {
+  ensureReviewSession();
+  const currentIndex=S.reviewQueue?.length?S.reviewQueue.shift():S.cardIdx;
+  const word=S.saved[currentIndex];
+  if(word){
     const now=Date.now();
+    const previousStatus=word.status||'new';
+    const previous=Math.max(0,Number(word.intervalDays)||0);
     word.status=a;
     word.lastReviewedAt=now;
     word.reviewCount=(word.reviewCount||0)+1;
-    const previous=Math.max(1,word.intervalDays||1);
-    if(a==='again'){word.intervalDays=0;word.dueAt=now+(10*60*1000);}
-    if(a==='hard'){word.intervalDays=Math.max(1,Math.round(previous*1.4));word.dueAt=now+(word.intervalDays*86400000);}
-    if(a==='got'){word.intervalDays=Math.max(3,Math.round(previous*2.2));word.dueAt=now+(word.intervalDays*86400000);}
-    localStorage.setItem('ht_deck', JSON.stringify(S.saved));
+    if(a==='again'){
+      word.intervalDays=0;
+      word.lapseCount=(word.lapseCount||0)+1;
+      word.dueAt=now+(10*60*1000);
+    }
+    if(a==='hard'){
+      word.intervalDays=previous<1?1:Math.max(1,Math.round(previous*1.35));
+      word.dueAt=now+(word.intervalDays*86400000);
+    }
+    if(a==='got'){
+      if(previousStatus==='again')word.intervalDays=1;
+      else if(previous<1)word.intervalDays=3;
+      else word.intervalDays=Math.max(previous+1,Math.round(previous*2.3));
+      word.dueAt=now+(word.intervalDays*86400000);
+    }
+    localStorage.setItem('ht_deck',JSON.stringify(S.saved));
+  }
+
+  S.reviewCompleted+=1;
+  const shouldRepeat=a==='again'||a==='hard';
+  if(shouldRepeat&&S.reviewQueue?.length){
+    const gap=a==='again'?2:4;
+    const insertAt=Math.min(gap,S.reviewQueue.length);
+    S.reviewQueue.splice(insertAt,0,currentIndex);
+    S.reviewSessionTotal+=1;
+  }
+
+  if(!S.reviewQueue?.length){
+    S.reviewSessionComplete=true;
+    S.reviewCompletedAt=Date.now();
+  }else{
+    S.cardIdx=S.reviewQueue[0];
   }
   updateBadge();
-  if (a === 'again') { renderDeck(); showToast('Scheduled again in 10 minutes.'); return; }
-  S.cardIdx = (S.cardIdx + 1) % Math.max(1, S.saved.length);
   renderDeck();
 }
 
 function removeWord(i) {
   S.saved.splice(i, 1);
   localStorage.setItem('ht_deck', JSON.stringify(S.saved));
+  invalidateReviewSession();
   updateBadge();
   if (S.cardIdx >= S.saved.length) S.cardIdx = Math.max(0, S.saved.length - 1);
   if (deckMode === 'list') renderDeckList(); else renderDeck();
@@ -4038,7 +4141,8 @@ function removeWord(i) {
 }
 
 function resetCard() {
-  if (deckMode === 'list') setDeckMode('cards'); else { S.cardIdx = 0; renderDeck(); }
+  if(deckMode==='list')setDeckMode('cards');
+  else practiceAllCards();
 }
 
 
@@ -4077,7 +4181,7 @@ function updateDailyPlan(){
 }
 function startDailyAction(){
   const due=getDueCards();
-  if(due.length){S.cardIdx=due[0].index;goTab('deck');return;}
+  if(due.length){startReviewSession({preferredIndex:due[0].index});goTab('deck');return;}
   if(S.title&&S.title!=='—'){openPlayer();return;}
   const popular=document.getElementById('popular-grid');
   if(popular)popular.scrollIntoView({behavior:'smooth',block:'start'});
@@ -4115,8 +4219,9 @@ function saveCurrentPhrase(){
   if(S.saved.some(w=>w.char===char&&w.song===S.title)){showToast('This line is already in your deck.');return;}
   const pinyin=line.words?.map(w=>w.pinyin).filter(Boolean).join(' ')||line.pinyin||'';
   const english=line.english||'';
-  S.saved.push({char,pinyin,english,song:S.title,artist:S.artist,lyricPin:pinyin,lyricChars:char,lyricEng:english,isPhrase:true,dueAt:Date.now(),intervalDays:0,reviewCount:0});
+  S.saved.push({char,pinyin,english,song:S.title,artist:S.artist,lyricPin:pinyin,lyricChars:char,lyricEng:english,isPhrase:true,isLine:true,dueAt:Date.now(),intervalDays:0,reviewCount:0});
   localStorage.setItem('ht_deck',JSON.stringify(S.saved));
+  invalidateReviewSession();
   updateBadge();rerender();
   showToast('Saved this lyric line as a phrase.');
 }
