@@ -1665,7 +1665,7 @@ async function handleSpotifyConnect() {
   const verifier=generateCodeVerifier();
   const challenge=await generateCodeChallenge(verifier);
   localStorage.setItem('spotify_verifier',verifier);
-  const params=new URLSearchParams({client_id:S.spotifyClientId,response_type:'code',redirect_uri:window.location.origin+'/',scope:'user-read-playback-state user-read-currently-playing user-modify-playback-state',code_challenge_method:'S256',code_challenge:challenge});
+  const params=new URLSearchParams({client_id:S.spotifyClientId,response_type:'code',redirect_uri:window.location.origin+'/',scope:'user-read-playback-state user-read-currently-playing user-modify-playback-state user-top-read',code_challenge_method:'S256',code_challenge:challenge});
   window.location='https://accounts.spotify.com/authorize?'+params;
 }
 
@@ -1874,132 +1874,162 @@ async function loadPopularImages(token){
 function fetchPopularSpotify(){ fetchPopularSongs(); }
 function fetchPopularFallback(){ fetchPopularSongs(); }
 
-async function fetchPopularSongs(){
-  const SONGS={
-    zh:[{t:'告白气球',a:'周杰伦',en:'周杰伦 (Jay Chou)',q:'告白气球 周杰伦'},
-        {t:'晴天',a:'周杰伦',en:'周杰伦 (Jay Chou)',q:'晴天 周杰伦'},
-        {t:'稻香',a:'周杰伦',en:'周杰伦 (Jay Chou)',q:'稻香 周杰伦'},
-        {t:'待我如初',a:'大头针',en:'大头针 (Dandelion)',q:'待我如初 大头针'},
-        {t:'喜欢你',a:'邓紫棋',en:'邓紫棋 G.E.M. (I Like You)',q:'喜欢你 邓紫棋'},
-        {t:'突然好想你',a:'五月天',en:'五月天 (Missing You)',q:'突然好想你 五月天'}],
-    ko:[{t:'봄날',a:'BTS',en:'BTS 방탄소년단 (Spring Day)',q:'봄날 BTS'},
-        {t:'LOVE SCENARIO',a:'iKON',en:'iKON 아이콘 (Love Scenario)',q:'Love Scenario iKON'},
-        {t:'Eight',a:'IU',en:'IU 아이유 (Eight)',q:'Eight IU'},
-        {t:'Celebrity',a:'IU',en:'IU 아이유 (Celebrity)',q:'Celebrity IU'},
-        {t:'Dynamite',a:'BTS',en:'BTS 방탄소년단 (Dynamite)',q:'Dynamite BTS'},
-        {t:'Lilac',a:'IU',en:'IU 아이유 (Lilac)',q:'Lilac IU'}],
-    ja:[{t:'うっせぇわ',a:'Ado',en:'Ado (Usseewa)',q:'うっせぇわ Ado'},
-        {t:'炎',a:'LiSA',en:'LiSA リサ (Homura)',q:'炎 LiSA'},
-        {t:'紅蓮華',a:'LiSA',en:'LiSA リサ (Gurenge)',q:'紅蓮華 LiSA'},
-        {t:'廻廻奇譚',a:'Eve',en:'Eve (Kaikai Kitan)',q:'廻廻奇譚 Eve'},
-        {t:'夜に駆ける',a:'YOASOBI',en:'YOASOBI (Into the Night)',q:'夜に駆ける YOASOBI'},
-        {t:'ドライフラワー',a:'優里',en:'優里 Yuuri (Dry Flower)',q:'ドライフラワー 優里'}],
+const CURATED_LANGUAGE_SONGS={
+  zh:[
+    {t:'告白气球',a:'周杰伦',en:'周杰伦 (Jay Chou)',q:'告白气球 周杰伦'},
+    {t:'晴天',a:'周杰伦',en:'周杰伦 (Jay Chou)',q:'晴天 周杰伦'},
+    {t:'稻香',a:'周杰伦',en:'周杰伦 (Jay Chou)',q:'稻香 周杰伦'},
+    {t:'待我如初',a:'大头针',en:'大头针 (Dandelion)',q:'待我如初 大头针'},
+    {t:'喜欢你',a:'邓紫棋',en:'邓紫棋 G.E.M.',q:'喜欢你 邓紫棋'},
+    {t:'突然好想你',a:'五月天',en:'五月天 (Mayday)',q:'突然好想你 五月天'}
+  ],
+  ko:[
+    {t:'봄날',a:'BTS',en:'BTS (Spring Day)',q:'봄날 BTS'},
+    {t:'LOVE SCENARIO',a:'iKON',en:'iKON',q:'LOVE SCENARIO iKON'},
+    {t:'Eight',a:'IU',en:'IU',q:'Eight IU'},
+    {t:'Celebrity',a:'IU',en:'IU',q:'Celebrity IU'},
+    {t:'Dynamite',a:'BTS',en:'BTS',q:'Dynamite BTS'},
+    {t:'Lilac',a:'IU',en:'IU',q:'Lilac IU'}
+  ],
+  ja:[
+    {t:'うっせぇわ',a:'Ado',en:'Ado',q:'うっせぇわ Ado'},
+    {t:'炎',a:'LiSA',en:'LiSA',q:'炎 LiSA'},
+    {t:'紅蓮華',a:'LiSA',en:'LiSA',q:'紅蓮華 LiSA'},
+    {t:'廻廻奇譚',a:'Eve',en:'Eve',q:'廻廻奇譚 Eve'},
+    {t:'夜に駆ける',a:'YOASOBI',en:'YOASOBI',q:'夜に駆ける YOASOBI'},
+    {t:'ドライフラワー',a:'優里',en:'優里 (Yuuri)',q:'ドライフラワー 優里'}
+  ]
+};
+
+function spotifyTrackToSuggestion(track,source='popular'){
+  if(!track||track.type!=='track'||!track.uri)return null;
+  return {
+    id:track.id||track.uri,
+    uri:track.uri,
+    title:track.name||'',
+    artist:track.artists?.map(a=>a.name).filter(Boolean).join(', ')||'',
+    albumArt:track.album?.images?.[1]?.url||track.album?.images?.[0]?.url||'',
+    popularity:Number(track.popularity||0),
+    source
   };
-  const songs=SONGS[S.sourceLang]||SONGS.zh;
-  const grid=document.getElementById('popular-grid');if(!grid)return;
-  const langLabel={zh:'Chinese',ko:'Korean',ja:'Japanese'}[S.sourceLang]||'Chinese';
-  const heading=document.getElementById('popular-heading');
-  if(heading)heading.textContent=`Popular ${langLabel} Songs`;
-
-  // STEP 1: Render immediately with nice gradient tiles + music note icons
-  const GRADS=[
-    'linear-gradient(135deg,#e8902a,#c44)',
-    'linear-gradient(135deg,#1db95a,#0a7a3c)',
-    'linear-gradient(135deg,#c44f72,#7a2040)',
-    'linear-gradient(135deg,#5b4ccc,#2e246e)',
-    'linear-gradient(135deg,#3a8c45,#1a4c20)',
-    'linear-gradient(135deg,#1a9c8a,#0d5c52)',
-  ];
-  grid.innerHTML=songs.map((s,i)=>`
-    <div class="song-row" id="pr-${i}" onclick="playSuggestedSong(${JSON.stringify(s.t)},${JSON.stringify(s.a)})">
-      <div class="sr-art" id="pa-${i}" style="position:relative;overflow:hidden">
-        <div style="width:100%;height:100%;border-radius:12px;background:${GRADS[i]};display:flex;align-items:center;justify-content:center">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M9 17V7l9-2v10"/><circle cx="7" cy="17" r="2.5"/><circle cx="16" cy="15" r="2.5"/></svg>
-        </div>
-      </div>
-      <div class="sr-info"><div class="sr-title cjk">${esc(s.t)}</div><div class="sr-meta">${esc(s.en)}</div></div>
-      <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
-    </div>`).join('');
-
-  // STEP 2: Try to swap in real images (async, non-blocking)
-  // Try Spotify first (if connected), then iTunes as fallback
-  const token = await getValidToken();
-
-  songs.forEach(async(s,i)=>{
-    let imgUrl=null;
-
-    // Try Spotify search (most reliable when connected)
-    if(token&&!imgUrl){
-      try{
-        const r=await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(s.q)}&type=track&limit=1`,{headers:{'Authorization':'Bearer '+token}});
-        if(r.ok){
-          const d=await r.json();
-          const track=d.tracks?.items?.[0];
-          if(track?.album?.images?.length){
-            imgUrl=track.album.images[1]?.url||track.album.images[0]?.url;
-            // Also upgrade onclick to Spotify URI
-            const row=document.getElementById('pr-'+i);
-            if(row){
-              row.onclick=()=>playSpotifyCard(
-                track.uri,
-                track.name,
-                track.artists?.[0]?.name||'',
-                imgUrl||''
-              );
-            }
-          }
-        }
-      }catch(e){}
-    }
-
-    // Fallback: iTunes / Apple Music artwork. Do not country-lock this:
-    // the broad catalog handles CJK songs better than TW/KR/JP-only searches.
-    if(!imgUrl){
-      try{
-        const terms=[s.q];
-        if(S.sourceLang==='zh'){
-          const trad=s.q
-            .replace(/告白气球/g,'告白氣球')
-            .replace(/晴天/g,'晴天')
-            .replace(/稻香/g,'稻香')
-            .replace(/待我如初/g,'待我如初')
-            .replace(/喜欢你/g,'喜歡你')
-            .replace(/突然好想你/g,'突然好想你')
-            .replace(/周杰伦/g,'周杰倫')
-            .replace(/邓紫棋/g,'鄧紫棋')
-            .replace(/五月天/g,'五月天')
-            .replace(/大头针/g,'大頭針');
-          if(trad!==s.q)terms.push(trad);
-        }
-        for(const term of terms){
-          const r=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=5&media=music`);
-          if(!r.ok)continue;
-          const d=await r.json();
-          const hit=d.results?.find(x=>x.artworkUrl100);
-          if(hit){
-            imgUrl=hit.artworkUrl100.replace('100x100bb','600x600bb');
-            break;
-          }
-        }
-      }catch(e){}
-    }
-
-    // Swap gradient → real image when ready
-    if(imgUrl){
-      const artEl=document.getElementById('pa-'+i);
-      if(artEl){
-        const img=document.createElement('img');
-        img.alt='';
-        img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px';
-        img.onload=()=>{artEl.appendChild(img);};  // overlay on top of gradient
-        img.onerror=()=>{};  // keep gradient if image fails
-        img.src=imgUrl;
-      }
-    }
-  });
 }
 
+function trackLooksLikeLearningLanguage(track,lang=S.sourceLang){
+  const text=`${track?.name||''} ${track?.artists?.map(a=>a.name).join(' ')||''}`;
+  const hasHangul=/[\uac00-\ud7af]/.test(text);
+  const hasKana=/[\u3040-\u30ff]/.test(text);
+  const hasCjk=/[\u3400-\u9fff\uf900-\ufaff]/.test(text);
+  if(lang==='ko')return hasHangul;
+  if(lang==='ja')return hasKana;
+  if(lang==='zh')return hasCjk&&!hasKana&&!hasHangul;
+  return true;
+}
 
+async function fetchPersonalizedSpotifyTracks(token){
+  if(!token)return [];
+  try{
+    const r=await fetch('https://api.spotify.com/v1/me/top/tracks?time_range=medium_term&limit=50',{
+      headers:{'Authorization':'Bearer '+token}
+    });
+    // Existing users may not have approved user-top-read yet. The app simply
+    // falls back to popular tracks until they reconnect Spotify once.
+    if(!r.ok)return [];
+    const d=await r.json();
+    return (d.items||[])
+      .filter(t=>trackLooksLikeLearningLanguage(t,S.sourceLang))
+      .map(t=>spotifyTrackToSuggestion(t,'personal'))
+      .filter(Boolean)
+      .slice(0,4);
+  }catch(e){return [];}
+}
+
+async function fetchPopularSpotifyTracks(token){
+  if(!token)return [];
+  const genre={zh:'mandopop',ko:'k-pop',ja:'j-pop'}[S.sourceLang]||'mandopop';
+  const market=LANG_CONFIG[S.sourceLang]?.market||'TW';
+  try{
+    const q=encodeURIComponent(`genre:${genre}`);
+    const r=await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=30&market=${market}`,{
+      headers:{'Authorization':'Bearer '+token}
+    });
+    if(!r.ok)return [];
+    const d=await r.json();
+    return (d.tracks?.items||[])
+      .map(t=>spotifyTrackToSuggestion(t,'popular'))
+      .filter(Boolean)
+      .sort((a,b)=>b.popularity-a.popularity)
+      .slice(0,8);
+  }catch(e){return [];}
+}
+
+function suggestionRowHtml(song,index){
+  const art=song.albumArt
+    ? `<img src="${esc(song.albumArt)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:block" onerror="this.style.display='none'">`
+    : `<div style="width:100%;height:100%;border-radius:12px;background:linear-gradient(135deg,#5b4ccc,#2e246e);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M9 17V7l9-2v10"/><circle cx="7" cy="17" r="2.5"/><circle cx="16" cy="15" r="2.5"/></svg></div>`;
+  const click=song.uri
+    ? `playSuggestedSpotifyUri(${JSON.stringify(song.uri)},${JSON.stringify(song.title)},${JSON.stringify(song.artist)},${JSON.stringify(song.albumArt||'')})`
+    : `playSuggestedSong(${JSON.stringify(song.title)},${JSON.stringify(song.artist)})`;
+  return `<div class="song-row" id="dynamic-song-${index}" onclick='${click.replace(/'/g,"&#39;")}' title="Play on Spotify">
+    <div class="sr-art">${art}</div>
+    <div class="sr-info">
+      <div class="sr-title cjk">${esc(song.title)}</div>
+      <div class="sr-meta">${esc(song.artist)}</div>
+    </div>
+    <div class="sr-play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></div>
+  </div>`;
+}
+
+async function resolveCuratedSongs(token){
+  const curated=CURATED_LANGUAGE_SONGS[S.sourceLang]||CURATED_LANGUAGE_SONGS.zh;
+  if(!token)return curated.map((s,i)=>({id:'curated-'+i,title:s.t,artist:s.a,albumArt:'',uri:'',source:'popular'}));
+  const market=LANG_CONFIG[S.sourceLang]?.market||'TW';
+  const resolved=await Promise.all(curated.map(async(s,i)=>{
+    try{
+      const r=await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(s.q)}&type=track&limit=1&market=${market}`,{
+        headers:{'Authorization':'Bearer '+token}
+      });
+      if(!r.ok)throw new Error();
+      const d=await r.json();
+      return spotifyTrackToSuggestion(d.tracks?.items?.[0],'popular')||{id:'curated-'+i,title:s.t,artist:s.a,albumArt:'',uri:'',source:'popular'};
+    }catch(e){
+      return {id:'curated-'+i,title:s.t,artist:s.a,albumArt:'',uri:'',source:'popular'};
+    }
+  }));
+  return resolved;
+}
+
+async function fetchPopularSongs(){
+  const grid=document.getElementById('popular-grid');
+  if(!grid)return;
+  const langLabel={zh:'Chinese',ko:'Korean',ja:'Japanese'}[S.sourceLang]||'Chinese';
+  const heading=document.getElementById('popular-heading');
+  if(heading)heading.textContent=`Music for your ${langLabel}`;
+
+  const token=await getValidToken();
+  let [personal,popular]=await Promise.all([
+    fetchPersonalizedSpotifyTracks(token),
+    fetchPopularSpotifyTracks(token)
+  ]);
+
+  if(!popular.length)popular=await resolveCuratedSongs(token);
+
+  const seen=new Set(personal.map(s=>s.id||s.uri||`${s.title}|${s.artist}`));
+  popular=popular.filter(s=>{
+    const key=s.id||s.uri||`${s.title}|${s.artist}`;
+    if(seen.has(key))return false;
+    seen.add(key);return true;
+  }).slice(0,6);
+
+  let html='';
+  let rowIndex=0;
+  if(personal.length){
+    html+=`<div class="sec-hdr" style="margin-top:2px"><div class="sec-label">Suggested for you</div><div class="sec-genre">Your Spotify taste</div></div>`;
+    html+=personal.map(s=>suggestionRowHtml(s,rowIndex++)).join('');
+  }
+  html+=`<div class="sec-hdr" style="margin-top:${personal.length?'24px':'2px'}"><div class="sec-label">Popular ${langLabel}</div><div class="sec-genre">Spotify</div></div>`;
+  html+=popular.map(s=>suggestionRowHtml(s,rowIndex++)).join('');
+  grid.innerHTML=html;
+}
 
 function spotifyUriToWebUrl(uri) {
   const trackId = String(uri || '').split(':').pop();
