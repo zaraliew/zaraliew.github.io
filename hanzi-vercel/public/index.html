@@ -512,6 +512,19 @@ body.dev-mode .dev-only{display:flex!important}
 #screen-player.mode-learn #k-curr .chars{font-size:36px;line-height:1.5}
 #screen-player.mode-learn .k-word{padding:3px 4px}
 
+
+/* Deck card readability + touch polish */
+.card-face{overflow:hidden}
+#card-front-char,#card-back-char,#card-back-eng{max-width:100%;overflow-wrap:anywhere;word-break:break-word;text-wrap:balance}
+#card-front-char{width:100%;line-height:1.08;flex:0 1 auto}
+#card-back-eng{line-height:1.12}
+#card-back-char{line-height:1.15}
+#card-inner.is-phrase #card-front-char{line-height:1.22;letter-spacing:.01em}
+#card-inner.is-phrase #card-front-lyric{display:none}
+#card-inner.is-phrase #card-front-song{margin-top:18px}
+#card-inner.is-phrase #card-back-eng{margin-top:2px}
+#card-drag-wrap{touch-action:none!important;overscroll-behavior:none}
+
 /* Profile product hierarchy */
 .prof-scroll{padding-left:20px;padding-right:20px}
 .prof-hdr{padding:8px 0 20px;border:0;margin-bottom:8px}
@@ -1213,7 +1226,12 @@ body.dev-mode .dev-only{display:flex!important}
     <span class="dt-state" id="dt-eng-state">On</span>
     <button class="tog on" id="tog-eng" onclick="toggleSwitch('eng')"></button>
   </div>
-  <div class="dt-tip">Tip: tap any row to toggle. Change defaults in Profile → Display.</div>
+  <div class="dt-row">
+    <span class="dt-label">Deck swipe sound</span>
+    <span class="dt-state" id="dt-swipe-sound-state">On</span>
+    <button class="tog on" id="tog-swipe-sound" role="switch" aria-checked="true" onclick="toggleSwipeSound()"></button>
+  </div>
+  <div class="dt-tip">Tip: use Learn mode to inspect and save words. Deck swipe sounds can be turned off here anytime.</div>
 </div>
 
 <!-- Song info sheet -->
@@ -1491,6 +1509,7 @@ const S = {
   trialStart: parseInt(localStorage.getItem('ml_trial_start') || '0'),
   aiConsent: localStorage.getItem('ml_ai_consent') === '1',
   analyticsConsent: localStorage.getItem('ml_analytics_consent') === '1',
+  swipeSound: localStorage.getItem('ml_swipe_sound') !== 'off',
 };
 const LANG_CODE={'English':'en','Malay':'ms','Indonesian':'id','Thai':'th','Spanish':'es','French':'fr','German':'de','Arabic':'ar'};
 const TRANSLATIONS={
@@ -1568,6 +1587,13 @@ window.onload = async () => {
   document.body.classList.toggle('dev-mode', params.get('dev') === '1');
   renderProductPrototype();
   setPlayerMode(S.playerMode, true);
+  // Initialise touch and interaction handlers before any OAuth callback path can return early.
+  initCardSwipe();
+  initPlayerSwipeDown();
+  initPwaPrompt();
+  initSeekBar();
+  initLyricWordTaps();
+  syncSwipeSoundToggle();
   if (params.get('code')) {
     await handleSpotifyCallback(params.get('code'));
     if (S.setupDone) { showScreen('home'); }
@@ -1594,11 +1620,6 @@ window.onload = async () => {
     obGoto(1); // always start at step 1
   }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
-  initCardSwipe();
-  initPlayerSwipeDown();
-  initPwaPrompt();
-  initSeekBar();
-  initLyricWordTaps();
 };
 
 // ── STREAK ─────────────────────────────────────────────────────────────────
@@ -1637,7 +1658,7 @@ function goTab(tab) {
   ['home','deck','profile'].forEach(t => {
     document.getElementById('tab-'+t)?.classList.toggle('active', t===tab);
   });
-  if (tab === 'deck') renderDeck();
+  if (tab === 'deck') { renderDeck(); requestAnimationFrame(initCardSwipe); }
   if (tab === 'profile') {
     renderProfile();
     renderProductProfile();
@@ -1711,7 +1732,11 @@ function obSelectLang(el) {
   S.obLang = el.dataset.lang;
   setSourceLang(el.dataset.lang, false);
 }
-function skipOnboarding() { localStorage.setItem('sl_setup','1'); S.setupDone=true; showScreen('home'); updateBadge(); }
+function skipOnboarding() {
+  localStorage.setItem('sl_setup','1'); S.setupDone=true;
+  showScreen('home'); updateBadge(); updateHomeNowPlaying(); updateDailyPlan();
+  if(!localStorage.getItem('ml_tour_done')) setTimeout(startTour,500);
+}
 function finishOnboarding() {
   localStorage.setItem('sl_setup','1'); S.setupDone=true;
   showScreen('home'); updateBadge(); updateHomeNowPlaying(); updateContinueLearning(); updateDailyPlan(); renderProductPrototype();
@@ -1721,45 +1746,126 @@ function finishOnboarding() {
 }
 
 // ── ONBOARDING TOUR ──────────────────────────────────────────────────────────
+let tourDemoSnapshot = null;
+
+function getTourDemoLyrics(){
+  if(S.sourceLang==='ko') return [
+    {time:0,text:'음악으로 배우면',characters:'음악으로 배우면',pinyin:'eumageuro baeumyeon',english:'When you learn through music',words:[{char:'음악',pinyin:'eumak',english:'music'},{char:'으로',pinyin:'euro',english:'through'},{char:'배우면',pinyin:'baeumyeon',english:'when learning'}]},
+    {time:4,text:'기억에 오래 남아요',characters:'기억에 오래 남아요',pinyin:'gieoge orae namayo',english:'it stays in your memory longer',words:[{char:'기억',pinyin:'gieok',english:'memory'},{char:'오래',pinyin:'orae',english:'for a long time'},{char:'남아요',pinyin:'namayo',english:'stays'}]},
+    {time:8,text:'좋아하는 노래로 시작해요',characters:'좋아하는 노래로 시작해요',pinyin:'joahaneun noraero sijakaeyo',english:'Start with a song you love',words:[{char:'좋아하는',pinyin:'joahaneun',english:'that you like'},{char:'노래',pinyin:'norae',english:'song'},{char:'시작해요',pinyin:'sijakaeyo',english:'start'}]}
+  ];
+  if(S.sourceLang==='ja') return [
+    {time:0,text:'音楽で学ぶと',characters:'音楽で学ぶと',pinyin:'ongaku de manabu to',english:'When you learn through music',words:[{char:'音楽',pinyin:'ongaku',english:'music'},{char:'学ぶ',pinyin:'manabu',english:'to learn'}]},
+    {time:4,text:'言葉を長く覚えられる',characters:'言葉を長く覚えられる',pinyin:'kotoba o nagaku oboerareru',english:'you remember words for longer',words:[{char:'言葉',pinyin:'kotoba',english:'words'},{char:'長く',pinyin:'nagaku',english:'for longer'},{char:'覚えられる',pinyin:'oboerareru',english:'can remember'}]},
+    {time:8,text:'好きな歌から始めよう',characters:'好きな歌から始めよう',pinyin:'suki na uta kara hajimeyou',english:'Start with a song you love',words:[{char:'好き',pinyin:'suki',english:'liked / favorite'},{char:'歌',pinyin:'uta',english:'song'},{char:'始めよう',pinyin:'hajimeyou',english:"let's start"}]}
+  ];
+  return [
+    {time:0,text:'用音乐学习',characters:'用音乐学习',pinyin:'yòng yīn yuè xué xí',english:'Learn through music',words:[{char:'用',pinyin:'yòng',english:'using'},{char:'音乐',pinyin:'yīn yuè',english:'music'},{char:'学习',pinyin:'xué xí',english:'to learn'}]},
+    {time:4,text:'会记得更久',characters:'会记得更久',pinyin:'huì jì de gèng jiǔ',english:'and remember for longer',words:[{char:'记得',pinyin:'jì de',english:'to remember'},{char:'更久',pinyin:'gèng jiǔ',english:'for longer'}]},
+    {time:8,text:'从喜欢的歌开始',characters:'从喜欢的歌开始',pinyin:'cóng xǐ huān de gē kāi shǐ',english:'Start with a song you love',words:[{char:'喜欢',pinyin:'xǐ huān',english:'to like'},{char:'歌',pinyin:'gē',english:'song'},{char:'开始',pinyin:'kāi shǐ',english:'to begin'}]}
+  ];
+}
+
+function prepareTourPlayer(mode){
+  if(!tourDemoSnapshot){
+    tourDemoSnapshot={
+      title:S.title,artist:S.artist,lyrics:S.lyrics,activeIdx:S.activeIdx,offset:S.offset,
+      running:S.running,syncStart:S.syncStart,playerMode:S.playerMode,view:S.view,tab:S.tab,prevView:S.prevView
+    };
+  }
+  S.title='Melozi learning demo';
+  S.artist='Listen, then learn';
+  S.lyrics=getTourDemoLyrics();
+  S.activeIdx=1;
+  S.offset=4;
+  S.running=false;
+  S.syncStart=null;
+  const pt=document.getElementById('np-title');if(pt)pt.textContent=S.title;
+  const pa=document.getElementById('np-artist');if(pa)pa.textContent=S.artist;
+  showScreen('player');
+  setPlayerMode(mode,true);
+  rerender();
+}
+
+function prepareTourHome(){
+  showScreen('home');
+  S.tab='home';
+  ['home','deck','profile'].forEach(t=>document.getElementById('tab-'+t)?.classList.toggle('active',t==='home'));
+}
+
+function restoreTourDemo(){
+  if(!tourDemoSnapshot)return;
+  const x=tourDemoSnapshot;
+  S.title=x.title;S.artist=x.artist;S.lyrics=x.lyrics;S.activeIdx=x.activeIdx;S.offset=x.offset;
+  S.running=x.running;S.syncStart=x.syncStart;S.playerMode=x.playerMode;S.tab=x.tab;S.prevView=x.prevView;
+  tourDemoSnapshot=null;
+  setPlayerMode(S.playerMode,true);
+  prepareTourHome();
+  updateHomeNowPlaying();
+  updateContinueLearning();
+}
+
 const TOUR_STEPS = [
   {
     targetFn: ()=>null,
     step:'Welcome',
-    title:'A quick tour 🎵',
-    body:"You'll be learning from music in 60 seconds. Here's everything you need to know.",
-    cta:"Let's go →"
+    title:'Learn a song in two modes',
+    body:'Listen keeps you immersed in the music. Learn slows the moment down so you can inspect, replay, and save useful language.',
+    cta:"Show me →"
   },
   {
-    targetFn: ()=>document.querySelector('.song-row'),
+    onEnter:prepareTourHome,
+    targetFn: ()=>document.querySelector('.song-row')||document.getElementById('today-card'),
     placement:'below',
-    step:'1 of 4',
-    title:'Tap any song to start',
-    body:'Lyrics load instantly with pinyin, romanization, and translation. Or just play anything on Spotify — it follows along automatically.',
-    cta:'Got it →'
+    step:'1 of 6',
+    title:'Choose any song',
+    body:'Tap a suggestion or play something in Spotify. Melozi finds the synced lyrics and follows the song.',
+    cta:'See Listen mode →'
   },
   {
-    targetFn: ()=>null,
-    step:'2 of 4',
-    title:'Control what you see',
-    body:'Inside the player, tap the Aa button to toggle characters, pinyin, and translation on or off — focus on what helps you most.',
-    cta:'Got it →',
-    icon:'👁'
+    onEnter:()=>prepareTourPlayer('listen'),
+    targetFn: ()=>document.getElementById('player-mode-listen'),
+    placement:'below',
+    step:'2 of 6',
+    title:'Listen mode keeps it simple',
+    body:'Use this while the song is playing. The current lyric stays prominent, with pronunciation and translation underneath.',
+    cta:'Now show Learn →'
   },
   {
+    onEnter:()=>prepareTourPlayer('learn'),
+    targetFn: ()=>document.getElementById('player-mode-learn'),
+    placement:'below',
+    step:'3 of 6',
+    title:'Learn mode adds study tools',
+    body:'Replay the current line, save the full phrase, or report a translation that needs correcting.',
+    cta:'Show word learning →'
+  },
+  {
+    onEnter:()=>prepareTourPlayer('learn'),
+    targetFn: ()=>document.querySelector('#k-curr .k-word')||document.getElementById('k-curr'),
+    placement:'above',
+    step:'4 of 6',
+    title:'Tap complete words, not isolated characters',
+    body:'Tap a word to see its own pronunciation and meaning. Save it to your deck when it is useful.',
+    cta:'Show phrase saving →'
+  },
+  {
+    onEnter:()=>prepareTourPlayer('learn'),
+    targetFn: ()=>document.querySelector('#learn-toolbar .learn-action:nth-child(2)'),
+    placement:'above',
+    step:'5 of 6',
+    title:'Save a whole lyric when the phrase matters',
+    body:'Saved lines become responsive phrase cards, while individual words stay compact and easy to review.',
+    cta:'Finish tour →'
+  },
+  {
+    onEnter:prepareTourHome,
     targetFn: ()=>document.getElementById('tab-deck'),
     placement:'above',
-    step:'3 of 4',
-    title:'Build your vocabulary',
-    body:'Tap any word in the lyrics to save it to your deck. Review with spaced-repetition flashcards anytime.',
-    cta:'Got it →'
-  },
-  {
-    targetFn: ()=>null,
-    step:'4 of 4',
-    title:'Review your saved words',
-    body:'In the Deck, tap the card to flip and reveal pinyin + translation. Swipe right (Got it ✓), left (Again), or down (Hard) to score yourself.',
-    cta:"Start listening 🎵",
-    icon:'🃏'
+    step:'6 of 6',
+    title:'Review with cards',
+    body:'Tap to reveal. Swipe right for Got it, left for Again, or down for Hard. A soft swipe sound confirms each action.',
+    cta:'Start listening 🎵'
   }
 ];
 let tourStep = 0;
@@ -1784,6 +1890,7 @@ function renderTourStep(){
   const dotsEl=document.getElementById('tour-dots');
   dotsEl.innerHTML=TOUR_STEPS.map((_,i)=>`<span class="${i===tourStep?'on':''}"></span>`).join('');
 
+  step.onEnter?.();
   const target=step.targetFn?.();
   card.style.display='block';
 
@@ -1842,6 +1949,7 @@ function tourDismiss(){
     const el=document.getElementById(id);if(el){el.style.display='none';el.classList.remove('active');}
   });
   document.getElementById('tour-overlay').style.background='';
+  restoreTourDemo();
   localStorage.setItem('ml_tour_done','1');
 }
 function redoSetup() {
@@ -3441,7 +3549,9 @@ function renderDeck(){
   const nextW = words[(S.cardIdx+1) % words.length];
   const bgChar = document.getElementById('card-bg-char');
   if (bgChar) bgChar.textContent = S.cardIdx+1 < words.length ? nextW.char : '';
-  document.getElementById('card-inner').classList.remove('is-flipped');
+  const cardInner=document.getElementById('card-inner');
+  cardInner.classList.remove('is-flipped');
+  cardInner.classList.toggle('is-phrase',!!w.isPhrase||deckTextLength(w.char)>6);
   snapBack(true);
   document.getElementById('card-front-char').textContent=w.char;
   document.getElementById('card-front-song').textContent=w.song?'— '+w.song:'';
@@ -3481,6 +3591,41 @@ function renderDeck(){
   const total=words.length;
   document.getElementById('dk-count').textContent=`${S.cardIdx+1} / ${total}`;
   document.getElementById('dk-prog-fill').style.width=(((S.cardIdx+1)/total)*100)+'%';
+  requestAnimationFrame(()=>{fitDeckCardContent(w);initCardSwipe();});
+}
+
+
+function deckTextLength(value){
+  return Array.from(String(value||'').replace(/\s+/g,'')).length;
+}
+function fitTextInside(el,maxPx,minPx,maxHeight){
+  if(!el)return;
+  let size=Math.max(minPx,maxPx);
+  el.style.fontSize=size+'px';
+  el.style.maxHeight=maxHeight+'px';
+  el.style.overflow='hidden';
+  // Shrink only as much as needed; this keeps short word cards visually strong.
+  while(size>minPx&&(el.scrollHeight>maxHeight+1||el.scrollWidth>el.clientWidth+1)){
+    size-=2;
+    el.style.fontSize=size+'px';
+  }
+}
+function fitDeckCardContent(word){
+  const inner=document.getElementById('card-inner');
+  const frontFace=inner?.querySelector('.card-face.front');
+  const backFace=inner?.querySelector('.card-face.back');
+  if(!inner||!frontFace||!backFace||!word)return;
+  const len=deckTextLength(word.char);
+  const phrase=!!word.isPhrase||len>6;
+  inner.classList.toggle('is-phrase',phrase);
+  const front=document.getElementById('card-front-char');
+  const frontMax=phrase?(len>26?28:len>18?34:len>12?42:52):(len>4?66:96);
+  fitTextInside(front,frontMax,phrase?20:36,phrase?Math.max(150,frontFace.clientHeight*.58):Math.max(150,frontFace.clientHeight*.48));
+  const backEng=document.getElementById('card-back-eng');
+  const engLen=deckTextLength(backEng?.textContent||'');
+  fitTextInside(backEng,engLen>65?22:engLen>38?26:32,16,Math.max(90,backFace.clientHeight*.30));
+  const backChar=document.getElementById('card-back-char');
+  fitTextInside(backChar,phrase?(len>20?20:26):36,16,Math.max(58,backFace.clientHeight*.18));
 }
 
 function renderDeckList() {
@@ -3658,40 +3803,68 @@ function initCardSwipe() {
   const wrap=document.getElementById('card-drag-wrap');
   if(!wrap||wrap.dataset.swipeInit)return;
   wrap.dataset.swipeInit='1';
-  let pointerId=null;
+  wrap.style.touchAction='none';
+  let activeId=null;
   let moved=false;
 
-  wrap.addEventListener('pointerdown',e=>{
-    if(!S.saved.length||e.button>0)return;
-    pointerId=e.pointerId;moved=false;drag.on=true;
-    drag.sx=drag.cx=e.clientX;drag.sy=drag.cy=e.clientY;
-    try{wrap.setPointerCapture(pointerId);}catch(_){}
-  });
-
-  wrap.addEventListener('pointermove',e=>{
-    if(!drag.on||e.pointerId!==pointerId)return;
-    drag.cx=e.clientX;drag.cy=e.clientY;
+  const begin=(x,y,id)=>{
+    if(!S.saved.length)return false;
+    activeId=id;moved=false;drag.on=true;
+    drag.sx=drag.cx=x;drag.sy=drag.cy=y;
+    primeSwipeAudio();
+    return true;
+  };
+  const move=(x,y,id,event)=>{
+    if(!drag.on||id!==activeId)return;
+    drag.cx=x;drag.cy=y;
     const dx=drag.cx-drag.sx,dy=drag.cy-drag.sy;
-    if(!moved&&(Math.abs(dx)>10||Math.abs(dy)>10)){
+    if(!moved&&(Math.abs(dx)>8||Math.abs(dy)>8)){
       moved=true;
       wrap.dataset.didSwipe='1';
       wrap.style.transition='none';
     }
-    if(moved){e.preventDefault();applyDrag();}
-  },{passive:false});
-
-  const finish=e=>{
-    if(!drag.on||e.pointerId!==pointerId)return;
-    drag.on=false;
-    try{wrap.releasePointerCapture(pointerId);}catch(_){}
-    pointerId=null;
+    if(moved){event?.preventDefault?.();applyDrag();}
+  };
+  const finish=(id)=>{
+    if(!drag.on||id!==activeId)return;
+    drag.on=false;activeId=null;
     if(moved)commitSwipe();else snapBack();
-    // Suppress the synthetic click generated after a swipe, but allow taps to flip.
-    setTimeout(()=>{delete wrap.dataset.didSwipe;},80);
+    setTimeout(()=>{delete wrap.dataset.didSwipe;},120);
     moved=false;
   };
-  wrap.addEventListener('pointerup',finish);
-  wrap.addEventListener('pointercancel',e=>{if(e.pointerId===pointerId){drag.on=false;pointerId=null;moved=false;snapBack();}});
+  const cancel=(id)=>{
+    if(id!==activeId)return;
+    drag.on=false;activeId=null;moved=false;snapBack();
+  };
+
+  if(window.PointerEvent){
+    wrap.addEventListener('pointerdown',e=>{
+      if(!e.isPrimary||(e.pointerType==='mouse'&&e.button!==0))return;
+      if(!begin(e.clientX,e.clientY,e.pointerId))return;
+      try{wrap.setPointerCapture(e.pointerId);}catch(_){ }
+    },{passive:false});
+    wrap.addEventListener('pointermove',e=>move(e.clientX,e.clientY,e.pointerId,e),{passive:false});
+    wrap.addEventListener('pointerup',e=>{
+      try{wrap.releasePointerCapture(e.pointerId);}catch(_){ }
+      finish(e.pointerId);
+    });
+    wrap.addEventListener('pointercancel',e=>cancel(e.pointerId));
+  }else{
+    // Fallback for older iOS webviews that do not deliver PointerEvents reliably.
+    wrap.addEventListener('touchstart',e=>{
+      const t=e.changedTouches[0];if(!t)return;
+      begin(t.clientX,t.clientY,t.identifier);
+    },{passive:false});
+    wrap.addEventListener('touchmove',e=>{
+      const t=Array.from(e.changedTouches).find(x=>x.identifier===activeId)||e.changedTouches[0];
+      if(t)move(t.clientX,t.clientY,t.identifier,e);
+    },{passive:false});
+    wrap.addEventListener('touchend',e=>{
+      const t=Array.from(e.changedTouches).find(x=>x.identifier===activeId)||e.changedTouches[0];
+      if(t)finish(t.identifier);
+    },{passive:false});
+    wrap.addEventListener('touchcancel',()=>cancel(activeId));
+  }
 
   const inner=document.getElementById('card-inner');
   if(inner&&!inner.dataset.swipeClickGuard){
@@ -3703,15 +3876,75 @@ function initCardSwipe() {
 }
 
 
+let swipeAudioContext=null;
+function getSwipeAudioContext(){
+  if(!swipeAudioContext){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return null;
+    swipeAudioContext=new AC();
+  }
+  return swipeAudioContext;
+}
+function primeSwipeAudio(){
+  if(!S.swipeSound)return;
+  const ctx=getSwipeAudioContext();
+  if(ctx?.state==='suspended')ctx.resume().catch(()=>{});
+}
+function playSwipeSound(action='got'){
+  if(!S.swipeSound)return;
+  const ctx=getSwipeAudioContext();
+  if(!ctx)return;
+  if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+  const now=ctx.currentTime;
+  const duration=.17;
+  const frames=Math.max(1,Math.floor(ctx.sampleRate*duration));
+  const buffer=ctx.createBuffer(1,frames,ctx.sampleRate);
+  const data=buffer.getChannelData(0);
+  for(let i=0;i<frames;i++){
+    const p=i/frames;
+    const envelope=Math.sin(Math.PI*p)*(1-p);
+    data[i]=(Math.random()*2-1)*envelope;
+  }
+  const source=ctx.createBufferSource();source.buffer=buffer;
+  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.Q.value=.7;
+  const startFreq=action==='got'?1050:action==='again'?760:620;
+  const endFreq=action==='got'?520:action==='again'?420:300;
+  filter.frequency.setValueAtTime(startFreq,now);
+  filter.frequency.exponentialRampToValueAtTime(endFreq,now+duration);
+  const gain=ctx.createGain();
+  gain.gain.setValueAtTime(.0001,now);
+  gain.gain.exponentialRampToValueAtTime(.032,now+.018);
+  gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+  source.connect(filter).connect(gain).connect(ctx.destination);
+  source.start(now);source.stop(now+duration+.02);
+}
+function syncSwipeSoundToggle(){
+  const btn=document.getElementById('tog-swipe-sound');
+  const state=document.getElementById('dt-swipe-sound-state');
+  btn?.classList.toggle('on',S.swipeSound);
+  btn?.setAttribute('aria-checked',String(S.swipeSound));
+  if(state)state.textContent=S.swipeSound?'On':'Off';
+}
+function toggleSwipeSound(){
+  S.swipeSound=!S.swipeSound;
+  localStorage.setItem('ml_swipe_sound',S.swipeSound?'on':'off');
+  syncSwipeSoundToggle();
+  if(S.swipeSound){primeSwipeAudio();playSwipeSound('got');}
+}
+
+
 function commitSwipe() {
   const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
   const adx = Math.abs(dx), ady = Math.abs(dy);
   hideStamps();
   if (adx > SWIPE_THRESH && adx > ady) {
+    const action=dx > 0 ? 'got' : 'again';
     haptic(dx > 0 ? 'success' : 'medium');
-    flyOff(dx > 0 ? 'right' : 'left', dx > 0 ? 'got' : 'again');
+    playSwipeSound(action);
+    flyOff(dx > 0 ? 'right' : 'left', action);
   } else if (dy > SWIPE_THRESH && ady > adx) {
     haptic('light');
+    playSwipeSound('hard');
     flyOff('down', 'hard');
   } else {
     snapBack();
