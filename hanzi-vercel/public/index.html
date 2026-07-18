@@ -448,6 +448,115 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRODUCT PREVIEW — production-oriented web UX layer
+   This remains a web prototype. Native billing/auth must replace local demos.
+═══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --surface:#15111d;
+  --surface-raised:#1b1625;
+  --surface-soft:rgba(255,255,255,.045);
+  --line:rgba(255,255,255,.095);
+  --line-strong:rgba(255,255,255,.16);
+  --radius-sm:12px;
+  --radius-md:16px;
+  --radius-lg:22px;
+  --shadow-card:0 12px 34px rgba(0,0,0,.22);
+}
+body::before{background:radial-gradient(ellipse 60% 40% at 78% 8%,rgba(105,72,176,.20) 0%,transparent 58%),radial-gradient(ellipse 45% 35% at 8% 92%,rgba(245,164,76,.055) 0%,transparent 62%)}
+body::after{opacity:.14;background-size:470px 470px}
+button,input,select,textarea{font:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--a);outline-offset:3px}
+button,.prof-row,.song-row,.si-act{min-height:44px}
+textarea{resize:vertical;color:var(--text);background:transparent;border:0;outline:0;width:100%;min-height:116px;line-height:1.55}
+.dev-only{display:none!important}
+body.dev-mode .dev-only{display:flex!important}
+
+/* Cleaner shell */
+.home-hdr{padding-top:52px;padding-bottom:18px}
+.home-logo-ic{box-shadow:none}
+.home-logo-name{background:none;-webkit-text-fill-color:var(--text);color:var(--text);letter-spacing:-.025em}
+.home-scroll{padding:0 20px 28px}
+.home-greet-1{font-size:14px;line-height:1.2;color:var(--muted);font-weight:650;letter-spacing:.01em}
+.home-greet-2{font-size:30px;line-height:1.15;color:var(--text);margin-top:5px}
+.home-stats{margin:8px 0 18px}
+.np-card,.song-row,.prof-card,.pro-banner{box-shadow:none;background:var(--surface-soft);border-color:var(--line)}
+.song-row{border-radius:var(--radius-md);padding:11px 12px}
+.sec-label{letter-spacing:.1em}
+.live-pill{background:rgba(245,164,76,.09);border-color:rgba(245,164,76,.2)}
+
+/* Today / daily loop */
+.today-card{position:relative;overflow:hidden;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px;margin-bottom:26px;box-shadow:var(--shadow-card)}
+.today-card::after{content:'';position:absolute;width:150px;height:150px;border-radius:50%;right:-65px;top:-78px;background:radial-gradient(circle,rgba(245,164,76,.15),transparent 68%);pointer-events:none}
+.today-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.today-kicker{font:700 10px/1 'Plus Jakarta Sans';letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.today-progress{font:600 11px/1 'JetBrains Mono';color:var(--a)}
+.today-title{font:750 21px/1.2 'Space Grotesk';letter-spacing:-.02em;margin-bottom:5px;max-width:290px}
+.today-sub{font-size:13px;line-height:1.5;color:var(--soft);max-width:310px}
+.today-actions{display:flex;gap:10px;margin-top:16px}
+.today-primary{flex:1;border-radius:13px;background:var(--a);color:var(--ink);padding:13px 15px;font:750 13px/1 'Plus Jakarta Sans'}
+.today-secondary{width:46px;border-radius:13px;background:rgba(255,255,255,.07);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--soft)}
+.today-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.today-chip{padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.05);font:600 10px/1 'Plus Jakarta Sans';color:var(--muted)}
+
+/* Player learning mode */
+.player-mode-switch{align-self:center;display:flex;gap:3px;background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:12px;padding:3px;margin:0 auto 8px;flex-shrink:0}
+.player-mode-btn{padding:8px 16px;border-radius:9px;font:700 11px/1 'Plus Jakarta Sans';color:var(--muted);min-height:34px}
+.player-mode-btn.active{background:var(--surface-raised);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.learn-toolbar{display:flex;gap:8px;padding:0 20px 10px;justify-content:center;flex-shrink:0}
+.learn-action{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border-radius:11px;background:rgba(255,255,255,.055);border:1px solid var(--line);font:650 11px/1 'Plus Jakarta Sans';color:var(--soft);min-height:38px}
+#screen-player.mode-learn .pl-lyrics{gap:12px;padding-left:22px;padding-right:22px}
+#screen-player.mode-learn #k-prev,#screen-player.mode-learn #k-next{opacity:.12;transform:scale(.8)}
+#screen-player.mode-learn #k-curr .chars{font-size:36px;line-height:1.5}
+#screen-player.mode-learn .k-word{padding:3px 4px}
+
+/* Profile product hierarchy */
+.prof-scroll{padding-left:20px;padding-right:20px}
+.prof-hdr{padding:8px 0 20px;border:0;margin-bottom:8px}
+.prof-section-label{letter-spacing:.1em;margin-left:2px}
+.prof-card{border-radius:var(--radius-md)}
+.prof-row{padding:14px}
+.prototype-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:rgba(184,153,255,.10);border:1px solid rgba(184,153,255,.20);font:700 9px/1 'Plus Jakarta Sans';letter-spacing:.08em;text-transform:uppercase;color:var(--p)}
+.account-status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:6px}
+.account-status-dot.on{background:var(--g)}
+.plan-card{background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px;margin:6px 0 22px}
+.plan-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.plan-title{font:750 21px/1.2 'Space Grotesk';letter-spacing:-.02em;margin-top:8px}
+.plan-sub{font-size:13px;line-height:1.5;color:var(--soft);margin-top:5px}
+.plan-actions{display:flex;gap:9px;margin-top:16px}
+.plan-actions .btn{border-radius:12px;padding:12px 16px}
+.plan-fine{font-size:10px;line-height:1.45;color:var(--dim);margin-top:12px}
+
+/* Forms / prototype sheets */
+.form-label{display:block;font:700 10px/1 'Plus Jakarta Sans';letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:16px 2px 8px}
+.form-field{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:13px;padding:13px 14px}
+.form-field:focus-within{border-color:rgba(245,164,76,.55)}
+.form-field input,.form-field select{width:100%;font-size:14px;color:var(--text)}
+.form-field select{appearance:none;-webkit-appearance:none}
+.form-note{padding:12px 13px;border-radius:12px;background:rgba(184,153,255,.08);border:1px solid rgba(184,153,255,.14);font-size:12px;line-height:1.5;color:var(--soft)}
+.plan-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.plan-option{text-align:left;padding:15px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid var(--line);min-height:92px}
+.plan-option.active{border-color:var(--a);background:rgba(245,164,76,.08)}
+.plan-option-name{font:750 14px/1.2 'Plus Jakarta Sans'}
+.plan-option-price{font:750 20px/1.2 'Space Grotesk';margin-top:7px}
+.plan-option-note{font-size:10px;color:var(--muted);margin-top:3px}
+.check-row{display:flex;align-items:flex-start;gap:11px;padding:13px 0;border-bottom:1px solid var(--line)}
+.check-row input{margin-top:2px;accent-color:var(--a);width:18px;height:18px}
+.check-row-title{font:650 13px/1.35 'Plus Jakarta Sans'}
+.check-row-sub{font-size:11px;line-height:1.45;color:var(--muted);margin-top:3px}
+.sheet-actions{display:flex;gap:10px;margin-top:18px}
+.sheet-actions .btn{flex:1;border-radius:13px}
+
+/* Toast */
+#app-toast{position:fixed;left:50%;bottom:calc(var(--tab-h) + 18px);transform:translate(-50%,18px);z-index:120;max-width:360px;width:calc(100% - 40px);padding:12px 15px;border-radius:13px;background:#eee8df;color:#17111d;font:700 12px/1.4 'Plus Jakarta Sans';box-shadow:0 14px 36px rgba(0,0,0,.38);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;text-align:center}
+#app-toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 <body>
@@ -560,8 +669,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(145deg,#f5a44c 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M9 17V7l9-2v10"/><circle cx="7" cy="17" r="2"/><circle cx="16" cy="15" r="2"/></svg>
     </div>
-    <div class="ob-title" style="font-size:30px">Start learning<br><em>for free.</em></div>
-    <div class="ob-sub">7 days free, then just $5.99/month. Cancel anytime.</div>
+    <div class="ob-title" style="font-size:30px">Your first lesson<br><em>is ready.</em></div>
+    <div class="ob-sub">Explore the complete learning flow in this web prototype. Billing is not enabled yet.</div>
 
     <!-- Feature list -->
     <div style="background:var(--s1);border:0.5px solid var(--b1);border-radius:18px;padding:18px 20px;margin-top:8px;text-align:left">
@@ -593,7 +702,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
         </div>
       </div>
     </div>
-    <div style="font-size:11px;color:var(--dim);margin-top:14px;text-align:center;line-height:1.6">No payment required during beta · $5.99/month or $49.99/year after</div>
+    <div style="font-size:11px;color:var(--dim);margin-top:14px;text-align:center;line-height:1.6">Web product preview · No payment is collected</div>
   </div>
 
   <div class="ob-dots">
@@ -630,6 +739,27 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="home-greet-1" id="home-greet1">Good evening,</div>
     <div class="home-greet-2">let's listen.</div>
     <div class="home-stats" id="home-stats"><b>0 cards due</b> · <span id="home-streak-display">0-day streak</span></div>
+
+    <!-- Daily learning loop -->
+    <section class="today-card" id="today-card" aria-labelledby="today-title">
+      <div class="today-top">
+        <div class="today-kicker">Today</div>
+        <div class="today-progress" id="today-progress">0 due</div>
+      </div>
+      <div class="today-title" id="today-title">Choose a song to begin</div>
+      <div class="today-sub" id="today-sub">Listen once, tap useful words, then review them while the song is still fresh.</div>
+      <div class="today-actions">
+        <button class="today-primary" id="today-primary" onclick="startDailyAction()">Find a song</button>
+        <button class="today-secondary" onclick="goTab('deck')" aria-label="Open vocabulary deck">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4" y="6" width="14" height="14" rx="2"/><path d="M8 6V4a2 2 0 012-2h8a2 2 0 012 2v14"/></svg>
+        </button>
+      </div>
+      <div class="today-meta">
+        <span class="today-chip" id="today-saved-chip">0 saved words</span>
+        <span class="today-chip" id="today-streak-chip">0-day streak</span>
+        <span class="today-chip">5–10 min</span>
+      </div>
+    </section>
 
     <!-- Now Playing -->
     <div id="home-np-section"></div>
@@ -670,6 +800,25 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-2.8-1.7-6.4-2.1-10.5-1.1a.7.7 0 11-.4-1.4c4.6-1 8.5-.6 11.6 1.3.4.2.5.7.3 1zm1.4-3.3c-3.2-2-8.1-2.6-12-1.4a.9.9 0 11-.5-1.7c4.4-1.4 9.8-.7 13.5 1.5.4.2.5.8.3 1.3zm.1-3.3C15.2 8.4 8.8 8.2 5.2 9.3a1.1 1.1 0 11-.7-2.1c4.3-1.3 11.3-1 15.7 1.6a1.1 1.1 0 11-1.2 1.9z"/></svg>
       Synced with Spotify
     </div>
+  </div>
+
+  <div class="player-mode-switch" role="tablist" aria-label="Player mode">
+    <button class="player-mode-btn active" id="player-mode-listen" role="tab" aria-selected="true" onclick="setPlayerMode('listen')">Listen</button>
+    <button class="player-mode-btn" id="player-mode-learn" role="tab" aria-selected="false" onclick="setPlayerMode('learn')">Learn</button>
+  </div>
+  <div class="learn-toolbar hidden" id="learn-toolbar">
+    <button class="learn-action" onclick="replayCurrentLine()" aria-label="Replay current lyric line">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12a8 8 0 108-8H6"/><path d="M6 1v6h6"/></svg>
+      Replay line
+    </button>
+    <button class="learn-action" onclick="saveCurrentPhrase()" aria-label="Save current lyric line as a phrase">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Save line
+    </button>
+    <button class="learn-action" onclick="openContentFeedback()" aria-label="Report a lyric or translation issue">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.8 17a2 2 0 001.7 3h15a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/></svg>
+      Report
+    </button>
   </div>
   <div id="pl-translating" class="pl-translating hidden">
     <span class="spinner"></span>
@@ -812,6 +961,23 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       </div>
     </div>
 
+
+    <div class="prof-section">
+      <div class="prof-section-label">Account</div>
+      <div class="prof-card">
+        <div class="prof-row" onclick="openAccountSheet()">
+          <div class="prof-row-ic p">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>
+          </div>
+          <div class="prof-row-txt">
+            <div class="prof-row-label" id="prof-account-name">Guest learner</div>
+            <div class="prof-row-value" id="prof-account-status"><span class="account-status-dot"></span>Progress is stored on this device</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
     <div class="prof-section">
       <div class="prof-section-label">Connections</div>
       <div class="prof-card">
@@ -852,7 +1018,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </div>
         <!-- Developer: API key override (used as fallback when backend not deployed) -->
-        <div class="prof-row" onclick="openApiKeySheet()" id="dev-api-row">
+        <div class="prof-row dev-only" onclick="openApiKeySheet()" id="dev-api-row">
           <div class="prof-row-ic" style="background:var(--s2)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
           </div>
@@ -878,27 +1044,48 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
     <button class="prof-disconnect hidden" id="prof-disconnect" onclick="disconnectSpotify()">Disconnect Spotify</button>
 
-    <!-- Subscription Banner -->
-    <div class="pro-banner" style="margin-top:4px;margin-bottom:20px">
-      <div class="pro-banner-label">✦ YOUR PLAN</div>
-      <div class="pro-banner-title" style="font-size:22px;color:var(--text)">Free Trial</div>
-      <div class="pro-banner-sub" style="color:var(--soft)">7 days free, then $5.99/month or $49.99/year. All features included — cancel anytime.</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="pro-banner-btn" onclick="alert('Subscription management coming soon — you\'re on the free trial for now! 🎵')">
-          Upgrade to Pro →
-        </button>
-        <button style="padding:10px 14px;border-radius:10px;background:transparent;color:var(--muted);font:600 13px/1 'Plus Jakarta Sans';border:0.5px solid var(--b2);cursor:pointer" onclick="alert('You\'re currently on a free trial. No payment has been charged.')">
-          Manage
-        </button>
-      </div>
-      <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid rgba(184,153,255,.15);display:flex;flex-direction:column;gap:8px">
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft)">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1ed760" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-          Unlimited songs · All 3 languages · Real-time AI
+    <!-- Subscription design preview -->
+    <div class="plan-card" id="profile-plan-card">
+      <div class="plan-card-head">
+        <div>
+          <div class="prototype-badge">Web billing preview</div>
+          <div class="plan-title" id="plan-title">Free preview</div>
+          <div class="plan-sub" id="plan-sub">Explore every feature while the product and store billing are being prepared.</div>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft)">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1ed760" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-          Vocabulary deck · Spaced repetition · Spotify sync
+        <div class="prof-row-ic a" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l2.7 5.5L21 8.4l-4.5 4.4 1.1 6.2-5.6-2.9L6.4 19l1.1-6.2L3 8.4l6.3-.9L12 2z"/></svg>
+        </div>
+      </div>
+      <div class="plan-actions">
+        <button class="btn btn-a" onclick="openPaywallSheet()" id="plan-primary-btn">Preview plans</button>
+        <button class="btn btn-g" onclick="managePrototypePlan()">Plan details</button>
+      </div>
+      <div class="plan-fine">Design prototype only. No payment is collected, no entitlement is enforced, and this must be replaced by StoreKit / Google Play Billing before release.</div>
+    </div>
+
+    <div class="prof-section">
+      <div class="prof-section-label">Support &amp; privacy</div>
+      <div class="prof-card">
+        <div class="prof-row" onclick="openFeedbackSheet('General feedback')">
+          <div class="prof-row-ic a">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a4 4 0 01-4 4H8l-5 3V7a4 4 0 014-4h10a4 4 0 014 4z"/></svg>
+          </div>
+          <div class="prof-row-txt"><div class="prof-row-label">Send feedback</div><div class="prof-row-value">Bug, idea, billing, or content correction</div></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="prof-row" onclick="openPrivacySheet()">
+          <div class="prof-row-ic p">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <div class="prof-row-txt"><div class="prof-row-label">Data &amp; privacy</div><div class="prof-row-value" id="prof-privacy-status">Review AI processing and local data</div></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="prof-row" onclick="exportAllData()">
+          <div class="prof-row-ic" style="background:var(--s2)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+          </div>
+          <div class="prof-row-txt"><div class="prof-row-label">Export my data</div><div class="prof-row-value">Download deck, preferences, and local prototype state</div></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </div>
       </div>
     </div>
@@ -909,11 +1096,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div id="faq-list">
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-q">How much does Melozi cost? <span class="faq-chev">▾</span></div>
-          <div class="faq-a">Melozi Pro is $5.99/month or $49.99/year (save ~30%). Both plans include unlimited songs, all three languages, real-time AI translations, and your full vocabulary deck. You get a 7-day free trial to start — no credit card required during beta.</div>
+          <div class="faq-a">The paywall in this web build is a design preview only. Final prices and trial terms must come from Apple App Store and Google Play before launch.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-q">How do I cancel? <span class="faq-chev">▾</span></div>
-          <div class="faq-a">Cancel anytime from Profile → Manage Subscription. You'll keep access until the end of your billing period. No questions asked, no cancellation fees.</div>
+          <div class="faq-a">Real subscription management is not enabled in this web prototype. The native app will link to the relevant App Store or Google Play subscription settings.</div>
         </div>
         <div class="faq-item" onclick="toggleFaq(this)">
           <div class="faq-q">Why do I need Spotify? <span class="faq-chev">▾</span></div>
@@ -939,7 +1126,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
 
     <div style="text-align:center;padding:16px 0 8px">
-      <div style="font-size:12px;color:var(--dim);line-height:1.6">Melozi v0.9 · Made with ♥ for language learners<br>Questions? <span style="color:var(--a)">hello@melozi.app</span></div>
+      <div style="font-size:12px;color:var(--dim);line-height:1.6">Melozi product preview · Web prototype<br><button onclick="openFeedbackSheet('General feedback')" style="color:var(--a);font:inherit">Send feedback</button></div>
     </div>
     <div style="height:16px"></div>
   </div>
@@ -1056,6 +1243,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div><div class="si-act-title">Save all words from this song</div><div class="si-act-sub" id="si-word-count">— words</div></div>
       <svg class="si-act-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
     </div>
+
+    <div class="si-act" onclick="openContentFeedback()">
+      <div class="si-act-ic p"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.8 17a2 2 0 001.7 3h15a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/></svg></div>
+      <div><div class="si-act-title">Report lyrics or translation</div><div class="si-act-sub">Flag timing, segmentation, pinyin, or meaning</div></div>
+      <svg class="si-act-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
   </div>
 </div>
 
@@ -1134,6 +1327,102 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 </div>
 
+
+<!-- Account preview sheet -->
+<div id="sheet-account" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div class="sh-title" style="margin-bottom:0">Melozi account</div>
+    <div class="prototype-badge">Local preview</div>
+  </div>
+  <div class="form-note" style="margin-top:16px">This previews the account experience only. The name and email below remain in this browser and are not a real login.</div>
+  <label class="form-label" for="account-name-input">Name</label>
+  <div class="form-field"><input id="account-name-input" autocomplete="name" placeholder="Your name"></div>
+  <label class="form-label" for="account-email-input">Email</label>
+  <div class="form-field"><input id="account-email-input" type="email" autocomplete="email" placeholder="you@example.com"></div>
+  <div class="sheet-actions">
+    <button class="btn btn-g" onclick="signOutLocalAccount()">Use as guest</button>
+    <button class="btn btn-a" onclick="saveLocalAccount()">Save preview</button>
+  </div>
+  <div class="plan-fine">Production version: anonymous account → Sign in with Apple / Google / email magic link → secure cloud sync.</div>
+</div>
+
+<!-- Paywall design preview sheet -->
+<div id="sheet-paywall" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div class="sh-title" style="margin-bottom:0">Melozi Pro</div>
+    <div class="prototype-badge">No charge</div>
+  </div>
+  <div style="font:750 25px/1.18 'Space Grotesk';letter-spacing:-.025em;margin-top:16px">Turn every song into a lesson.</div>
+  <div style="font-size:13px;line-height:1.55;color:var(--soft);margin-top:7px">Unlimited annotated songs, complete vocabulary review, all learning languages, and cloud sync when accounts launch.</div>
+  <div class="plan-options">
+    <button class="plan-option active" id="prototype-plan-monthly" onclick="selectPrototypePlan('monthly')">
+      <div class="plan-option-name">Monthly</div><div class="plan-option-price">$5.99</div><div class="plan-option-note">per month · preview price</div>
+    </button>
+    <button class="plan-option" id="prototype-plan-annual" onclick="selectPrototypePlan('annual')">
+      <div class="plan-option-name">Annual</div><div class="plan-option-price">$49.99</div><div class="plan-option-note">per year · preview price</div>
+    </button>
+  </div>
+  <div class="form-note">7-day trial design preview. A real app must show localized store pricing, renewal terms, cancellation instructions, Privacy Policy, Terms, and Restore Purchases.</div>
+  <button class="btn btn-a btn-lg" style="width:100%;border-radius:14px;margin-top:16px" onclick="startPrototypeTrial()">Start local trial preview</button>
+  <button class="btn btn-g" style="width:100%;border-radius:14px;margin-top:9px" onclick="showToast('Restore Purchases will be connected to the app stores in the native build.')">Restore purchases</button>
+  <div style="display:flex;justify-content:center;gap:18px;margin-top:16px;font-size:11px;color:var(--muted)">
+    <button onclick="openPrivacySheet()" style="font:inherit;color:inherit">Privacy</button>
+    <button onclick="showToast('Terms of Use page placeholder — legal copy is still required.')" style="font:inherit;color:inherit">Terms</button>
+  </div>
+</div>
+
+<!-- Feedback sheet -->
+<div id="sheet-feedback" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div class="sh-title">Send feedback</div>
+  <div class="form-note">This prototype saves a local copy and opens your email app. A production build should submit to a secure feedback API.</div>
+  <label class="form-label" for="feedback-category">Category</label>
+  <div class="form-field">
+    <select id="feedback-category">
+      <option>General feedback</option>
+      <option>Bug report</option>
+      <option>Feature idea</option>
+      <option>Lyrics or translation correction</option>
+      <option>Spotify issue</option>
+      <option>Billing question</option>
+    </select>
+  </div>
+  <label class="form-label" for="feedback-message">What happened?</label>
+  <div class="form-field"><textarea id="feedback-message" placeholder="Tell us what you expected and what happened instead…"></textarea></div>
+  <label class="form-label" for="feedback-email">Reply email (optional)</label>
+  <div class="form-field"><input id="feedback-email" type="email" placeholder="you@example.com"></div>
+  <label class="check-row" for="feedback-diagnostics">
+    <input id="feedback-diagnostics" type="checkbox" checked>
+    <span><span class="check-row-title">Include diagnostics</span><span class="check-row-sub">App version, learning language, current song ID/title, and browser — never Spotify tokens.</span></span>
+  </label>
+  <button class="btn btn-a btn-lg" style="width:100%;border-radius:14px;margin-top:17px" onclick="submitFeedback()">Continue in email</button>
+</div>
+
+<!-- Privacy / AI disclosure sheet -->
+<div id="sheet-privacy" class="bsheet">
+  <div class="sh-handle" onclick="closeAllSheets()"></div>
+  <div class="sh-title">Data &amp; privacy</div>
+  <div class="form-note">Current web prototype: learning data is stored in this browser. Spotify access tokens are also stored locally. That must move to secure native storage and a backend before release.</div>
+  <label class="check-row" for="privacy-ai-consent">
+    <input id="privacy-ai-consent" type="checkbox">
+    <span><span class="check-row-title">Allow AI processing of lyric text</span><span class="check-row-sub">Melozi sends selected lyric text and song metadata to generate pronunciation, segmentation, and translations.</span></span>
+  </label>
+  <label class="check-row" for="privacy-analytics-consent">
+    <input id="privacy-analytics-consent" type="checkbox">
+    <span><span class="check-row-title">Share anonymous product analytics</span><span class="check-row-sub">Prototype preference only. No analytics SDK is installed by this change.</span></span>
+  </label>
+  <div class="sheet-actions">
+    <button class="btn btn-g" onclick="exportAllData()">Export data</button>
+    <button class="btn btn-a" onclick="savePrivacyChoices()">Save choices</button>
+  </div>
+  <button class="prof-disconnect" style="margin-top:14px" onclick="deleteLocalData()">Delete local Melozi data</button>
+  <div class="plan-fine">Production still needs a public Privacy Policy, Terms of Use, support URL, in-app account deletion, external deletion page, and accurate App Store / Play Data Safety disclosures.</div>
+</div>
+
+<div id="app-toast" role="status" aria-live="polite"></div>
+
 <!-- PWA Install Prompt -->
 <div id="pwa-prompt" class="hidden">
   <div class="pwa-icon">
@@ -1196,6 +1485,12 @@ const S = {
   lastActive: localStorage.getItem('sl_last_active') || '',
   setupDone: !!localStorage.getItem('sl_setup'),
   obStep: 1, obLang: localStorage.getItem('sl_source') || 'zh',
+  playerMode: localStorage.getItem('ml_player_mode') || 'listen',
+  localAccount: JSON.parse(localStorage.getItem('ml_account') || 'null'),
+  prototypePlan: localStorage.getItem('ml_prototype_plan') || 'monthly',
+  trialStart: parseInt(localStorage.getItem('ml_trial_start') || '0'),
+  aiConsent: localStorage.getItem('ml_ai_consent') === '1',
+  analyticsConsent: localStorage.getItem('ml_analytics_consent') === '1',
 };
 const LANG_CODE={'English':'en','Malay':'ms','Indonesian':'id','Thai':'th','Spanish':'es','French':'fr','German':'de','Arabic':'ar'};
 const TRANSLATIONS={
@@ -1270,6 +1565,9 @@ window.onload = async () => {
     rerender();
   });
   const params = new URLSearchParams(window.location.search);
+  document.body.classList.toggle('dev-mode', params.get('dev') === '1');
+  renderProductPrototype();
+  setPlayerMode(S.playerMode, true);
   if (params.get('code')) {
     await handleSpotifyCallback(params.get('code'));
     if (S.setupDone) { showScreen('home'); }
@@ -1288,7 +1586,7 @@ window.onload = async () => {
   }
   if (S.setupDone) {
     showScreen('home');
-    updateBadge(); updateHomeNowPlaying(); updateContinueLearning();
+    updateBadge(); updateHomeNowPlaying(); updateContinueLearning(); updateDailyPlan();
     showPopularSkeleton(); // show skeleton before fetching, not after
     fetchPopularSpotify();
   } else {
@@ -1342,6 +1640,7 @@ function goTab(tab) {
   if (tab === 'deck') renderDeck();
   if (tab === 'profile') {
     renderProfile();
+    renderProductProfile();
     // Always scroll profile to top when navigating to it
     requestAnimationFrame(() => {
       const ps = document.querySelector('.prof-scroll');
@@ -1349,7 +1648,7 @@ function goTab(tab) {
     });
   }
   if (tab === 'home') {
-    updateHomeNowPlaying(); updateContinueLearning(); showPopularSkeleton(); fetchPopularSpotify();
+    updateHomeNowPlaying(); updateContinueLearning(); updateDailyPlan(); showPopularSkeleton(); fetchPopularSpotify();
     // Reset home scroll to top
     requestAnimationFrame(() => {
       const hs = document.querySelector('.home-scroll');
@@ -1391,7 +1690,7 @@ function obGoto(step) {
     if (sel) sel.value = S.appLanguage;
   }
   const continueBtn = document.querySelector('.ob-footer .btn-a');
-  if (continueBtn) continueBtn.textContent = step === 6 ? 'Start free trial →' : 'Continue →';
+  if (continueBtn) continueBtn.textContent = step === 6 ? 'Start learning →' : 'Continue →';
   const leftBtn = document.getElementById('ob-left-btn');
   if (leftBtn) {
     if (step === 1) { leftBtn.textContent = 'Skip setup'; leftBtn.onclick = skipOnboarding; }
@@ -1415,7 +1714,7 @@ function obSelectLang(el) {
 function skipOnboarding() { localStorage.setItem('sl_setup','1'); S.setupDone=true; showScreen('home'); updateBadge(); }
 function finishOnboarding() {
   localStorage.setItem('sl_setup','1'); S.setupDone=true;
-  showScreen('home'); updateBadge(); updateHomeNowPlaying(); updateContinueLearning();
+  showScreen('home'); updateBadge(); updateHomeNowPlaying(); updateContinueLearning(); updateDailyPlan(); renderProductPrototype();
   fetchPopularSpotify();
   // Start the feature tour after a short delay (first time only)
   if(!localStorage.getItem('ml_tour_done')) setTimeout(startTour, 700);
@@ -2869,7 +3168,7 @@ function tick(){
     let idx=0;for(let i=0;i<S.lyrics.length;i++){if(S.lyrics[i].time<=pos)idx=i;else break;}
     if(idx!==S.activeIdx&&S.running){S.activeIdx=idx;rerender();}
     const last=S.lyrics[S.lyrics.length-1]?.time||1;const pf=document.getElementById('progress-fill-h');if(pf){const pct=S.spotifyDurationMs?Math.min(100,(pos/(S.spotifyDurationMs/1000))*100):Math.min(100,(pos/last)*100);pf.style.width=pct+'%';const th=document.getElementById('progress-thumb-h');if(th)th.style.left=pct+'%';}const rem=document.getElementById('pl-remaining');if(rem){const r=Math.max(0,last-pos);const rm=Math.floor(r/60);const rs=String(Math.floor(r%60)).padStart(2,'0');rem.textContent=`-${rm}:${rs}`;}}
-  const cstats=document.getElementById('home-stats');if(cstats){const due=S.saved.length;cstats.innerHTML=`<b>${due} card${due===1?'':'s'} due</b> · <span id="home-streak-display">${S.streak}-day streak 🔥</span>`;}
+  const cstats=document.getElementById('home-stats');if(cstats){const due=getDueCount();cstats.innerHTML=`<b>${due} card${due===1?'':'s'} due</b> · <span id="home-streak-display">${S.streak}-day streak 🔥</span>`;}
 }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
@@ -3011,7 +3310,7 @@ function tooltipAddToDeck(){
       char,pinyin,english,song:S.title,artist:S.artist,
       lyricPin: line?.words?.map(w=>w.pinyin).join(' ')||line?.pinyin||'',
       lyricChars: line?.words?.map(w=>w.char).join('')||line?.characters||'',
-      lyricEng: line?.english||''
+      lyricEng: line?.english||'', dueAt:Date.now(), intervalDays:0, reviewCount:0
     });
     if(!english){
       translateWordFallback(char).then(en=>{
@@ -3057,7 +3356,7 @@ function saveAllWords(){
     const lyricEng=l.english||'';
     l.words.forEach(w=>{
       if(!isTrivialChineseWord(w.char) && !S.saved.some(s=>s.char===w.char))
-        S.saved.push({char:w.char,pinyin:w.pinyin,english:w.english||lyricEng,song:S.title,artist:S.artist,lyricPin,lyricChars,lyricEng});
+        S.saved.push({char:w.char,pinyin:w.pinyin,english:w.english||lyricEng,song:S.title,artist:S.artist,lyricPin,lyricChars,lyricEng,dueAt:Date.now(),intervalDays:0,reviewCount:0});
     });
   });
   localStorage.setItem('ht_deck',JSON.stringify(S.saved));
@@ -3117,8 +3416,9 @@ function filterDeckList(q) { deckFilter=q.toLowerCase(); renderDeckList(); }
 
 // ── DECK ───────────────────────────────────────────────────────────────────
 function updateBadge(){
-  const n=S.saved.length;const el=document.getElementById('deck-badge');
+  const n=getDueCount();const el=document.getElementById('deck-badge');
   if(el){el.textContent=n;el.classList.toggle('show',n>0);}
+  updateDailyPlan();
 }
 
 function renderDeck(){
@@ -3477,11 +3777,20 @@ function flipCard() {
 }
 
 function cardAction(a) {
-  if (S.saved[S.cardIdx]) {
-    S.saved[S.cardIdx].status = a; // track: 'again' | 'hard' | 'got'
+  const word=S.saved[S.cardIdx];
+  if (word) {
+    const now=Date.now();
+    word.status=a;
+    word.lastReviewedAt=now;
+    word.reviewCount=(word.reviewCount||0)+1;
+    const previous=Math.max(1,word.intervalDays||1);
+    if(a==='again'){word.intervalDays=0;word.dueAt=now+(10*60*1000);}
+    if(a==='hard'){word.intervalDays=Math.max(1,Math.round(previous*1.4));word.dueAt=now+(word.intervalDays*86400000);}
+    if(a==='got'){word.intervalDays=Math.max(3,Math.round(previous*2.2));word.dueAt=now+(word.intervalDays*86400000);}
     localStorage.setItem('ht_deck', JSON.stringify(S.saved));
   }
-  if (a === 'again') { renderDeck(); return; }
+  updateBadge();
+  if (a === 'again') { renderDeck(); showToast('Scheduled again in 10 minutes.'); return; }
   S.cardIdx = (S.cardIdx + 1) % Math.max(1, S.saved.length);
   renderDeck();
 }
@@ -3492,10 +3801,230 @@ function removeWord(i) {
   updateBadge();
   if (S.cardIdx >= S.saved.length) S.cardIdx = Math.max(0, S.saved.length - 1);
   if (deckMode === 'list') renderDeckList(); else renderDeck();
+  updateBadge();
 }
 
 function resetCard() {
   if (deckMode === 'list') setDeckMode('cards'); else { S.cardIdx = 0; renderDeck(); }
+}
+
+
+// ── PRODUCT PREVIEW UX ─────────────────────────────────────────────────────
+function getDueCards(){
+  const now=Date.now();
+  return S.saved.map((word,index)=>({word,index})).filter(({word})=>!word.dueAt||Number(word.dueAt)<=now);
+}
+function getDueCount(){return getDueCards().length;}
+
+function updateDailyPlan(){
+  const title=document.getElementById('today-title');
+  const sub=document.getElementById('today-sub');
+  const primary=document.getElementById('today-primary');
+  const progress=document.getElementById('today-progress');
+  const savedChip=document.getElementById('today-saved-chip');
+  const streakChip=document.getElementById('today-streak-chip');
+  if(!title||!sub||!primary)return;
+  const due=getDueCount();
+  if(progress)progress.textContent=`${due} due`;
+  if(savedChip)savedChip.textContent=`${S.saved.length} saved word${S.saved.length===1?'':'s'}`;
+  if(streakChip)streakChip.textContent=`${S.streak}-day streak`;
+  if(due>0){
+    title.textContent=`Review ${due} word${due===1?'':'s'} while they're fresh`;
+    sub.textContent='A short review now helps the words from your songs stick.';
+    primary.textContent=`Review ${due} now`;
+  }else if(S.title&&S.title!=='—'){
+    title.textContent=`Continue “${stripParenText(S.title)||S.title}”`;
+    sub.textContent='Return to the synced lyric and save one useful word or phrase.';
+    primary.textContent='Continue listening';
+  }else{
+    title.textContent='Choose a song to begin';
+    sub.textContent='Listen once, tap useful words, then review them while the song is still fresh.';
+    primary.textContent='Find a song';
+  }
+}
+function startDailyAction(){
+  const due=getDueCards();
+  if(due.length){S.cardIdx=due[0].index;goTab('deck');return;}
+  if(S.title&&S.title!=='—'){openPlayer();return;}
+  const popular=document.getElementById('popular-grid');
+  if(popular)popular.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function setPlayerMode(mode,silent=false){
+  mode=mode==='learn'?'learn':'listen';
+  S.playerMode=mode;
+  if(!silent)localStorage.setItem('ml_player_mode',mode);
+  const player=document.getElementById('screen-player');
+  player?.classList.toggle('mode-learn',mode==='learn');
+  document.getElementById('learn-toolbar')?.classList.toggle('hidden',mode!=='learn');
+  ['listen','learn'].forEach(name=>{
+    const btn=document.getElementById('player-mode-'+name);
+    btn?.classList.toggle('active',name===mode);
+    btn?.setAttribute('aria-selected',String(name===mode));
+  });
+}
+async function replayCurrentLine(){
+  const line=S.lyrics[S.activeIdx];
+  if(!line){showToast('Load a song first.');return;}
+  const seconds=Math.max(0,Number(line.time)||0);
+  S.offset=seconds;S.lastPollAt=Date.now();
+  const token=await getValidToken();
+  if(token){
+    fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${Math.round(seconds*1000)}`,{method:'PUT',headers:{Authorization:'Bearer '+token}}).catch(()=>{});
+  }
+  showToast('Replaying this line.');
+}
+function saveCurrentPhrase(){
+  const line=S.lyrics[S.activeIdx];
+  if(!line){showToast('Load a song first.');return;}
+  const char=(line.words?.map(w=>w.char).join('')||line.characters||line.text||'').trim();
+  if(!char)return;
+  if(S.saved.some(w=>w.char===char&&w.song===S.title)){showToast('This line is already in your deck.');return;}
+  const pinyin=line.words?.map(w=>w.pinyin).filter(Boolean).join(' ')||line.pinyin||'';
+  const english=line.english||'';
+  S.saved.push({char,pinyin,english,song:S.title,artist:S.artist,lyricPin:pinyin,lyricChars:char,lyricEng:english,isPhrase:true,dueAt:Date.now(),intervalDays:0,reviewCount:0});
+  localStorage.setItem('ht_deck',JSON.stringify(S.saved));
+  updateBadge();rerender();
+  showToast('Saved this lyric line as a phrase.');
+}
+
+function openAccountSheet(){
+  const account=S.localAccount||{};
+  const n=document.getElementById('account-name-input');if(n)n.value=account.name||'';
+  const e=document.getElementById('account-email-input');if(e)e.value=account.email||'';
+  openSheet('account');
+}
+function saveLocalAccount(){
+  const name=(document.getElementById('account-name-input')?.value||'').trim();
+  const email=(document.getElementById('account-email-input')?.value||'').trim();
+  if(!name||!email){showToast('Add a name and email to preview the signed-in state.');return;}
+  S.localAccount={name,email,localOnly:true};
+  localStorage.setItem('ml_account',JSON.stringify(S.localAccount));
+  renderProductProfile();closeAllSheets();showToast('Local account preview saved.');
+}
+function signOutLocalAccount(){
+  S.localAccount=null;localStorage.removeItem('ml_account');renderProductProfile();closeAllSheets();showToast('Using Melozi as a guest.');
+}
+function accountInitials(name){return (name||'Guest learner').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();}
+
+function getTrialState(){
+  if(!S.trialStart)return {status:'preview',daysLeft:7};
+  const elapsed=Date.now()-S.trialStart;
+  const daysLeft=Math.max(0,Math.ceil((7*86400000-elapsed)/86400000));
+  return daysLeft>0?{status:'trial',daysLeft}:{status:'expired',daysLeft:0};
+}
+function updatePlanUI(){
+  const state=getTrialState();
+  const title=document.getElementById('plan-title');
+  const sub=document.getElementById('plan-sub');
+  const btn=document.getElementById('plan-primary-btn');
+  if(!title||!sub||!btn)return;
+  if(state.status==='trial'){
+    title.textContent=`Trial preview · ${state.daysLeft} day${state.daysLeft===1?'':'s'} left`;
+    sub.textContent=`Local ${S.prototypePlan} plan preview. No payment or store subscription exists.`;
+    btn.textContent='View plan preview';
+  }else if(state.status==='expired'){
+    title.textContent='Trial preview ended';
+    sub.textContent='Features remain available because this web prototype does not enforce entitlements.';
+    btn.textContent='Preview plans';
+  }else{
+    title.textContent='Free preview';
+    sub.textContent='Explore every feature while the product and store billing are being prepared.';
+    btn.textContent='Preview plans';
+  }
+}
+function openPaywallSheet(){selectPrototypePlan(S.prototypePlan,true);openSheet('paywall');}
+function selectPrototypePlan(plan,silent=false){
+  S.prototypePlan=plan==='annual'?'annual':'monthly';
+  if(!silent)localStorage.setItem('ml_prototype_plan',S.prototypePlan);
+  ['monthly','annual'].forEach(name=>document.getElementById('prototype-plan-'+name)?.classList.toggle('active',name===S.prototypePlan));
+}
+function startPrototypeTrial(){
+  S.trialStart=Date.now();
+  localStorage.setItem('ml_trial_start',String(S.trialStart));
+  localStorage.setItem('ml_prototype_plan',S.prototypePlan);
+  updatePlanUI();closeAllSheets();showToast('Local 7-day trial preview started — no payment was collected.');
+}
+function managePrototypePlan(){
+  const state=getTrialState();
+  if(state.status==='trial')showToast(`${state.daysLeft} day${state.daysLeft===1?'':'s'} left in the local trial preview. No subscription exists.`);
+  else showToast('This is a billing design preview. Native store billing is still required.');
+}
+
+function openFeedbackSheet(category='General feedback',message=''){
+  const cat=document.getElementById('feedback-category');if(cat)cat.value=category;
+  const msg=document.getElementById('feedback-message');if(msg)msg.value=message;
+  const em=document.getElementById('feedback-email');if(em)em.value=S.localAccount?.email||'';
+  openSheet('feedback');
+}
+function openContentFeedback(){
+  closeAllSheets();
+  const line=S.lyrics[S.activeIdx];
+  const text=line?.characters||line?.text||'';
+  const prefill=`Song: ${S.title||'Unknown'}\nArtist: ${S.artist||'Unknown'}\nLine: ${text}\nTimestamp: ${line?.time??'Unknown'}s\n\nWhat should be corrected? `;
+  openFeedbackSheet('Lyrics or translation correction',prefill);
+}
+function feedbackDiagnostics(){
+  return {version:'web-product-preview-1.0',sourceLanguage:S.sourceLang,targetLanguage:S.targetLanguage,appLanguage:S.appLanguage,currentSong:S.title||null,currentArtist:S.artist||null,spotifyTrackId:S.spotifyCurrentTrackId||null,activeLine:S.activeIdx,userAgent:navigator.userAgent};
+}
+function submitFeedback(){
+  const category=document.getElementById('feedback-category')?.value||'General feedback';
+  const message=(document.getElementById('feedback-message')?.value||'').trim();
+  const email=(document.getElementById('feedback-email')?.value||'').trim();
+  if(message.length<5){showToast('Please add a little more detail.');return;}
+  const include=document.getElementById('feedback-diagnostics')?.checked;
+  const entry={id:(crypto.randomUUID?.()||String(Date.now())),category,message,email,diagnostics:include?feedbackDiagnostics():null,createdAt:new Date().toISOString(),status:'local-draft'};
+  const history=JSON.parse(localStorage.getItem('ml_feedback')||'[]');history.push(entry);localStorage.setItem('ml_feedback',JSON.stringify(history.slice(-25)));
+  const body=[message,email?`Reply email: ${email}`:'',include?`Diagnostics:\n${JSON.stringify(entry.diagnostics,null,2)}`:''].filter(Boolean).join('\n\n');
+  closeAllSheets();showToast('Feedback draft saved. Opening your email app…');
+  setTimeout(()=>{window.location.href=`mailto:hello@melozi.app?subject=${encodeURIComponent('Melozi: '+category)}&body=${encodeURIComponent(body)}`;},350);
+}
+
+function openPrivacySheet(){
+  const ai=document.getElementById('privacy-ai-consent');if(ai)ai.checked=S.aiConsent;
+  const analytics=document.getElementById('privacy-analytics-consent');if(analytics)analytics.checked=S.analyticsConsent;
+  openSheet('privacy');
+}
+function savePrivacyChoices(){
+  S.aiConsent=!!document.getElementById('privacy-ai-consent')?.checked;
+  S.analyticsConsent=!!document.getElementById('privacy-analytics-consent')?.checked;
+  localStorage.setItem('ml_ai_consent',S.aiConsent?'1':'0');
+  localStorage.setItem('ml_analytics_consent',S.analyticsConsent?'1':'0');
+  renderProductProfile();closeAllSheets();showToast('Privacy preferences saved on this device.');
+}
+function exportAllData(){
+  const data={exportedAt:new Date().toISOString(),account:S.localAccount,preferences:{appLanguage:S.appLanguage,sourceLanguage:S.sourceLang,targetLanguage:S.targetLanguage,playerMode:S.playerMode,aiConsent:S.aiConsent,analyticsConsent:S.analyticsConsent},prototypePlan:{plan:S.prototypePlan,trialStart:S.trialStart},deck:S.saved,history:JSON.parse(localStorage.getItem('ml_history')||localStorage.getItem('ht_history')||'[]'),feedback:JSON.parse(localStorage.getItem('ml_feedback')||'[]')};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download='melozi-data-export.json';a.click();URL.revokeObjectURL(a.href);showToast('Data export created.');
+}
+function deleteLocalData(){
+  if(!confirm('Delete your local Melozi account preview, deck, history, trial preview, and preferences from this browser? Spotify will also be disconnected.'))return;
+  stopSpotifyPolling?.();
+  const keep=[];
+  Object.keys(localStorage).forEach(key=>{if(!keep.includes(key))localStorage.removeItem(key);});
+  showToast('Local data deleted. Reloading…');
+  setTimeout(()=>location.reload(),650);
+}
+
+let toastTimer=null;
+function showToast(message){
+  const el=document.getElementById('app-toast');if(!el)return;
+  el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3300);
+}
+function renderProductProfile(){
+  const account=S.localAccount;
+  const name=account?.name||'Guest learner';
+  const accountName=document.getElementById('prof-account-name');if(accountName)accountName.textContent=name;
+  const status=document.getElementById('prof-account-status');
+  if(status)status.innerHTML=account?'<span class="account-status-dot on"></span>Local account preview · cloud sync not connected':'<span class="account-status-dot"></span>Progress is stored on this device';
+  const profileName=document.getElementById('prof-name');if(profileName)profileName.textContent=account?.name||'Listener';
+  const av=document.getElementById('prof-av');if(av)av.textContent=accountInitials(name);
+  const privacy=document.getElementById('prof-privacy-status');if(privacy)privacy.textContent=S.aiConsent?'AI processing disclosure accepted on this device':'Review AI processing and local data';
+  updatePlanUI();
+}
+function renderProductPrototype(){
+  renderProductProfile();updateDailyPlan();
 }
 
 // ── PROFILE ────────────────────────────────────────────────────────────────
@@ -3507,6 +4036,7 @@ function renderProfile(){
   const lv=document.getElementById('prof-lang-value');if(lv)lv.textContent=S.targetLanguage||'English';
   const ps=document.getElementById('prof-sub');if(ps){const langNames={zh:'Mandarin',ko:'Korean',ja:'Japanese'};ps.textContent=`你好 · Learning ${langNames[S.sourceLang]||'Mandarin'}`;}
   const sn=document.getElementById('streak-num');if(sn)sn.textContent=S.streak;
+  renderProductProfile();
 }
 
 function renderProfileSpotify(){
@@ -3527,7 +4057,7 @@ function openSheet(name){
 }
 function closeAllSheets(){
   document.getElementById('sheet-backdrop').classList.remove('open');
-  ['word','display','info','lang','deck-word','app-lang','apikey'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
+  ['word','display','info','lang','deck-word','app-lang','apikey','account','paywall','feedback','privacy'].forEach(n=>{const el=document.getElementById('sheet-'+n);if(el)el.classList.remove('open');});
   document.body.style.overflow='';
 }
 function openDisplaySheet(){openSheet('display');}
