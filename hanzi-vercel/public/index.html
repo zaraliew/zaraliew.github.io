@@ -1252,6 +1252,8 @@ const LANG_CONFIG = {
 // ── INIT ───────────────────────────────────────────────────────────────────
 window.onload = async () => {
   updateStreak();
+  // Repair older cards that stored a full sentence instead of the word meaning.
+  Promise.all(S.saved.map(repairSavedWordMeaning)).then(()=>{if(S.tab==='deck')renderDeck();});
 
   setTargetLanguage(S.targetLanguage, true);
   setSourceLang(S.sourceLang, true);
@@ -2565,20 +2567,38 @@ async function ensureEnglishForLines(lines){
 }
 const ZH_WORD_ENGLISH = {
   '在乎':'care about', '时间':'time', '朋友':'friend', '爱情':'love', '喜欢':'like', '想念':'miss', '回忆':'memory', '梦想':'dream',
-  '情绪':'emotion', '无用功':'wasted effort', '不再':'no longer', '人':'person', '心':'heart', '爱':'love', '梦':'dream',
+  '情绪':'emotion', '无用功':'wasted effort', '不再':'no longer', '不再是':'is no longer', '不是':'is not', '在乎':'care about', '人':'person', '心':'heart', '爱':'love', '梦':'dream',
   '说':'say', '问':'ask', '听':'listen', '看':'look', '等':'wait', '走':'walk / leave', '来':'come', '去':'go',
   '知道':'know', '明白':'understand', '相信':'believe', '忘记':'forget', '记得':'remember', '离开':'leave', '回来':'come back',
   '世界':'world', '城市':'city', '夜晚':'night', '月光':'moonlight', '阳光':'sunlight', '声音':'voice / sound', '眼泪':'tears',
   '快乐':'happy', '难过':'sad', '孤单':'lonely', '温柔':'gentle', '自由':'freedom', '未来':'future', '过去':'past'
 };
+function looksLikeSentenceTranslation(value, line){
+  const v=(value||'').trim();
+  const lineEng=(line?.english||'').trim();
+  if(!v)return false;
+  if(lineEng && v===lineEng)return true;
+  // A word meaning should normally be short. This catches old deck entries
+  // that accidentally stored the complete lyric sentence.
+  return v.length>48 || v.split(/\s+/).length>9 || /[.!?。！？].+/.test(v);
+}
 function getBestWordEnglish(word,line){
   const raw=(word?.english||'').trim();
-  const lineEng=(line?.english||'').trim();
-  // Never use the whole sentence as the word meaning.
-  if(raw && raw !== lineEng) return raw;
   const ch=S.sourceLang==='zh'?toSimplified(word?.char||''):(word?.char||'');
   if(S.sourceLang==='zh' && ZH_WORD_ENGLISH[ch]) return ZH_WORD_ENGLISH[ch];
+  if(raw && !looksLikeSentenceTranslation(raw,line)) return raw;
   return '';
+}
+async function repairSavedWordMeaning(w){
+  if(!w)return '';
+  const line={english:w.lyricEng||''};
+  let eng=getBestWordEnglish(w,line);
+  if(!eng)eng=await translateWordFallback(w.char||'');
+  if(eng && eng!==w.english){
+    w.english=eng;
+    localStorage.setItem('ht_deck',JSON.stringify(S.saved));
+  }
+  return eng||'';
 }
 function getWordCacheKey(ch){return 'ht_word_en_'+(S.sourceLang||'zh')+'_'+(S.targetLanguage||'English')+'_'+ch;}
 async function translateWordFallback(ch){
@@ -2873,7 +2893,7 @@ function renderLine(id,lineIdx,isActive){
       html+='<div class="chars">';
       words.forEach((w,wi)=>{
         const sv=isWordSavedForHighlight(w.char);
-        html+=`<span class="k-word${sv?' is-saved':''}" data-line-idx="${lineIdx}" data-word-idx="${wi}" role="button" tabindex="0">${esc(w.char)}</span>`;
+        html+=`<span class="k-word${sv?' is-saved':''}" data-line-idx="${lineIdx}" data-word-idx="${wi}" role="button" tabindex="0" onclick="openWordSheet(event,${lineIdx},${wi})">${esc(w.char)}</span>`;
       });
       html+='</div>';
     }
@@ -2896,18 +2916,16 @@ function initLyricWordTaps(){
   const wrap=document.querySelector('.pl-lyrics');
   if(!wrap||wrap.dataset.wordTapInit)return;
   wrap.dataset.wordTapInit='1';
-  const handler=e=>{
+  // Keyboard accessibility only. Pointer taps use the inline onclick added
+  // during renderLine, which is the most reliable route on mobile Safari.
+  wrap.addEventListener('keydown',e=>{
     const word=e.target.closest('.k-word');
-    if(!word||!wrap.contains(word))return;
-    if(e.type==='keydown'&&e.key!=='Enter'&&e.key!==' ')return;
-    e.preventDefault();
-    e.stopPropagation();
-    openWordSheet(e,parseInt(word.dataset.lineIdx,10),parseInt(word.dataset.wordIdx,10));
-  };
-  wrap.addEventListener('click',handler,true);
-  wrap.addEventListener('touchend',handler,{capture:true,passive:false});
-  wrap.addEventListener('keydown',handler,true);
+    if(!word||!wrap.contains(word)||(e.key!=='Enter'&&e.key!==' '))return;
+    e.preventDefault();e.stopPropagation();
+    openWordSheet(e,Number(word.dataset.lineIdx),Number(word.dataset.wordIdx));
+  },true);
 }
+
 
 // ── WORD SHEET ─────────────────────────────────────────────────────────────
 function openWordSheet(e,lineIdx,wordIdx){
@@ -3105,7 +3123,9 @@ function renderDeck(){
     else{frontLyric.innerHTML='';}
   }
   document.getElementById('card-back-pin').textContent=w.pinyin||'';
-  document.getElementById('card-back-eng').textContent=w.english||'';
+  const cardEng=getBestWordEnglish(w,{english:w.lyricEng||''});
+  document.getElementById('card-back-eng').textContent=cardEng||'Loading meaning…';
+  if(!cardEng){repairSavedWordMeaning(w).then(en=>{if(en&&S.saved[S.cardIdx]===w){const el=document.getElementById('card-back-eng');if(el)el.textContent=en;}});}
   document.getElementById('card-back-char').textContent=w.char;
   const ctxLabel=document.getElementById('card-ctx-label');
   const ctx=document.getElementById('card-ctx');
@@ -3130,7 +3150,7 @@ function renderDeck(){
   }
   const total=words.length;
   document.getElementById('dk-count').textContent=`${S.cardIdx+1} / ${total}`;
-  document.getElementById('dk-prog-fill').style.width=((S.cardIdx)/total*100)+'%';
+  document.getElementById('dk-prog-fill').style.width=(((S.cardIdx+1)/total)*100)+'%';
 }
 
 function renderDeckList() {
@@ -3305,66 +3325,53 @@ const drag = { on:false, sx:0, sy:0, cx:0, cy:0 };
 const SWIPE_THRESH = 80;
 
 function initCardSwipe() {
-  const wrap = document.getElementById('card-drag-wrap');
-  if (!wrap) return;
-  let dragging = false; // only true after real movement threshold
+  const wrap=document.getElementById('card-drag-wrap');
+  if(!wrap||wrap.dataset.swipeInit)return;
+  wrap.dataset.swipeInit='1';
+  let pointerId=null;
+  let moved=false;
 
-  // ── TOUCH ──
-  wrap.addEventListener('touchstart', e => {
-    if (!S.saved.length) return;
-    const t = e.touches[0];
-    drag.on = true; dragging = false;
-    drag.sx = t.clientX; drag.sy = t.clientY;
-    drag.cx = t.clientX; drag.cy = t.clientY;
-  }, { passive: true });
+  wrap.addEventListener('pointerdown',e=>{
+    if(!S.saved.length||e.button>0)return;
+    pointerId=e.pointerId;moved=false;drag.on=true;
+    drag.sx=drag.cx=e.clientX;drag.sy=drag.cy=e.clientY;
+    try{wrap.setPointerCapture(pointerId);}catch(_){}
+  });
 
-  wrap.addEventListener('touchmove', e => {
-    if (!drag.on) return;
-    drag.cx = e.touches[0].clientX;
-    drag.cy = e.touches[0].clientY;
-    // Only start drag visuals after 12px movement
-    if (!dragging && (Math.abs(drag.cx - drag.sx) > 12 || Math.abs(drag.cy - drag.sy) > 12)) {
-      dragging = true;
-      wrap.style.transition = 'none';
+  wrap.addEventListener('pointermove',e=>{
+    if(!drag.on||e.pointerId!==pointerId)return;
+    drag.cx=e.clientX;drag.cy=e.clientY;
+    const dx=drag.cx-drag.sx,dy=drag.cy-drag.sy;
+    if(!moved&&(Math.abs(dx)>10||Math.abs(dy)>10)){
+      moved=true;
+      wrap.dataset.didSwipe='1';
+      wrap.style.transition='none';
     }
-    if (dragging) { e.preventDefault(); applyDrag(); }
-  }, { passive: false });
+    if(moved){e.preventDefault();applyDrag();}
+  },{passive:false});
 
-  wrap.addEventListener('touchend', () => {
-    if (!drag.on) return;
-    drag.on = false;
-    if (dragging) commitSwipe();
-    // tap: let the natural click event on card-inner handle flipCard()
-    dragging = false;
-  });
+  const finish=e=>{
+    if(!drag.on||e.pointerId!==pointerId)return;
+    drag.on=false;
+    try{wrap.releasePointerCapture(pointerId);}catch(_){}
+    pointerId=null;
+    if(moved)commitSwipe();else snapBack();
+    // Suppress the synthetic click generated after a swipe, but allow taps to flip.
+    setTimeout(()=>{delete wrap.dataset.didSwipe;},80);
+    moved=false;
+  };
+  wrap.addEventListener('pointerup',finish);
+  wrap.addEventListener('pointercancel',e=>{if(e.pointerId===pointerId){drag.on=false;pointerId=null;moved=false;snapBack();}});
 
-  wrap.addEventListener('touchcancel', () => { drag.on = false; dragging = false; snapBack(); });
-
-  // ── MOUSE (desktop) ──
-  wrap.addEventListener('mousedown', e => {
-    if (!S.saved.length) return;
-    drag.on = true; dragging = false;
-    drag.sx = e.clientX; drag.sy = e.clientY;
-    drag.cx = e.clientX; drag.cy = e.clientY;
-    e.preventDefault();
-  });
-  document.addEventListener('mousemove', e => {
-    if (!drag.on) return;
-    drag.cx = e.clientX; drag.cy = e.clientY;
-    if (!dragging && (Math.abs(drag.cx - drag.sx) > 12 || Math.abs(drag.cy - drag.sy) > 12)) {
-      dragging = true;
-      wrap.style.transition = 'none';
-    }
-    if (dragging) applyDrag();
-  });
-  document.addEventListener('mouseup', () => {
-    if (!drag.on) return;
-    drag.on = false;
-    if (dragging) commitSwipe();
-    // tap: onclick on card-inner fires naturally
-    dragging = false;
-  });
+  const inner=document.getElementById('card-inner');
+  if(inner&&!inner.dataset.swipeClickGuard){
+    inner.dataset.swipeClickGuard='1';
+    inner.addEventListener('click',e=>{
+      if(wrap.dataset.didSwipe){e.preventDefault();e.stopImmediatePropagation();}
+    },true);
+  }
 }
+
 
 function commitSwipe() {
   const dx = drag.cx - drag.sx, dy = drag.cy - drag.sy;
