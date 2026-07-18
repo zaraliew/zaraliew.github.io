@@ -605,8 +605,27 @@ body.dev-mode .dev-only{display:flex!important}
   <!-- Step 1: Welcome -->
   <div class="ob-body" id="ob-1">
     <div class="ob-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg></div>
-    <div class="ob-title">Turn the songs you love<br><em>into languages you speak.</em></div>
-    <div class="ob-sub">Four quick questions to tune your lyrics, vocabulary, and translations to you. Takes about 30 seconds.</div>
+    <div class="eyebrow" style="color:var(--a)">LEARN THROUGH MUSIC</div>
+    <div class="ob-title">Learn the words in<br><em>the songs you love.</em></div>
+    <div class="ob-sub">Melozi turns music into an interactive language lesson: follow the lyrics, understand words in context, and remember them with smart review.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px">
+      <div style="padding:12px 8px;border-radius:14px;background:var(--s1);border:0.5px solid var(--b1);text-align:center">
+        <div style="font-size:20px;margin-bottom:7px">♫</div>
+        <div style="font:700 11px/1.25 'Plus Jakarta Sans';color:var(--text)">Listen</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.35">Synced lyrics</div>
+      </div>
+      <div style="padding:12px 8px;border-radius:14px;background:var(--s1);border:0.5px solid var(--b1);text-align:center">
+        <div style="font-size:20px;margin-bottom:7px">文</div>
+        <div style="font:700 11px/1.25 'Plus Jakarta Sans';color:var(--text)">Understand</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.35">Tap any word</div>
+      </div>
+      <div style="padding:12px 8px;border-radius:14px;background:var(--s1);border:0.5px solid var(--b1);text-align:center">
+        <div style="font-size:20px;margin-bottom:7px">✓</div>
+        <div style="font:700 11px/1.25 'Plus Jakarta Sans';color:var(--text)">Remember</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.35">Smart review</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--dim);line-height:1.5">Set up your language and try the complete Listen → Learn → Review flow in under a minute.</div>
   </div>
 
   <!-- Step 2: Source language -->
@@ -1740,7 +1759,7 @@ function obGoto(step) {
     if (sel) sel.value = S.appLanguage;
   }
   const continueBtn = document.querySelector('.ob-footer .btn-a');
-  if (continueBtn) continueBtn.textContent = step === 6 ? 'Start learning →' : 'Continue →';
+  if (continueBtn) continueBtn.textContent = step === 1 ? 'Get started →' : (step === 6 ? 'Try your first lesson →' : 'Continue →');
   const leftBtn = document.getElementById('ob-left-btn');
   if (leftBtn) {
     if (step === 1) { leftBtn.textContent = 'Skip setup'; leftBtn.onclick = skipOnboarding; }
@@ -3037,8 +3056,32 @@ const ZH_WORD_ENGLISH = {
   '说':'say', '问':'ask', '听':'listen', '看':'look', '等':'wait', '走':'walk / leave', '来':'come', '去':'go',
   '知道':'know', '明白':'understand', '相信':'believe', '忘记':'forget', '记得':'remember', '离开':'leave', '回来':'come back',
   '世界':'world', '城市':'city', '夜晚':'night', '月光':'moonlight', '阳光':'sunlight', '声音':'voice / sound', '眼泪':'tears',
-  '快乐':'happy', '难过':'sad', '孤单':'lonely', '温柔':'gentle', '自由':'freedom', '未来':'future', '过去':'past'
+  '快乐':'happy', '难过':'sad', '孤单':'lonely', '温柔':'gentle', '自由':'freedom', '未来':'future', '过去':'past',
+  '没空':'not free / have no time', '有空':'have free time / be available', '空闲':'free time / spare time', '天空':'sky', '空气':'air',
+  '忙':'busy', '烦':'annoyed / frustrated', '累':'tired', '连言不由衷':'even say things you do not mean'
 };
+function getContextualWordEnglish(char,line){
+  const ch=S.sourceLang==='zh'?toSimplified(char||''):(char||'');
+  const ctx=S.sourceLang==='zh'?toSimplified(line?.characters||line?.text||''):(line?.characters||line?.text||'');
+  if(S.sourceLang!=='zh')return '';
+
+  // Choose the meaning from the lyric context rather than a generic dictionary/API sense.
+  if(ch==='空'){
+    if(/没空|沒有空|没有空|有空|空闲|空閒/.test(ctx))return 'free time / available';
+    if(/天空/.test(ctx))return 'sky';
+    if(/空气|空氣/.test(ctx))return 'air';
+    if(/空白/.test(ctx))return 'blank';
+    return 'empty / free';
+  }
+  if(ch==='没空'||ch==='沒有空'||ch==='没有空')return 'not free / have no time';
+  if(ch==='有空')return 'have free time / be available';
+  if(ch==='在乎')return 'care about';
+  if(ch==='无用功'||ch==='無用功')return 'wasted effort';
+  if(ch==='不再是')return 'is no longer';
+  if(ch==='言不由衷')return 'say something you do not mean';
+  return '';
+}
+
 function looksLikeSentenceTranslation(value, line){
   const v=(value||'').trim();
   const lineEng=(line?.english||'').trim();
@@ -3051,27 +3094,36 @@ function looksLikeSentenceTranslation(value, line){
 function getBestWordEnglish(word,line){
   const raw=(word?.english||'').trim();
   const ch=S.sourceLang==='zh'?toSimplified(word?.char||''):(word?.char||'');
+  const contextual=getContextualWordEnglish(ch,line);
+  if(contextual)return contextual;
+  // Reject common machine-translation mistakes that are clearly wrong for normal lyric vocabulary.
+  if(raw && !/^(null|undefined|nil|void)$/i.test(raw) && !looksLikeSentenceTranslation(raw,line)) return raw;
   if(S.sourceLang==='zh' && ZH_WORD_ENGLISH[ch]) return ZH_WORD_ENGLISH[ch];
-  if(raw && !looksLikeSentenceTranslation(raw,line)) return raw;
   return '';
 }
 async function repairSavedWordMeaning(w){
   if(!w)return '';
   const line={english:w.lyricEng||''};
   let eng=getBestWordEnglish(w,line);
-  if(!eng)eng=await translateWordFallback(w.char||'');
+  if(!eng)eng=await translateWordFallback(w.char||'',w.lyricChars||'');
   if(eng && eng!==w.english){
     w.english=eng;
     localStorage.setItem('ht_deck',JSON.stringify(S.saved));
   }
   return eng||'';
 }
-function getWordCacheKey(ch){return 'ht_word_en_'+(S.sourceLang||'zh')+'_'+(S.targetLanguage||'English')+'_'+ch;}
-async function translateWordFallback(ch){
+function getWordCacheKey(ch,contextText=''){
+  const ctx=(contextText||'').slice(0,80);
+  let hash=0;for(let i=0;i<ctx.length;i++)hash=((hash<<5)-hash+ctx.charCodeAt(i))|0;
+  return 'ht_word_en_'+(S.sourceLang||'zh')+'_'+(S.targetLanguage||'English')+'_'+ch+'_'+Math.abs(hash);
+}
+async function translateWordFallback(ch,contextText=''){
   ch=(S.sourceLang==='zh'?toSimplified(ch):ch||'').trim();
   if(!ch) return '';
+  const contextual=getContextualWordEnglish(ch,{characters:contextText,text:contextText});
+  if(contextual)return contextual;
   if(S.sourceLang==='zh' && ZH_WORD_ENGLISH[ch]) return ZH_WORD_ENGLISH[ch];
-  const key=getWordCacheKey(ch);
+  const key=getWordCacheKey(ch,contextText);
   const cached=localStorage.getItem(key);
   if(cached) return cached;
   try{
@@ -3094,7 +3146,7 @@ async function ensureWordEnglishForSheet(ch,lineIdx,wordIdx){
   const w=words[wordIdx];
   if(!w) return;
   let eng=getBestWordEnglish(w,line);
-  if(!eng) eng=await translateWordFallback(ch);
+  if(!eng) eng=await translateWordFallback(ch,line?.characters||line?.text||'');
   if(!eng) return;
   // Write it back into the real lyric word object too, so Deck cards get the word meaning.
   if(line?.words?.[wordIdx]) line.words[wordIdx].english=eng;
@@ -3123,6 +3175,15 @@ async function annotateInChunks(arr){
           arr[idx].characters=item.characters||arr[idx].characters;
           arr[idx].pinyin=item.pinyin||arr[idx].pinyin;
           arr[idx].english=item.english||arr[idx].english;
+          if(Array.isArray(item.words)){
+            item.words=item.words.map(w=>{
+              const contextual=getContextualWordEnglish(w.char,arr[idx]);
+              if(contextual || /^(null|undefined|nil|void)$/i.test((w.english||'').trim())){
+                return {...w,english:contextual||ZH_WORD_ENGLISH[toSimplified(w.char||'')]||''};
+              }
+              return w;
+            });
+          }
           arr[idx].words=item.words?.length?item.words:arr[idx].words;
         }
       });
@@ -3171,6 +3232,10 @@ ${numbered}
 
 Return a JSON array ONLY (no markdown):
 [{"line":1,"characters":"你好","pinyin":"nǐ hǎo","english":"hello","words":[{"char":"你","pinyin":"nǐ","english":"you"},{"char":"好","pinyin":"hǎo","english":"good"}]}]
+
+CRITICAL WORD-MEANING RULE: Each words[].english value must translate ONLY that word or phrase as it is used in the supplied lyric line. Use the surrounding lyric context to choose the intended sense. Never return programming/database meanings such as "null" unless the lyric is literally about computing. Example: in "我没空", 空 means "free time / available", not "empty" or "null"; 在乎 means "care about"; 不再是 means "is no longer".
+
+CRITICAL SEGMENTATION RULE: Segment meaningful multi-character words and phrases together when that produces the natural vocabulary unit. Do not split 时间, 在乎, 无用功, 不再是, 没空, or similar expressions into isolated characters unless the context requires it.
 
 CRITICAL PINYIN RULE: Every Chinese character = exactly ONE pinyin syllable. Multi-character words MUST have one space between each syllable. NEVER combine syllables.
 ✓ CORRECT: 慢慢→"màn màn", 城市→"chéng shì", 时间→"shí jiān", 朋友→"péng yǒu", 回声→"huí shēng", 月光→"yuè guāng"
@@ -3450,7 +3515,7 @@ function tooltipAddToDeck(){
       lyricEng: line?.english||'', dueAt:Date.now(), intervalDays:0, reviewCount:0
     });
     if(!english){
-      translateWordFallback(char).then(en=>{
+      translateWordFallback(char,line?.characters||line?.text||'').then(en=>{
         if(!en)return;
         const savedWord=S.saved.find(x=>x.char===char);
         if(savedWord&&!savedWord.english){savedWord.english=en;localStorage.setItem('ht_deck',JSON.stringify(S.saved));renderDeck?.();}
