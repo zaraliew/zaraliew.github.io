@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Melozi">
-<link rel="apple-touch-icon" href="/logo.png">
+<link rel="apple-touch-icon" href="/melozi-logo-dark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -72,7 +72,24 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .ob-count{font:600 12px/1 'JetBrains Mono';color:var(--muted)}
 .ob-body{flex:1;min-height:180px;display:flex;flex-direction:column;justify-content:center;padding:24px 0 16px;gap:16px}
 .ob-icon{width:72px;height:72px;border-radius:22px;background:linear-gradient(150deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px -8px rgba(245,164,76,.4);margin-bottom:6px}
-.ob-title{font:800 38px/1.05 'Space Grotesk';letter-spacing:-.03em}
+.ob-brand-logo {
+  width: 156px;
+  height: 156px;
+  border-radius: 30px;
+  overflow: hidden;
+  align-self: center;
+  background: #10091d;
+  border: 0.5px solid rgba(184, 153, 255, 0.28);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+.ob-brand-logo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+  .ob-title{font:800 38px/1.05 'Space Grotesk';letter-spacing:-.03em}
 .ob-title em{font-style:normal;color:var(--a)}
 .ob-sub{font-size:16px;color:var(--soft);line-height:1.65}
 .ob-options{display:flex;flex-direction:column;gap:10px}
@@ -604,7 +621,7 @@ body.dev-mode .dev-only{display:flex!important}
 
   <!-- Step 1: Welcome -->
   <div class="ob-body" id="ob-1">
-    <div class="ob-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg></div>
+    <div class="ob-brand-logo" aria-label="Melozi logo">   <img src="/melozi-logo-dark.png" alt="Melozi"> </div><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg></div>
     <div class="eyebrow" style="color:var(--a)">LEARN THROUGH MUSIC</div>
     <div class="ob-title">Learn the words in<br><em>the songs you love.</em></div>
     <div class="ob-sub">Melozi turns music into an interactive language lesson: follow the lyrics, understand words in context, and remember them with smart review.</div>
