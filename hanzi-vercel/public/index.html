@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Melozi">
-<link rel="apple-touch-icon" href="/melozi-logo-dark.png">
+<link rel="apple-touch-icon" href="/melozi-logo-dark.png?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -46,7 +46,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
 /* === SCREENS === */
 .screen{position:absolute;inset:0;overflow:hidden;background:transparent;transition:opacity .22s,transform .22s}
-.screen.hidden{opacity:0;pointer-events:none;transform:translateY(8px)}
+.screen.hidden{display:none!important;opacity:0;pointer-events:none;transform:translateY(8px)}
 .tab-screen{bottom:var(--tab-h)}
 
 /* scroll */
@@ -89,6 +89,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   display: block;
   object-fit: cover;
 }
+
+/* Logo rendering */
+.ob-brand-logo img,.home-logo-ic img,.pwa-icon img{background:#10091d}
   .ob-title{font:800 38px/1.05 'Space Grotesk';letter-spacing:-.03em}
 .ob-title em{font-style:normal;color:var(--a)}
 .ob-sub{font-size:16px;color:var(--soft);line-height:1.65}
@@ -134,7 +137,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 #screen-home{top:0;left:0;right:0;bottom:var(--tab-h);display:flex;flex-direction:column;overflow:hidden}
 .home-hdr{padding:56px 22px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .home-logo{display:flex;align-items:center;gap:10px}
-.home-logo-ic{width:36px;height:36px;border-radius:10px;background:linear-gradient(150deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center}
+.home-logo-ic{width:42px;height:42px;border-radius:12px;background:#10091d;display:flex;align-items:center;justify-content:center;overflow:hidden;border:0.5px solid var(--b2);flex-shrink:0}
+.home-logo-ic img{width:100%;height:100%;display:block;object-fit:cover}
 .home-logo-name{font:800 20px/1 'Space Grotesk';background:linear-gradient(90deg,var(--a),var(--p));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .live-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--abg);border:0.5px solid rgba(245,164,76,.3);font:700 11px/1 'Plus Jakarta Sans';color:var(--a)}
 .live-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--a);animation:pulse 1.6s ease-in-out infinite}
@@ -448,7 +452,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 /* === PWA INSTALL PROMPT === */
 #pwa-prompt{position:fixed;left:12px;right:12px;bottom:calc(var(--tab-h) + 12px);z-index:90;background:var(--bg2);border:0.5px solid var(--b2);border-radius:20px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 -4px 40px rgba(0,0,0,.5);backdrop-filter:blur(20px);transform:translateY(120%);transition:transform .4s cubic-bezier(.32,.72,0,1);max-width:406px;margin:0 auto}
 #pwa-prompt.show{transform:translateY(0)}
-.pwa-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(150deg,var(--a) 0%,#b878d8 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pwa-icon{width:52px;height:52px;border-radius:14px;background:#10091d;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:0.5px solid var(--b2)}
+.pwa-icon img{width:100%;height:100%;display:block;object-fit:cover}
 .pwa-text{flex:1;min-width:0}
 .pwa-title{font:700 14px/1 'Plus Jakarta Sans';color:var(--text);margin-bottom:4px}
 .pwa-sub{font-size:12px;color:var(--muted);line-height:1.4}
@@ -621,7 +626,9 @@ body.dev-mode .dev-only{display:flex!important}
 
   <!-- Step 1: Welcome -->
   <div class="ob-body" id="ob-1">
-    <div class="ob-brand-logo" aria-label="Melozi logo">   <img src="/melozi-logo-dark.png" alt="Melozi"> </div><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg></div>
+    <div class="ob-brand-logo" aria-label="Melozi logo">
+      <img src="/melozi-logo-dark.png?v=3" alt="Melozi logo" onerror="this.onerror=null;this.src='/melozi-logo-white.png?v=3'">
+    </div>
     <div class="eyebrow" style="color:var(--a)">LEARN THROUGH MUSIC</div>
     <div class="ob-title">Learn the words in<br><em>the songs you love.</em></div>
     <div class="ob-sub">Melozi turns music into an interactive language lesson: follow the lyrics, understand words in context, and remember them with smart review.</div>
@@ -792,7 +799,9 @@ body.dev-mode .dev-only{display:flex!important}
 <div id="screen-home" class="screen tab-screen hidden">
   <div class="home-hdr">
     <div class="home-logo">
-      <div class="home-logo-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg></div>
+      <div class="home-logo-ic" aria-hidden="true">
+        <img src="/melozi-logo-dark.png?v=3" alt="" onerror="this.onerror=null;this.src='/melozi-logo-white.png?v=3'">
+      </div>
       <div class="home-logo-name">Melozi</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
@@ -1508,8 +1517,8 @@ body.dev-mode .dev-only{display:flex!important}
 
 <!-- PWA Install Prompt -->
 <div id="pwa-prompt" class="hidden">
-  <div class="pwa-icon">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 17V7l9-2v10" stroke="#1a0d24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="2.2" fill="#1a0d24"/><circle cx="16" cy="15" r="2.2" fill="#1a0d24"/></svg>
+  <div class="pwa-icon" aria-hidden="true">
+    <img src="/melozi-logo-dark.png?v=3" alt="" onerror="this.onerror=null;this.src='/melozi-logo-white.png?v=3'">
   </div>
   <div class="pwa-text">
     <div class="pwa-title">Add Melozi to your Home Screen</div>
@@ -1750,8 +1759,8 @@ function obGoto(step) {
     document.getElementById('ob-'+i)?.classList.toggle('hidden', i!==step);
     document.getElementById('od-'+i)?.classList.toggle('active', i===step);
   }
-  document.getElementById('ob-prog').style.width = (step/5*100)+'%';
-  document.getElementById('ob-count').textContent = step+'/5';
+  document.getElementById('ob-prog').style.width = (step/6*100)+'%';
+  document.getElementById('ob-count').textContent = step+'/6';
   S.obStep = step;
   // Sync language selector UI to actual state
   if (step === 2) {
