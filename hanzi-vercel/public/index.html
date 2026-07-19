@@ -610,6 +610,68 @@ body.dev-mode .dev-only{display:flex!important}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
 }
 
+
+/* === ONBOARDING LAYOUT FIX: compact, scroll-safe, no cut-off content === */
+#screen-onboarding{
+  padding:calc(18px + env(safe-area-inset-top,0px)) 28px calc(18px + env(safe-area-inset-bottom,0px));
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto auto;
+  gap:10px;
+  overflow:hidden;
+}
+.ob-top{margin:0;min-height:20px}
+.ob-body{
+  min-height:0;
+  justify-content:flex-start;
+  align-self:stretch;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:22px 0 8px;
+  gap:14px;
+}
+.ob-body::-webkit-scrollbar{display:none}
+#ob-2,#ob-3,#ob-4,#ob-5{justify-content:center}
+#ob-6{padding-top:12px}
+.ob-brand-logo{
+  width:138px;
+  height:138px;
+  border-radius:28px;
+  flex-shrink:0;
+  margin:0 auto 4px;
+}
+.ob-brand-logo img{object-fit:contain;background:#10091d}
+.ob-title{font-size:clamp(32px,9vw,38px);line-height:1.08}
+.ob-sub{font-size:15px;line-height:1.55}
+.ob-options{gap:9px}
+.ob-opt{padding:14px 16px}
+.ob-sp-card{padding:18px}
+.ob-dots{margin:2px 0 4px;min-height:20px;align-items:center}
+.ob-footer{padding:2px 0 0;gap:12px;min-height:58px}
+.ob-footer .btn{white-space:nowrap}
+.ob-skip{padding:10px 0}
+
+@media (max-height:780px){
+  #screen-onboarding{padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));gap:7px}
+  .ob-body{padding:12px 0 4px;gap:10px}
+  .ob-brand-logo{width:112px;height:112px;border-radius:23px}
+  .ob-title{font-size:30px;line-height:1.05}
+  .ob-sub{font-size:14px;line-height:1.45}
+  .ob-opt{padding:11px 13px}
+  .ob-opt-ic{width:38px;height:38px;font-size:19px}
+  .ob-sp-card{padding:14px}
+  .ob-sp-ic{width:46px;height:46px}
+  .ob-dots{margin:0;min-height:16px}
+  .ob-footer{min-height:50px}
+  .btn-lg{padding:14px 22px;font-size:15px}
+}
+
+@media (max-width:360px){
+  #screen-onboarding{padding-left:20px;padding-right:20px}
+  .ob-title{font-size:30px}
+  .ob-footer{gap:8px}
+  .ob-footer .btn{padding-left:18px;padding-right:18px}
+}
+
 </style>
 </head>
 <body>
@@ -1884,7 +1946,7 @@ const TOUR_STEPS = [
     targetFn: ()=>null,
     step:'Welcome',
     title:'Learn a song in two modes',
-    body:'Listen keeps you immersed in the music. Learn slows the moment down so you can inspect, replay, and save useful language.',
+    body:'Connect Spotify, play a song, and Melozi auto-syncs the lyrics. Listen keeps you immersed; Learn lets you inspect, replay, and save useful language.',
     cta:"Show me →"
   },
   {
@@ -1893,7 +1955,7 @@ const TOUR_STEPS = [
     placement:'below',
     step:'1 of 6',
     title:'Choose any song',
-    body:'Tap a suggestion or play something in Spotify. Melozi finds the synced lyrics and follows the song.',
+    body:'Connect Spotify once, then play any song in Spotify. Melozi automatically detects what is playing, loads the synced lyrics, and follows the song. If Spotify is not connected yet, tap Connect Spotify on the Listen screen.',
     cta:'See Listen mode →'
   },
   {
